@@ -1,0 +1,47 @@
+# Publishes to npm with Trusted Publishing (OIDC, no tokens) when a version tag is pushed,
+# e.g. `git tag v0.3.1 && git push origin v0.3.1`. Configure the trusted publisher on
+# npmjs.com: package quarter4-mcp > Settings > Trusted Publisher > GitHub Actions,
+# owner phestplus, repository quarter4-mcp, workflow release.yml.
+name: Release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write   # create the GitHub release
+  id-token: write   # npm trusted publishing
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+      - name: Tag must match package.json version
+        run: |
+          V="v$(node -p "require('./package.json').version")"
+          if [ "$V" != "$GITHUB_REF_NAME" ]; then echo "Tag $GITHUB_REF_NAME does not match package.json $V"; exit 1; fi
+
+      - name: Publish to npm (skipped if this version is already published)
+        run: |
+          V="$(node -p "require('./package.json').version")"
+          if npm view "quarter4-mcp@$V" version >/dev/null 2>&1; then
+            echo "quarter4-mcp@$V is already on npm, skipping publish"
+          else
+            npm publish --access public
+          fi
+
+      - name: GitHub release with notes from CHANGELOG
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="$(node -p "require('./package.json').version")"
+          node -e "const s=require('fs').readFileSync('CHANGELOG.md','utf8');const m=s.split(/^## /m).find(x=>x.startsWith('$V'));require('fs').writeFileSync('notes.md',m?m.split('\n').slice(1).join('\n').trim():'See CHANGELOG.md')"
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "Quarter4 $GITHUB_REF_NAME" --notes-file notes.md
