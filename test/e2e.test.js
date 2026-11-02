@@ -26,7 +26,7 @@ test('bundle works over stdio without node_modules', { skip, timeout: 30000 }, a
   await client.connect(new StdioClientTransport({ command: process.execPath, args: [file], cwd: dir }));
   try {
     const { tools } = await client.listTools();
-    assert.equal(tools.length, 9);
+    assert.equal(tools.length, 13);
     const out = join(dir, 'page.html');
     const r = await client.callTool({ name: 'landing_page', arguments: { brand: 'Glow', headline: 'Sale', ctaText: 'Shop', ctaUrl: 'https://x.y', outputPath: out, autoImages: false } });
     assert.ok(!r.isError, r.content[0].text);

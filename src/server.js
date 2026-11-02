@@ -1,9 +1,10 @@
-import { writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { buildBrief, ASSET_TYPES } from './brief.js';
 import { EVENT_IDS, listEvents } from './calendar.js';
+import { cloud } from './cloud.js';
 import { findImages } from './images.js';
 import { upcomingHolidays, whatsOn } from './live.js';
 import { NICHES, classifyNiche } from './niches.js';
@@ -16,7 +17,7 @@ import { buildLanding, describeLanding, LAYOUTS, THEMES } from './landing.js';
 import { buildPlan } from './plan.js';
 import { getSpecs, PLATFORM_IDS } from './specs.js';
 
-export const VERSION = '0.2.0';
+export const VERSION = '0.3.0';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD');
 // Loose inputs: real users write "ig, tik tok", "Lagos", "black friday". Normalised in the engine.
@@ -133,6 +134,7 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
       variant: z.number().int().min(0).max(99).optional().describe('Re-roll fonts, nav, buttons and countdown style'),
       images: z.array(z.union([z.string(), z.object({ url: z.string(), alt: z.string().optional(), attribution: z.string().optional() })])).max(8).optional().describe('Photos, best first. Use the seller\'s own product photos when possible'),
       productImage: z.string().optional().describe('Product photo, ideally a cut-out PNG on transparent background'),
+      products: z.array(z.object({ name: z.string(), price: z.string().optional(), originalPrice: z.string().optional(), image: z.string().optional(), note: z.string().optional(), url: z.string().optional() })).max(12).optional().describe('Items on sale; shown as a product grid. With a WhatsApp ctaUrl each card opens a prefilled order chat'),
       videoUrl: z.string().optional().describe('Short turntable/walkaround video (mp4); scroll scrubs through it'),
       modelUrl: z.string().optional().describe('3D model (.glb); rotates with scroll'),
       autoImages: z.boolean().optional().describe('Fetch free mood photos when no media is given (default true)'),
@@ -262,6 +264,63 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
     },
     annotations: { readOnlyHint: true, openWorldHint: true },
   }, wrap(async (a) => json(await findImages(a.query, a))));
+
+  // ---- Quarter4 Cloud: publish, measure, own domain, billing ----
+  server.registerTool('publish_page', {
+    title: 'Publish a page online',
+    description: 'Put a sales page online and get a shareable link, e.g. https://q4-korakicks.erasstack.com/black-friday. Pass the HTML from landing_page, a local file path (local mode), or "page" with landing_page arguments to build and publish in one step. Free plan: 1 site, 3 live pages, small badge. Pro adds the user\'s own domain and removes the badge. Needs QUARTER4_API_KEY (get one free with cloud_account action "signup").',
+    inputSchema: {
+      brand: z.string().min(1).describe('Brand name; becomes the address q4-<brand>.erasstack.com'),
+      path: z.string().optional().describe('Page path, e.g. "black-friday"; empty for the home page'),
+      html: z.string().optional(),
+      file: z.string().optional().describe('Local mode: path to an .html file'),
+      page: z.record(z.string(), z.any()).optional().describe('landing_page arguments to build and publish in one call'),
+      title: z.string().optional(),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => {
+    let pageHtml = a.html;
+    if (!pageHtml && a.file) {
+      if (!allowFileWrites) throw new Error('file is only supported when the server runs locally. Pass html instead.');
+      pageHtml = await readFile(a.file, 'utf8');
+    }
+    if (!pageHtml && a.page) pageHtml = buildLanding({ brand: a.brand, ...a.page });
+    if (!pageHtml) throw new Error('Send html, file or page.');
+    const r = await cloud.publish({ brand: a.brand, path: a.path, html: pageHtml, title: a.title });
+    return json({ ...r, share: `Share this link on WhatsApp, Instagram bio and Status: ${r.url}` });
+  }));
+
+  server.registerTool('page_stats', {
+    title: 'Page results',
+    description: 'Views, WhatsApp order clicks and button clicks for published pages, broken down per product (e.g. "Runner One: 48 WhatsApp clicks"). Use it to tell the user what is selling and what to push next.',
+    inputSchema: { days: z.number().int().min(1).max(365).optional().describe('Look-back window, default 30 (free plan keeps 7)') },
+    annotations: { readOnlyHint: true, openWorldHint: true },
+  }, wrap(async (a) => json(await cloud.stats(a.days ?? 30))));
+
+  server.registerTool('connect_domain', {
+    title: 'Connect your own domain',
+    description: 'Pro: serve published pages on the user\'s own domain (e.g. sale.korakicks.com) with automatic HTTPS. Returns the one DNS record to add. Call again with check: true to see if it is live.',
+    inputSchema: { hostname: z.string().min(4), check: z.boolean().optional(), site: z.string().optional().describe('Which brand site, if more than one') },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => json(a.check ? await cloud.domainStatus(a.hostname) : await cloud.connectDomain(a.hostname, a.site))));
+
+  server.registerTool('cloud_account', {
+    title: 'Quarter4 account and plans',
+    description: 'Quarter4 Cloud account. action "signup" emails a free API key to the given email. "status" shows plan, limits and published sites. "upgrade" returns a secure Flutterwave checkout link for Pro (NGN 9,900 or USD 9 a month) or Business (NGN 39,000 or USD 39 a month). Never ask for card details in chat; always send the link.',
+    inputSchema: {
+      action: z.enum(['signup', 'status', 'upgrade', 'pages']),
+      email: z.string().optional(),
+      plan: z.enum(['pro', 'business']).optional(),
+      currency: z.enum(['NGN', 'USD']).optional(),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => {
+    if (a.action === 'signup') { if (!a.email) throw new Error('Send the user\'s email.'); return json(await cloud.signup(a.email)); }
+    if (a.action === 'status') return json(await cloud.me());
+    if (a.action === 'pages') return json(await cloud.pages());
+    const r = await cloud.checkout(a.plan ?? 'pro', a.currency ?? 'NGN');
+    return json({ ...r, note: 'Send this link to the user. Payment happens on Flutterwave\'s secure page; the plan activates as soon as the payment is verified.' });
+  }));
 
   // Prompts: reusable workflows for clients without skills (ChatGPT, Claude Desktop).
   server.registerPrompt('q4-campaign', {

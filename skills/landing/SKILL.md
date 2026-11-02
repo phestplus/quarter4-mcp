@@ -32,6 +32,14 @@ Show the returned summary (layout, notes) and fix anything in `notes` (missing l
 
 ## 4. Publish
 
+**Fastest:** call `publish_page` with the brand, a path (e.g. `black-friday`) and the HTML (or the same arguments as `page`). It returns a live link like `https://q4-korakicks.erasstack.com/black-friday` to share on WhatsApp, Status and Instagram bio. Without `QUARTER4_API_KEY`, offer `cloud_account` action `signup` with their email first.
+
+For a shop with several items, pass `products` (name, price, real previous price, photo): the page gets a product grid, and on WhatsApp shops every item opens a prefilled order chat.
+
+Own domain and no badge: `cloud_account` action `upgrade` returns a Flutterwave checkout link (Pro ₦9,900 or $9 a month), then `connect_domain`.
+
+Other options:
+
 - **Netlify Drop**: drag the file onto app.netlify.com/drop, live in seconds
 - **GitHub Pages**, **Vercel** or **Cloudflare Pages**: deploy the folder
 - Or paste into a custom HTML block on their site builder

@@ -4016,10 +4016,10 @@ var require_fast_uri = __commonJS({
       schemelessOptions.skipEscape = true;
       return serialize(resolved, schemelessOptions);
     }
-    function resolveComponent(base, relative, options, skipNormalization) {
+    function resolveComponent(base2, relative, options, skipNormalization) {
       const target = {};
       if (!skipNormalization) {
-        base = parse4(serialize(base, options), options);
+        base2 = parse4(serialize(base2, options), options);
         relative = parse4(serialize(relative, options), options);
       }
       options = options || {};
@@ -4039,33 +4039,33 @@ var require_fast_uri = __commonJS({
           target.query = relative.query;
         } else {
           if (!relative.path) {
-            target.path = base.path;
+            target.path = base2.path;
             if (relative.query !== void 0) {
               target.query = relative.query;
             } else {
-              target.query = base.query;
+              target.query = base2.query;
             }
           } else {
             if (relative.path[0] === "/") {
               target.path = removeDotSegments(relative.path);
             } else {
-              const baseHasAuthority = base.userinfo !== void 0 || base.host !== void 0 || base.port !== void 0;
-              if (baseHasAuthority && !base.path) {
+              const baseHasAuthority = base2.userinfo !== void 0 || base2.host !== void 0 || base2.port !== void 0;
+              if (baseHasAuthority && !base2.path) {
                 target.path = "/" + relative.path;
-              } else if (!base.path) {
+              } else if (!base2.path) {
                 target.path = relative.path;
               } else {
-                target.path = base.path.slice(0, base.path.lastIndexOf("/") + 1) + relative.path;
+                target.path = base2.path.slice(0, base2.path.lastIndexOf("/") + 1) + relative.path;
               }
-              target.path = base.scheme === void 0 && !baseHasAuthority && target.path[0] !== "/" ? removeDotSegmentsRelative(target.path) : removeDotSegments(target.path);
+              target.path = base2.scheme === void 0 && !baseHasAuthority && target.path[0] !== "/" ? removeDotSegmentsRelative(target.path) : removeDotSegments(target.path);
             }
             target.query = relative.query;
           }
-          target.userinfo = base.userinfo;
-          target.host = base.host;
-          target.port = base.port;
+          target.userinfo = base2.userinfo;
+          target.host = base2.host;
+          target.port = base2.port;
         }
-        target.scheme = base.scheme;
+        target.scheme = base2.scheme;
       }
       target.fragment = relative.fragment;
       return target;
@@ -12598,14 +12598,14 @@ var memo = {
     var _a3;
     (_a3 = inst._zod).deferred ?? (_a3.deferred = []);
     inst._zod.deferred.push(() => {
-      const base = inst._zod.parse;
+      const base2 = inst._zod.parse;
       const wrapped = (payload, ctx) => {
         if (ctx.direction !== "backward" && isBackEdge(ctx, payload.value))
           throw new $ZodCyclicError();
-        return base(payload, ctx);
+        return base2(payload, ctx);
       };
       inst._zod.parse = wrapped;
-      if (inst._zod.run === base)
+      if (inst._zod.run === base2)
         inst._zod.run = wrapped;
     });
   },
@@ -12617,15 +12617,15 @@ var memo = {
     let lastBucket;
     (_a3 = inst._zod).deferred ?? (_a3.deferred = []);
     inst._zod.deferred.push(() => {
-      const base = inst._zod.parse;
+      const base2 = inst._zod.parse;
       const wrapped = (payload, ctx) => {
         if (isRecursiveInst === void 0) {
           const walked = isRecursive(inst, /* @__PURE__ */ new Set(), false);
           if (walked === NONE) {
-            inst._zod.parse = base;
+            inst._zod.parse = base2;
             if (inst._zod.run === wrapped)
-              inst._zod.run = base;
-            return base(payload, ctx);
+              inst._zod.run = base2;
+            return base2(payload, ctx);
           }
           if (walked === PROVEN || rechecked)
             isRecursiveInst = true;
@@ -12634,7 +12634,7 @@ var memo = {
         }
         const input2 = payload.value;
         if (!isRef(input2))
-          return base(payload, ctx);
+          return base2(payload, ctx);
         let state = ctx[STATE];
         if (!state) {
           state = { buckets: /* @__PURE__ */ new WeakMap(), backEdges: void 0 };
@@ -12663,7 +12663,7 @@ var memo = {
         }
         handoff = bucket;
         const depth = open.length;
-        const result = base(payload, ctx);
+        const result = base2(payload, ctx);
         handoff = void 0;
         const entry = open.length > depth ? open.pop() : void 0;
         if (result instanceof Promise) {
@@ -12678,7 +12678,7 @@ var memo = {
         return result;
       };
       inst._zod.parse = wrapped;
-      if (inst._zod.run === base)
+      if (inst._zod.run === base2)
         inst._zod.run = wrapped;
     });
   }
@@ -30841,7 +30841,7 @@ var StreamableHTTPServerTransport = class {
 };
 
 // src/server.js
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { extname, resolve } from "node:path";
 
 // node_modules/zod/v3/helpers/util.js
@@ -34392,23 +34392,23 @@ var ZodEffects = class extends ZodType2 {
     }
     if (effect.type === "transform") {
       if (ctx.common.async === false) {
-        const base = this._def.schema._parseSync({
+        const base2 = this._def.schema._parseSync({
           data: ctx.data,
           path: ctx.path,
           parent: ctx
         });
-        if (!isValid(base))
+        if (!isValid(base2))
           return INVALID2;
-        const result = effect.transform(base.value, checkCtx);
+        const result = effect.transform(base2.value, checkCtx);
         if (result instanceof Promise) {
           throw new Error(`Asynchronous transform encountered during synchronous parse operation. Use .parseAsync instead.`);
         }
         return { status: status.value, value: result };
       } else {
-        return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((base) => {
-          if (!isValid(base))
+        return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((base2) => {
+          if (!isValid(base2))
             return INVALID2;
-          return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({
+          return Promise.resolve(effect.transform(base2.value, checkCtx)).then((result) => ({
             status: status.value,
             value: result
           }));
@@ -35817,19 +35817,19 @@ function parseNullableDef(def, refs) {
     };
   }
   if (refs.target === "openApi3") {
-    const base2 = parseDef(def.innerType._def, {
+    const base3 = parseDef(def.innerType._def, {
       ...refs,
       currentPath: [...refs.currentPath]
     });
-    if (base2 && "$ref" in base2)
-      return { allOf: [base2], nullable: true };
-    return base2 && { ...base2, nullable: true };
+    if (base3 && "$ref" in base3)
+      return { allOf: [base3], nullable: true };
+    return base3 && { ...base3, nullable: true };
   }
-  const base = parseDef(def.innerType._def, {
+  const base2 = parseDef(def.innerType._def, {
     ...refs,
     currentPath: [...refs.currentPath, "anyOf", "0"]
   });
-  return base && { anyOf: [base, { type: "null" }] };
+  return base2 && { anyOf: [base2, { type: "null" }] };
 }
 
 // node_modules/zod-to-json-schema/dist/esm/parsers/number.js
@@ -37256,8 +37256,8 @@ var Protocol = class {
 function isPlainObject2(value2) {
   return value2 !== null && typeof value2 === "object" && !Array.isArray(value2);
 }
-function mergeCapabilities(base, additional) {
-  const result = { ...base };
+function mergeCapabilities(base2, additional) {
+  const result = { ...base2 };
   for (const key in additional) {
     const k = key;
     const addValue = additional[k];
@@ -39665,8 +39665,8 @@ function resolveDate(event, year) {
   if (r.fixed) return `${y}-${pad(r.fixed[0])}-${pad(r.fixed[1])}`;
   if (r.nth) return nthWeekday(y, r.nth[0], r.nth[1], r.nth[2]);
   if (r.after) {
-    const base = resolveDate(byId.get(r.after[0]), year);
-    return base && addDays(base, r.after[1]);
+    const base2 = resolveDate(byId.get(r.after[0]), year);
+    return base2 && addDays(base2, r.after[1]);
   }
   if (r.lastWeekdayBefore) {
     const [m, d, wd] = r.lastWeekdayBefore;
@@ -40636,8 +40636,37 @@ function pickFormat(p, assetType) {
   return want.find((w) => ids.includes(w)) ?? ids[0];
 }
 
+// src/cloud.js
+var base = () => (process.env.QUARTER4_API_URL || "https://q4.erasstack.com").replace(/\/+$/, "");
+var NO_KEY = `No QUARTER4_API_KEY is set. Call cloud_account with action "signup" and the user's email to get a free key by email, then add it to the MCP server env as QUARTER4_API_KEY and restart the client.`;
+async function api(path, { method = "GET", body, auth = true } = {}) {
+  const key = process.env.QUARTER4_API_KEY;
+  if (auth && !key) throw new Error(NO_KEY);
+  const res = await fetch(`${base()}${path}`, {
+    method,
+    headers: { "content-type": "application/json", "user-agent": "quarter4-mcp", ...auth ? { authorization: `Bearer ${key}` } : {} },
+    body: body ? JSON.stringify(body) : void 0,
+    signal: AbortSignal.timeout(2e4)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error ?? `Quarter4 Cloud returned ${res.status}`);
+  return data;
+}
+var cloud = {
+  signup: (email3) => api("/v1/signup", { method: "POST", body: { email: email3 }, auth: false }),
+  me: () => api("/v1/me"),
+  publish: (b) => api("/v1/pages", { method: "POST", body: b }),
+  pages: () => api("/v1/pages"),
+  remove: (id) => api(`/v1/pages/${encodeURIComponent(id)}`, { method: "DELETE" }),
+  stats: (days) => api(`/v1/stats?days=${Number(days) || 30}`),
+  connectDomain: (hostname3, site) => api("/v1/domains", { method: "POST", body: { hostname: hostname3, site } }),
+  domainStatus: (hostname3) => api(`/v1/domains/${encodeURIComponent(hostname3)}`),
+  checkout: (plan, currency) => api("/v1/billing/checkout", { method: "POST", body: { plan, currency } }),
+  pricingUrl: () => base()
+};
+
 // src/images.js
-var UA = "quarter4-mcp (https://github.com/phestplus/quarter4)";
+var UA = "quarter4-mcp (https://github.com/phestplus/quarter4-mcp)";
 var TRADEMARKS = ["nike", "adidas", "converse", "vans", "puma", "reebok", "yeezy", "jordan", "new balance", "asics", "fila", "gucci", "louis vuitton", "chanel", "prada", "dior", "hermes", "rolex", "apple", "iphone", "macbook", "samsung", "sony", "playstation", "xbox", "nintendo", "toyota", "mercedes", "bmw", "audi", "ferrari", "lamborghini", "porsche", "tesla", "ford", "honda", "lexus", "range rover", "kia", "chevrolet", "corvette", "hyundai", "nissan", "volkswagen", "volvo", "jaguar", "bentley", "rolls-royce", "maserati", "mazda", "subaru", "jeep", "peugeot", "renault", "fiat", "mclaren", "bugatti", "aston martin", "coca-cola", "pepsi", "starbucks", "mcdonald", "ikea", "zara", "h&m", "supreme", "balenciaga", "off-white", "lego", "disney", "barbie", "marvel"];
 var brandRisk = (text) => TRADEMARKS.find((t) => String(text ?? "").toLowerCase().includes(t)) ?? null;
 var strip = (html) => String(html ?? "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
@@ -40781,7 +40810,7 @@ async function findImages(query, o = {}) {
 }
 
 // src/live.js
-var UA2 = "quarter4-mcp (https://github.com/phestplus/quarter4)";
+var UA2 = "quarter4-mcp (https://github.com/phestplus/quarter4-mcp)";
 var cache = /* @__PURE__ */ new Map();
 async function cached2(key, ttlMs, fn) {
   const hit = cache.get(key);
@@ -42451,7 +42480,7 @@ function buildPlan(o) {
 }
 
 // src/server.js
-var VERSION = "0.2.0";
+var VERSION = "0.3.0";
 var date5 = external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD");
 var list = external_exports.union([external_exports.array(external_exports.string()), external_exports.string()]);
 var platformList = list.describe(`Platforms, any spelling: ${PLATFORM_IDS.join(", ")} (also "ig", "tik tok", "newsletter", "status")`);
@@ -42563,6 +42592,7 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
       variant: external_exports.number().int().min(0).max(99).optional().describe("Re-roll fonts, nav, buttons and countdown style"),
       images: external_exports.array(external_exports.union([external_exports.string(), external_exports.object({ url: external_exports.string(), alt: external_exports.string().optional(), attribution: external_exports.string().optional() })])).max(8).optional().describe("Photos, best first. Use the seller's own product photos when possible"),
       productImage: external_exports.string().optional().describe("Product photo, ideally a cut-out PNG on transparent background"),
+      products: external_exports.array(external_exports.object({ name: external_exports.string(), price: external_exports.string().optional(), originalPrice: external_exports.string().optional(), image: external_exports.string().optional(), note: external_exports.string().optional(), url: external_exports.string().optional() })).max(12).optional().describe("Items on sale; shown as a product grid. With a WhatsApp ctaUrl each card opens a prefilled order chat"),
       videoUrl: external_exports.string().optional().describe("Short turntable/walkaround video (mp4); scroll scrubs through it"),
       modelUrl: external_exports.string().optional().describe("3D model (.glb); rotates with scroll"),
       autoImages: external_exports.boolean().optional().describe("Fetch free mood photos when no media is given (default true)"),
@@ -42690,6 +42720,61 @@ ${html}` }] };
     },
     annotations: { readOnlyHint: true, openWorldHint: true }
   }, wrap(async (a) => json3(await findImages(a.query, a))));
+  server.registerTool("publish_page", {
+    title: "Publish a page online",
+    description: `Put a sales page online and get a shareable link, e.g. https://q4-korakicks.erasstack.com/black-friday. Pass the HTML from landing_page, a local file path (local mode), or "page" with landing_page arguments to build and publish in one step. Free plan: 1 site, 3 live pages, small badge. Pro adds the user's own domain and removes the badge. Needs QUARTER4_API_KEY (get one free with cloud_account action "signup").`,
+    inputSchema: {
+      brand: external_exports.string().min(1).describe("Brand name; becomes the address q4-<brand>.erasstack.com"),
+      path: external_exports.string().optional().describe('Page path, e.g. "black-friday"; empty for the home page'),
+      html: external_exports.string().optional(),
+      file: external_exports.string().optional().describe("Local mode: path to an .html file"),
+      page: external_exports.record(external_exports.string(), external_exports.any()).optional().describe("landing_page arguments to build and publish in one call"),
+      title: external_exports.string().optional()
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => {
+    let pageHtml = a.html;
+    if (!pageHtml && a.file) {
+      if (!allowFileWrites) throw new Error("file is only supported when the server runs locally. Pass html instead.");
+      pageHtml = await readFile(a.file, "utf8");
+    }
+    if (!pageHtml && a.page) pageHtml = buildLanding({ brand: a.brand, ...a.page });
+    if (!pageHtml) throw new Error("Send html, file or page.");
+    const r = await cloud.publish({ brand: a.brand, path: a.path, html: pageHtml, title: a.title });
+    return json3({ ...r, share: `Share this link on WhatsApp, Instagram bio and Status: ${r.url}` });
+  }));
+  server.registerTool("page_stats", {
+    title: "Page results",
+    description: 'Views, WhatsApp order clicks and button clicks for published pages, broken down per product (e.g. "Runner One: 48 WhatsApp clicks"). Use it to tell the user what is selling and what to push next.',
+    inputSchema: { days: external_exports.number().int().min(1).max(365).optional().describe("Look-back window, default 30 (free plan keeps 7)") },
+    annotations: { readOnlyHint: true, openWorldHint: true }
+  }, wrap(async (a) => json3(await cloud.stats(a.days ?? 30))));
+  server.registerTool("connect_domain", {
+    title: "Connect your own domain",
+    description: "Pro: serve published pages on the user's own domain (e.g. sale.korakicks.com) with automatic HTTPS. Returns the one DNS record to add. Call again with check: true to see if it is live.",
+    inputSchema: { hostname: external_exports.string().min(4), check: external_exports.boolean().optional(), site: external_exports.string().optional().describe("Which brand site, if more than one") },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => json3(a.check ? await cloud.domainStatus(a.hostname) : await cloud.connectDomain(a.hostname, a.site))));
+  server.registerTool("cloud_account", {
+    title: "Quarter4 account and plans",
+    description: 'Quarter4 Cloud account. action "signup" emails a free API key to the given email. "status" shows plan, limits and published sites. "upgrade" returns a secure Flutterwave checkout link for Pro (NGN 9,900 or USD 9 a month) or Business (NGN 39,000 or USD 39 a month). Never ask for card details in chat; always send the link.',
+    inputSchema: {
+      action: external_exports.enum(["signup", "status", "upgrade", "pages"]),
+      email: external_exports.string().optional(),
+      plan: external_exports.enum(["pro", "business"]).optional(),
+      currency: external_exports.enum(["NGN", "USD"]).optional()
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => {
+    if (a.action === "signup") {
+      if (!a.email) throw new Error("Send the user's email.");
+      return json3(await cloud.signup(a.email));
+    }
+    if (a.action === "status") return json3(await cloud.me());
+    if (a.action === "pages") return json3(await cloud.pages());
+    const r = await cloud.checkout(a.plan ?? "pro", a.currency ?? "NGN");
+    return json3({ ...r, note: "Send this link to the user. Payment happens on Flutterwave's secure page; the plan activates as soon as the payment is verified." });
+  }));
   server.registerPrompt("q4-campaign", {
     title: "Plan my campaign",
     description: "Campaign for the coming weeks: key dates, content plan, posts and a landing page.",

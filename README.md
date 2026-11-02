@@ -33,6 +33,10 @@ Works with Claude (Code and Desktop), ChatGPT and Codex, or any MCP client.
 | `find_images` | Free, commercially usable photos with licence and attribution; filters logos. |
 | `landing_page` | Cinematic sales page from your product, photos, video or 3D model. |
 | `export_plan` | CSV (Sheets, Notion, Airtable), ICS (Google, Apple, Outlook calendar) or Markdown. |
+| `publish_page` | Puts the page online at `q4-<brand>.erasstack.com` and returns the link to share. |
+| `page_stats` | Views and WhatsApp order clicks per product. |
+| `connect_domain` | Pro: serve pages on your own domain with automatic HTTPS. |
+| `cloud_account` | Free API key by email, plan status, and Flutterwave upgrade links. |
 
 Skills for Claude Code and Codex: `/quarter4:campaign` (does everything), `/quarter4:plan`, `/quarter4:posts`, `/quarter4:visuals`, `/quarter4:landing`, `/quarter4:trends`.
 
@@ -74,6 +78,24 @@ npx -y quarter4-mcp --http --port 3000
 ```
 
 Health check: `GET /health`. In HTTP mode the server never writes files.
+
+## Publish and measure (Quarter4 Cloud)
+
+`publish_page` puts a page online in seconds and returns a link like `https://q4-korakicks.erasstack.com/black-friday`. `page_stats` shows views and WhatsApp order clicks per product.
+
+Get a free key by asking your assistant to run `cloud_account` with your email, then add it to your MCP config:
+
+```json
+"env": { "QUARTER4_API_KEY": "q4_..." }
+```
+
+| Plan | Price | Includes |
+|---|---|---|
+| Free | ₦0 | 1 site, 3 live pages, 7-day analytics, small badge |
+| Pro | ₦9,900 or $9 a month | Your own domain, no badge, 100 pages, 12-month analytics |
+| Business | ₦39,000 or $39 a month | 10 brands, 10 custom domains |
+
+Payments are handled by Flutterwave's secure checkout. Pricing: https://q4.erasstack.com
 
 ## Better photos (optional, free)
 

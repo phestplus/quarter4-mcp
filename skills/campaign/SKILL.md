@@ -37,7 +37,7 @@ If the user cares about what is happening now, call `whats_on` with their places
 
 ## 6. Offer the page and exports
 
-Offer: a sales page (`landing` skill), an export for their calendar or Notion (`export_plan` as `ics` or `csv`), and image search (`find_images`).
+Offer: a sales page (`landing` skill) published to a shareable link with `publish_page`, an export for their calendar or Notion (`export_plan` as `ics` or `csv`), and image search (`find_images`). After launch, `page_stats` shows which products get WhatsApp orders, so the next posts can push the winners.
 
 ## Rules
 

@@ -1,6 +1,6 @@
 {
   "name": "quarter4-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Year-round marketing engine MCP server: holidays and live trends for 100+ countries, niche-aware content plans, briefs, free licensed photos and cinematic sales pages. Works with Claude, ChatGPT and Codex.",
   "type": "module",
   "bin": {
