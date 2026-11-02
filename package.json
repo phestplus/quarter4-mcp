@@ -1,0 +1,54 @@
+{
+  "name": "quarter4-mcp",
+  "version": "0.2.0",
+  "description": "Year-round marketing engine MCP server: holidays and live trends for 100+ countries, niche-aware content plans, briefs, free licensed photos and cinematic sales pages. Works with Claude, ChatGPT and Codex.",
+  "type": "module",
+  "bin": {
+    "quarter4-mcp": "dist/server.mjs"
+  },
+  "main": "src/index.js",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node src/index.js",
+    "start:http": "node src/index.js --http",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "chatgpt",
+    "codex",
+    "content-creator",
+    "content-calendar",
+    "holidays",
+    "black-friday",
+    "landing-page",
+    "marketing",
+    "trends"
+  ],
+  "author": "phestplus",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phestplus/quarter4-mcp.git"
+  },
+  "homepage": "https://phestplus.github.io/quarter4-mcp/",
+  "mcpName": "io.github.phestplus/quarter4-mcp",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

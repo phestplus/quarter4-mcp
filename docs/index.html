@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quarter4: the marketing engine for Claude, ChatGPT and Codex</title>
+<meta name="description" content="Tell your AI what you sell in plain words. Quarter4 finds the dates and trends that matter in your country, plans your content, writes the posts and builds a sales page around your product. All year, any country.">
+<meta property="og:title" content="Quarter4: plan, create and sell all year with your AI">
+<meta property="og:description" content="Holidays and live trends for 100+ countries, niche-aware content plans, posts and video scripts, and cinematic sales pages built around your product.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://phestplus.github.io/quarter4-mcp/img/black-friday.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fbfaf6">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fbfaf6;--paper:#ffffff;--ink:#14130f;--ink2:#3d3a33;--mu:#6f6a5f;--line:#e8e4d9;--hi:#ffd426;--hi2:#fff2b3;--ok:#1f8a4c;--warn:#c2410c;--r:20px;--d:'Bricolage Grotesque',system-ui,sans-serif;--b:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--m:'JetBrains Mono',ui-monospace,Consolas,monospace;--e:cubic-bezier(.2,.7,.2,1)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--b);-webkit-font-smoothing:antialiased}
+a{color:inherit}img{max-width:100%;display:block}
+.w{width:min(1180px,100% - 40px);margin-inline:auto}
+h1,h2,h3{font-family:var(--d);letter-spacing:-.025em;margin:0}
+.mark{background:linear-gradient(transparent 58%,var(--hi) 58%,var(--hi) 92%,transparent 92%);padding:0 .08em}
+.kick{display:inline-flex;align-items:center;gap:8px;font:600 13px/1 var(--b);letter-spacing:.14em;text-transform:uppercase;color:var(--mu);margin-bottom:18px}
+.kick i{width:8px;height:8px;border-radius:50%;background:var(--hi);box-shadow:0 0 0 4px var(--hi2)}
+/* nav */
+nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid transparent;transition:border-color .3s}
+nav.s{border-color:var(--line)}
+nav .w{display:flex;align-items:center;justify-content:space-between;height:68px}
+.logo{display:flex;align-items:center;gap:10px;font:800 20px/1 var(--d);text-decoration:none}.logo img{width:30px;height:30px;border-radius:8px}
+.nl{display:flex;gap:26px;align-items:center;font-size:15px;font-weight:500}.nl a{text-decoration:none;color:var(--ink2)}.nl a:hover{color:var(--ink)}.nl a.btn{color:#fff}
+@media(max-width:760px){.nl a.hide{display:none}}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:50px;padding:0 24px;border-radius:999px;background:var(--ink);color:#fff;font-weight:600;text-decoration:none;border:0;cursor:pointer;font-size:16px;transition:transform .25s var(--e),box-shadow .25s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px -10px rgba(20,19,15,.5)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn.sm{min-height:40px;padding:0 18px;font-size:14px}
+.btn:focus-visible,.tab:focus-visible{outline:3px solid var(--hi);outline-offset:3px}
+/* hero */
+.hero{padding:72px 0 56px;display:grid;gap:48px}
+@media(min-width:1000px){.hero{grid-template-columns:1.05fr .95fr;align-items:center;padding:96px 0 80px}}
+h1{font-size:clamp(46px,6.6vw,88px);line-height:.96;font-weight:800;margin-bottom:22px}
+.lead{font-size:clamp(18px,1.8vw,21px);color:var(--ink2);max-width:33em;margin:0 0 30px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.works{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px}
+.works span{font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink2)}
+/* request demo */
+.demo{background:var(--paper);border:1px solid var(--line);border-radius:28px;box-shadow:0 30px 60px -40px rgba(20,19,15,.35);overflow:hidden}
+.demo-top{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--line);font:500 13px var(--m);color:var(--mu)}
+.demo-top i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.ask{margin:18px;padding:14px 16px;border-radius:16px 16px 4px 16px;background:var(--ink);color:#fff;font-size:15px;line-height:1.45;min-height:72px}
+.ask .cur{display:inline-block;width:2px;height:1.1em;background:var(--hi);vertical-align:-3px;animation:bl 1s steps(1) infinite}@keyframes bl{50%{opacity:0}}
+.got{padding:4px 18px 20px;display:grid;gap:10px;opacity:0;transform:translateY(8px);transition:opacity .6s var(--e),transform .6s var(--e)}
+.got.on{opacity:1;transform:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;padding:5px 10px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}.chip b{font-weight:600}
+.chip.y{background:var(--hi2);border-color:#f3dd7c}
+.ev{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:8px 0;border-top:1px dashed var(--line)}.ev span{color:var(--mu)}
+.q{font-size:13px;color:var(--mu)}.q b{color:var(--ink2);font-weight:600}
+/* sections */
+section{padding:96px 0;border-top:1px solid var(--line)}
+h2{font-size:clamp(34px,4.6vw,60px);line-height:1;font-weight:800;margin-bottom:16px}
+.sub{color:var(--ink2);font-size:19px;max-width:40em;margin:0 0 44px}
+.grid3{display:grid;gap:18px}@media(min-width:860px){.grid3{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:26px}
+.card h3{font-size:22px;margin:10px 0 8px;line-height:1.15}.card p{margin:0;color:var(--ink2);font-size:16px}
+.card .n{font:600 13px var(--m);color:var(--mu)}
+.card code{font:500 13px var(--m);background:var(--bg);border:1px solid var(--line);padding:1px 6px;border-radius:6px}
+/* year strip */
+.year{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:22px}
+.mo{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 10px;min-height:150px;display:flex;flex-direction:column;gap:6px}
+.mo h4{margin:0 0 4px;font:700 13px var(--b);letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+.mo.now{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.mo span{font-size:13px;line-height:1.3;padding:5px 8px;border-radius:6px;background:var(--bg);overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
+.mo span.h{background:var(--hi2);font-weight:600}
+@media(max-width:900px){.year{grid-template-columns:repeat(3,1fr)}}@media(max-width:520px){.year{grid-template-columns:repeat(2,1fr)}}
+.legend{font-size:14px;color:var(--mu)}
+/* gallery */
+.gal{display:grid;gap:18px}@media(min-width:760px){.gal{grid-template-columns:repeat(2,1fr)}}@media(min-width:1100px){.gal{grid-template-columns:repeat(3,1fr)}}
+.shot{display:block;text-decoration:none;border-radius:22px;overflow:hidden;background:var(--paper);border:1px solid var(--line);transition:transform .35s var(--e),box-shadow .35s}
+.shot:hover{transform:translateY(-4px);box-shadow:0 24px 40px -28px rgba(20,19,15,.5)}
+.shot img{aspect-ratio:16/10;width:100%;object-fit:cover;object-position:top;border-bottom:1px solid var(--line)}
+.shot div{padding:16px 18px}.shot b{display:block;font:700 18px var(--d)}.shot small{color:var(--mu);font-size:14px}
+/* live */
+.live{display:grid;gap:18px}@media(min-width:900px){.live{grid-template-columns:1.1fr .9fr}}
+.tr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:15px}
+.tag{font:600 11px var(--b);letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:6px}
+.tag.ok{background:#e3f4ea;color:var(--ok)}.tag.no{background:#fde8dd;color:var(--warn)}.tag.fit{background:var(--hi2);color:#7a5b00}
+/* compare */
+.vs{display:grid;gap:18px}@media(min-width:860px){.vs{grid-template-columns:1fr 1fr}}
+.vs ul{margin:0;padding-left:18px;color:var(--ink2)}.vs li{margin:8px 0}
+.vs .good{border-color:var(--ink);box-shadow:6px 6px 0 var(--hi)}
+/* install */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tab{background:var(--paper);border:1px solid var(--line);color:var(--ink2);border-radius:999px;padding:8px 16px;cursor:pointer;font:500 15px var(--b)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+pre{margin:0;background:var(--ink);color:#f3f1ea;border-radius:var(--r);padding:22px;overflow-x:auto;font:400 14px/1.7 var(--m);position:relative}
+.copy{position:absolute;top:12px;right:12px;font:600 12px var(--b);background:#2a2822;color:#d9d5c8;border:0;border-radius:8px;padding:6px 10px;cursor:pointer}
+footer{padding:44px 0 64px;border-top:1px solid var(--line);color:var(--mu);font-size:14px}
+footer .w{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}.got{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<nav><div class="w"><a class="logo" href="#"><img src="icon.png" alt="">Quarter4</a><div class="nl"><a class="hide" href="#how">How it works</a><a class="hide" href="#pages">Pages</a><a class="hide" href="#tools">Tools</a><a class="btn sm" href="#install">Install free</a></div></div></nav>
+
+<div class="w">
+<header class="hero">
+<div>
+<span class="kick"><i></i><span data-next>Every season, every country</span></span>
+<h1>Your AI's <span class="mark">marketing team</span>, all year round.</h1>
+<p class="lead">Tell Claude, ChatGPT or Codex what you sell, in your own words. Quarter4 finds the dates and trends that matter where your customers live, plans the content, writes the posts and builds a sales page around your product.</p>
+<div class="cta"><a class="btn" href="#install">Install free</a><a class="btn ghost" href="#pages">See the pages</a></div>
+<div class="works"><span>Claude Code</span><span>Claude Desktop</span><span>ChatGPT</span><span>Codex</span><span>Cursor</span><span>Any MCP client</span></div>
+</div>
+<div class="demo" aria-label="Example request and what Quarter4 understood">
+<div class="demo-top"><i></i><i></i><i></i><span style="margin-left:6px">start_campaign</span></div>
+<p class="ask" data-ask></p>
+<div class="got" data-got></div>
+</div>
+</header>
+</div>
+
+<section id="how"><div class="w">
+<span class="kick"><i></i>How it works</span>
+<h2>One messy sentence in. <span class="mark">A whole campaign</span> out.</h2>
+<p class="sub">Real people type "need bf content for ig, 30 percent off". Quarter4 understands it, says what it assumed, asks at most three questions and keeps working while you answer.</p>
+<div class="grid3">
+<div class="card"><span class="n">01 · Understand</span><h3>Your words, your places</h3><p>Platforms like "ig, tik tok, status", places like "Lagos", "the Gulf" or "West Africa", offers like "N5k off" and deadlines like "ends nov 30".</p></div>
+<div class="card"><span class="n">02 · Find the moments</span><h3>Dates that matter to you</h3><p>60+ curated events and official holidays for 100+ countries, ranked for your audience and niche. A Lagos sneaker shop gets Black Friday and Boxing Day, not Diwali.</p></div>
+<div class="card"><span class="n">03 · Plan</span><h3>Every post has a job</h3><p>Tease, warm up, early access, launch, last chance, thank you. Launch days always post. Email and WhatsApp stay capped so people do not unsubscribe.</p></div>
+<div class="card"><span class="n">04 · Create</span><h3>Fits what you sell</h3><p>15 niche profiles drive the angles, hooks and shot lists: outsole close-ups for sneakers, fabric in motion for dresses, headlight sweeps for cars.</p></div>
+<div class="card"><span class="n">05 · Stay current</span><h3>What is happening today</h3><p>Today's top searches per country, upcoming public holidays and what the world is reading, with sensitive topics flagged so your brand never newsjacks a tragedy.</p></div>
+<div class="card"><span class="n">06 · Sell</span><h3>A page built around your product</h3><p>Drop in photos, a phone turntable video or a 3D model. The page is art-directed from what you sell, with motion that follows the scroll.</p></div>
+</div>
+</div></section>
+
+<section><div class="w">
+<span class="kick"><i></i>The calendar</span>
+<h2>Every month has <span class="mark">a reason to sell</span>.</h2>
+<p class="sub">Computed by rule (Easter, Thanksgiving, Mother's Day) or verified tables (Ramadan, Eid, Lunar New Year, Diwali, Hanukkah), with a note where moon sighting can move a date. Plus live official holidays for 100+ countries.</p>
+<div class="year" data-year></div>
+<p class="legend">Highlighted: high-impact shopping moments. This strip is generated from the same data the tools use.</p>
+</div></section>
+
+<section id="pages"><div class="w">
+<span class="kick"><i></i>The pages</span>
+<h2>Pages that <span class="mark">do not look generated</span>.</h2>
+<p class="sub">An art director picks the structure from the product: cinematic scenes for cars and gadgets, a split showcase for fashion and food, a product stage for shoes and beauty, editorial for courses and software. Fonts, navigation, buttons, countdown and FAQ style change per brand. Each page below is one tool call.</p>
+<div class="gal">
+<a class="shot" href="examples/product-shoe.html"><img src="img/product-shoe.jpg" alt="Sneaker shop page with a product grid and WhatsApp ordering" loading="lazy"><div><b>Sneaker drop, Lagos</b><small>3D shoe that spins with scroll, naira prices, order each pair on WhatsApp</small></div></a>
+<a class="shot" href="examples/product-dress.html"><img src="img/product-dress.jpg" alt="Fashion page with a split showcase" loading="lazy"><div><b>Fashion edit</b><small>Story scrolls on the left, photos change on the right</small></div></a>
+<a class="shot" href="examples/black-friday.html"><img src="img/black-friday.jpg" alt="Black Friday poster page with a swinging price tag" loading="lazy"><div><b>Black Friday poster</b><small>Swinging price tag, marker strike-through, printing receipt</small></div></a>
+<a class="shot" href="examples/christmas.html"><img src="img/christmas.jpg" alt="Christmas page with glass baubles and snow" loading="lazy"><div><b>Christmas</b><small>Baubles that swing on hover, snow, a handwritten gift tag</small></div></a>
+<a class="shot" href="examples/cyber-monday.html"><img src="img/cyber-monday.jpg" alt="Cyber Monday terminal page" loading="lazy"><div><b>Cyber Monday</b><small>Terminal boot sequence, glitch type, split-flap clock</small></div></a>
+<a class="shot" href="examples/new-year.html"><img src="img/new-year.jpg" alt="New Year page with a flip clock and fireworks" loading="lazy"><div><b>New Year</b><small>Flip-clock countdown, gold foil, fireworks</small></div></a>
+</div>
+</div></section>
+
+<section><div class="w">
+<span class="kick"><i></i>Live data</span>
+<h2>Timely, <span class="mark">never tone-deaf</span>.</h2>
+<p class="sub"><code style="font:500 15px var(--m)">whats_on</code> checks today's searches per country, the public holidays coming up and what the world is reading. Topics about deaths, disasters, crime or politics are moved to "avoid".</p>
+<div class="live">
+<div class="card"><h3 style="margin-top:0">Example: Nigeria, sneaker shop</h3>
+<div class="tr"><span>Newcastle vs Everton</span><span class="tag fit">fits niche</span></div>
+<div class="tr"><span>ASUU strike talks</span><span class="tag ok">safe, low fit</span></div>
+<div class="tr"><span>Al-Nassr FC</span><span class="tag fit">fits niche</span></div>
+<div class="tr"><span>Learjet 60 crash</span><span class="tag no">avoid</span></div>
+<p class="q" style="margin-top:14px">Shape of a real response; topics change daily.</p></div>
+<div class="card"><h3 style="margin-top:0">Holidays it caught</h3>
+<div class="tr"><span>UK Boxing Day 2026</span><span>moved to Mon 28 Dec</span></div>
+<div class="tr"><span>Nigeria Boxing Day</span><span>Mon 28 Dec</span></div>
+<div class="tr"><span>Eid al-Fitr 2027</span><span>9 Mar, ±1 day</span></div>
+<div class="tr"><span>Mothering Sunday 2027</span><span>7 Mar (UK, Nigeria)</span></div>
+<p class="q" style="margin-top:14px">Substitute days come from official holiday data, not guesses.</p></div>
+</div>
+</div></section>
+
+<section><div class="w">
+<span class="kick"><i></i>Honest by default</span>
+<h2>Built to sell <span class="mark">without lying</span>.</h2>
+<div class="vs">
+<div class="card"><h3>What Quarter4 never does</h3><ul><li>Invent reviews, results or stock counts</li><li>Show a "was" price you never charged</li><li>Run a countdown that resets</li><li>Use another brand's logo photos (filtered out)</li><li>Sell on remembrance days or around tragedies</li></ul></div>
+<div class="card good"><h3>What every brief includes</h3><ul><li>Ad and affiliate disclosure</li><li>AI-image labels where platforms require them</li><li>Licensed music reminders</li><li>Niche rules: APR for car finance, no cure claims for beauty, allergens for food</li><li>Photo credits on every page</li></ul></div>
+</div>
+</div></section>
+
+<section id="tools"><div class="w">
+<span class="kick"><i></i>Inside</span>
+<h2>Nine tools, six skills.</h2>
+<p class="sub">The tools work in every MCP client. Claude Code and Codex also get guided skills: <code style="font:500 15px var(--m)">/quarter4:campaign</code> runs the whole flow from one sentence.</p>
+<div class="grid3">
+<div class="card"><code>start_campaign</code><p style="margin-top:10px">Understands the request, ranks the moments, says what to post now.</p></div>
+<div class="card"><code>event_calendar</code><p style="margin-top:10px">Holidays and shopping days for any dates and places.</p></div>
+<div class="card"><code>whats_on</code><p style="margin-top:10px">Live searches, public holidays and world reading, with safety flags.</p></div>
+<div class="card"><code>content_plan</code><p style="margin-top:10px">Day-by-day plan per platform: phase, angle, hook, shot, size.</p></div>
+<div class="card"><code>asset_brief</code><p style="margin-top:10px">Brief for a post, image, carousel, story, video or email.</p></div>
+<div class="card"><code>platform_specs</code><p style="margin-top:10px">Sizes, limits, safe zones and cadence for 10 platforms incl. WhatsApp.</p></div>
+<div class="card"><code>find_images</code><p style="margin-top:10px">Free licensed photos with attribution; logos filtered.</p></div>
+<div class="card"><code>landing_page</code><p style="margin-top:10px">Art-directed sales page from your product, photos, video or 3D model.</p></div>
+<div class="card"><code>export_plan</code><p style="margin-top:10px">CSV for Sheets and Notion, ICS for your calendar, Markdown.</p></div>
+</div>
+</div></section>
+
+<section id="install"><div class="w">
+<span class="kick"><i></i>Install</span>
+<h2>Free. <span class="mark">30 seconds.</span></h2>
+<p class="sub">Open source, MIT licensed. No account. Optional free Pexels or Unsplash key for studio-quality stock photos.</p>
+<div class="tabs" role="tablist">
+<button class="tab" role="tab" aria-selected="true" data-tab="cc">Claude Code</button>
+<button class="tab" role="tab" aria-selected="false" data-tab="codex">Codex</button>
+<button class="tab" role="tab" aria-selected="false" data-tab="desk">Claude Desktop / Cursor</button>
+<button class="tab" role="tab" aria-selected="false" data-tab="gpt">ChatGPT</button>
+</div>
+<pre data-panel="cc"><button class="copy">Copy</button>/plugin marketplace add phestplus/quarter4-mcp
+/plugin install quarter4@phestplus
+
+# then describe your business:
+/quarter4:campaign i sell sneakers in lagos, black friday content for ig and whatsapp</pre>
+<pre data-panel="codex" hidden><button class="copy">Copy</button>codex plugin marketplace add phestplus/quarter4-mcp
+# then open /plugins and install Quarter4</pre>
+<pre data-panel="desk" hidden><button class="copy">Copy</button>{
+  "mcpServers": {
+    "quarter4": {
+      "command": "npx",
+      "args": ["-y", "quarter4-mcp"],
+      "env": { "PEXELS_API_KEY": "optional" }
+    }
+  }
+}</pre>
+<pre data-panel="gpt" hidden><button class="copy">Copy</button># Host the HTTP server on any Node host
+npx -y quarter4-mcp --http --port 3000
+
+# ChatGPT → Settings → Apps &amp; Connectors → Developer mode → Create
+# URL: https://your-host/mcp</pre>
+</div></section>
+
+<footer><div class="w"><span>© 2026 phestplus · MIT License</span><span><a href="https://github.com/phestplus/quarter4-mcp">GitHub</a> · <a href="https://github.com/phestplus/quarter4-mcp/issues">Issues</a></span></div></footer>
+
+<script>
+(function(){
+var EVENTS = /*EVENTS*/[{"name":"Día de Muertos","date":"2026-11-01","big":false},{"name":"Melbourne Cup","date":"2026-11-03","big":false},{"name":"Dhanteras","date":"2026-11-06","big":false},{"name":"Diwali","date":"2026-11-08","big":false},{"name":"Singles' Day (11.11)","date":"2026-11-11","big":false},{"name":"Veterans Day","date":"2026-11-11","big":false},{"name":"Thanksgiving (US)","date":"2026-11-26","big":false},{"name":"Black Friday","date":"2026-11-27","big":true},{"name":"Small Business Saturday (US)","date":"2026-11-28","big":false},{"name":"Cyber Monday","date":"2026-11-30","big":true},{"name":"Giving Tuesday","date":"2026-12-01","big":false},{"name":"Hanukkah (begins at sundown)","date":"2026-12-04","big":false},{"name":"Small Business Saturday (UK)","date":"2026-12-05","big":false},{"name":"Green Monday","date":"2026-12-14","big":false},{"name":"Super Saturday","date":"2026-12-19","big":false},{"name":"Christmas Eve","date":"2026-12-24","big":false},{"name":"Christmas Day","date":"2026-12-25","big":true},{"name":"Boxing Day","date":"2026-12-26","big":false},{"name":"New Year's Eve","date":"2026-12-31","big":false},{"name":"New Year's Day","date":"2027-01-01","big":false}];
+var YEAR = /*YEAR*/[{"name":"New Year's Day","date":"2027-01-01","big":false},{"name":"Lunar New Year","date":"2027-02-06","big":true},{"name":"Ramadan begins","date":"2027-02-08","big":false},{"name":"Valentine's Day","date":"2027-02-14","big":true},{"name":"Mothering Sunday","date":"2027-03-07","big":true},{"name":"International Women's Day","date":"2027-03-08","big":false},{"name":"Eid al-Fitr","date":"2027-03-09","big":true},{"name":"St Patrick's Day","date":"2027-03-17","big":false},{"name":"Holi","date":"2027-03-22","big":false},{"name":"Easter Sunday","date":"2027-03-28","big":true},{"name":"Passover","date":"2027-04-21","big":false},{"name":"Mother's Day","date":"2027-05-09","big":true},{"name":"Graduation season","date":"2027-05-15","big":false},{"name":"Eid al-Adha","date":"2027-05-16","big":true},{"name":"Children's Day","date":"2027-05-27","big":false},{"name":"Memorial Day","date":"2027-05-31","big":true},{"name":"Pride Month","date":"2027-06-01","big":false},{"name":"Juneteenth","date":"2027-06-19","big":false},{"name":"Father's Day","date":"2027-06-20","big":true},{"name":"Canada Day","date":"2027-07-01","big":false},{"name":"Independence Day","date":"2027-07-04","big":true},{"name":"Back to school","date":"2027-08-01","big":true},{"name":"Labor Day","date":"2027-09-06","big":false},{"name":"Rosh Hashanah","date":"2027-10-01","big":false},{"name":"Nigeria Independence Day","date":"2027-10-01","big":false},{"name":"Thanksgiving","date":"2027-10-11","big":false},{"name":"Dhanteras","date":"2027-10-26","big":false},{"name":"Diwali","date":"2027-10-29","big":true},{"name":"Halloween","date":"2027-10-31","big":false},{"name":"Día de Muertos","date":"2027-11-01","big":false},{"name":"Melbourne Cup","date":"2027-11-02","big":false},{"name":"Singles' Day","date":"2027-11-11","big":false},{"name":"Veterans Day","date":"2027-11-11","big":false},{"name":"Thanksgiving","date":"2027-11-25","big":false},{"name":"Black Friday","date":"2027-11-26","big":true},{"name":"Small Business Saturday","date":"2027-11-27","big":false},{"name":"Cyber Monday","date":"2027-11-29","big":true},{"name":"Giving Tuesday","date":"2027-11-30","big":false},{"name":"Small Business Saturday","date":"2027-12-04","big":false},{"name":"Super Saturday","date":"2027-12-18","big":false},{"name":"Hanukkah","date":"2027-12-24","big":false},{"name":"Christmas Eve","date":"2027-12-24","big":false},{"name":"Christmas Day","date":"2027-12-25","big":true},{"name":"Boxing Day","date":"2027-12-26","big":true},{"name":"New Year's Eve","date":"2027-12-31","big":false}];
+var START = /*START*/{"request":"i sell sneakers in lagos, need bf content for ig and whatsapp status, 25 percent off","understood":{"brand":null,"product":"sneakers","niche":{"id":"footwear","label":"Footwear and sneakers","kind":"physical","confidence":"high"},"platforms":["instagram","whatsapp"],"regions":["NG"],"countries":["NG"],"currency":"NGN","offer":{"type":"percent","value":25,"text":"25 percent"},"deadline":"2026-11-27"},"events":[{"id":"black-friday","name":"Black Friday","date":"2026-11-27","daysUntil":25,"promoStart":"2026-11-06","why":["shopping event worldwide","strong fit for this niche"]},{"id":"cyber-monday","name":"Cyber Monday","date":"2026-11-30","daysUntil":28,"promoStart":"2026-11-16","why":["shopping event worldwide"]},{"id":"christmas","name":"Christmas Day","date":"2026-12-25","daysUntil":53,"promoStart":"2026-11-20","why":["shopping event worldwide"]},{"id":"boxing-day","name":"Boxing Day","date":"2026-12-26","daysUntil":54,"promoStart":"2026-12-19","why":["celebrated in NG","strong fit for this niche"]}],"questions":[{"field":"brand","question":"What is your brand or shop name?","blocking":false,"defaultUsed":"placeholder brand; needed before publishing a page"}]};
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var now = new Date(), today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+function t(s){var p=s.split('-');return Date.UTC(+p[0],+p[1]-1,+p[2])}
+function el(tag, cls, text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+
+var nav=document.querySelector('nav');addEventListener('scroll',function(){nav.classList.toggle('s',scrollY>10)},{passive:true});
+
+// Next big moment in the kicker
+var next = EVENTS.filter(function(e){return e.big && t(e.date) > today})[0];
+if (next) document.querySelector('[data-next]').textContent = next.name + ' is in ' + Math.round((t(next.date)-today)/864e5) + ' days';
+
+// Year strip
+var yearBox = document.querySelector('[data-year]');
+for (var m = 0; m < 12; m++) {
+  var mo = el('div', 'mo' + (m === now.getMonth() ? ' now' : ''));
+  mo.appendChild(el('h4', null, MON[m]));
+  YEAR.filter(function(e){return +e.date.slice(5,7) === m+1}).sort(function(a,b){return (b.big?1:0)-(a.big?1:0)}).slice(0,4).sort(function(a,b){return a.date<b.date?-1:1}).forEach(function(e){mo.appendChild(el('span', e.big ? 'h' : '', e.name))});
+  yearBox.appendChild(mo);
+}
+
+// Request demo: type the request, then reveal what was understood (real tool output, built at publish time)
+var ask = document.querySelector('[data-ask]'), got = document.querySelector('[data-got]');
+function renderGot(){
+  var u = START.understood || {};
+  var chips = el('div','chips');
+  [['Niche', u.niche && u.niche.label, 1], ['Places', (u.countries||[]).join(', ')], ['Platforms', (u.platforms||[]).join(', ')], ['Offer', u.offer && u.offer.text, 1], ['Currency', u.currency]].forEach(function(c){
+    if(!c[1])return; var ch=el('span','chip'+(c[2]?' y':'')); ch.appendChild(el('b',null,c[0]+': ')); ch.appendChild(document.createTextNode(c[1])); chips.appendChild(ch)});
+  got.appendChild(chips);
+  (START.events||[]).slice(0,4).forEach(function(e){var r=el('div','ev');r.appendChild(el('b',null,e.name));r.appendChild(el('span',null,MON[+e.date.slice(5,7)-1]+' '+(+e.date.slice(8,10))+(e.why&&e.why[0]?' · '+e.why[0]:'')));got.appendChild(r)});
+  (START.questions||[]).slice(0,2).forEach(function(q){var p=el('p','q');p.appendChild(el('b',null,'Asks, never blocks: '));p.appendChild(document.createTextNode(q.question.split('?')[0]+'? (default: '+q.defaultUsed+')'));got.appendChild(p)});
+  got.classList.add('on');
+}
+var text = START.request || '';
+if (reduce || !text) { ask.textContent = text; renderGot(); }
+else {
+  var i = 0, cur = el('span','cur');
+  (function type(){ ask.textContent = text.slice(0, i); ask.appendChild(cur); if (i++ < text.length) setTimeout(type, 28 + Math.random()*40); else setTimeout(function(){cur.remove(); renderGot();}, 350); })();
+}
+
+// Install tabs and copy
+document.querySelectorAll('.tab').forEach(function(tab){tab.addEventListener('click',function(){
+  document.querySelectorAll('.tab').forEach(function(x){x.setAttribute('aria-selected',String(x===tab))});
+  document.querySelectorAll('[data-panel]').forEach(function(p){p.hidden=p.getAttribute('data-panel')!==tab.getAttribute('data-tab')});
+})});
+document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){
+  var txt=b.parentNode.textContent.replace(/^Copy/,'').trim();
+  try{navigator.clipboard.writeText(txt).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1500)})}catch(e){}
+})});
+})();
+</script>
+</body>
+</html>
