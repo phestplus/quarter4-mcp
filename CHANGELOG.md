@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0 (2026-11-03)
+
+- **Designed posts, not boxes:** mood and scene photos fill the whole post (full bleed) with a soft gradient so text stays readable; product photos show the whole product on a clean panel (no cropping); posts without photos lead with the offer in the brand's display font.
+- **Vector elements from the brand:** each brand gets one consistent decoration style (rings, dot grid, arc or diagonal lines) drawn in its accent colour; information is designed in: a discount sticker on product posts, an end-date chip with a clock icon, and feature chips with check icons (`features`, up to 3 real facts).
+- **Premium review page:** icon actions (download, copy, WhatsApp, X, Facebook, LinkedIn, Telegram), app tabs with icons, a single Share action, a slim sticky header with Download all, all in the brand's colours and fonts.
+- **Copy:** story buttons follow the offer type ("Tap the link to start your plan", "Tap to order on WhatsApp"); more retail-only lines are kept away from apps, courses and services.
+
 ## 0.5.0 (2026-11-03)
 
 Built from a real field test: Quarter4 now works from the brand's own information instead of fixed templates.

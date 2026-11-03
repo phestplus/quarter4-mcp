@@ -40597,6 +40597,7 @@ var BY_PHASE = {
     "Week to go. Here is your shortlist."
   ],
   "early-access": [
+    "Before it ends: our most picked {product}.",
     "You are on the list, so you shop first.",
     "Early access is open. The public gets it tomorrow.",
     "First pick goes to the people who signed up.",
@@ -43098,15 +43099,37 @@ function buildKit(o) {
   const visual = (p, cls = "", frameW = 936) => p ? p.image ? photo(p.image, p.name, cls, pIdx(p), p.representative) : need(p, cls) : photos.length ? photo(photos[moodN % photos.length].url, photos[moodN++ % photos.length].alt, cls, `m${moodN}`) : typo(cls, frameW);
   const priceRow = o.price ? `<p class="g-pr"><b>${esc3(o.price)}</b>${o.originalPrice ? `<s>${esc3(o.originalPrice)}</s>` : ""}</p>` : "";
   const offerHead = (fallback) => typeLed && off ? "" : `<h2 class="g-h">${esc3(offTxt ? offTxt.toUpperCase() : fallback)}</h2>`;
-  const head = (h) => `<div class="g-top"><span class="g-brand">${o.logoUrl ? `<img src="${esc3(img(o.logoUrl))}" alt="">` : esc3(o.brand)}</span>${event ? `<span class="g-ev">${esc3(event)}</span>` : ""}</div>${h}`;
+  const head = (h) => `${deco}<div class="g-top"><span class="g-brand">${o.logoUrl ? `<img src="${esc3(img(o.logoUrl))}" alt="">` : esc3(o.brand)}</span>${event ? `<span class="g-ev">${esc3(event)}</span>` : ""}</div>${h}`;
   const wm = '<div class="q4wm">Made with Quarter4</div>';
+  const verbs = VERBS[offerType] ?? VERBS.physical;
+  const seedOf = (str) => [...String(str)].reduce((h, ch) => h * 31 + ch.charCodeAt(0) >>> 0, 7);
+  const decoStyle = seedOf(o.brand) % 4;
+  const DECO = [
+    '<svg class="deco d-rings" viewBox="0 0 600 600" aria-hidden="true"><g style="fill:none;stroke:var(--ac);stroke-opacity:.38;stroke-width:2"><circle cx="300" cy="300" r="110"/><circle cx="300" cy="300" r="170"/><circle cx="300" cy="300" r="230"/><circle cx="300" cy="300" r="290"/></g></svg>',
+    '<svg class="deco d-dots" viewBox="0 0 420 420" aria-hidden="true"><defs><pattern id="q4dots" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="4" style="fill:var(--ac);fill-opacity:.4"/></pattern></defs><rect width="420" height="420" style="fill:url(#q4dots)"/></svg>',
+    '<svg class="deco d-arc" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="50" style="fill:var(--ac);fill-opacity:.13"/><circle cx="50" cy="50" r="36" style="fill:none;stroke:var(--ac);stroke-opacity:.35;stroke-width:.4"/></svg>',
+    '<svg class="deco d-lines" viewBox="0 0 400 400" aria-hidden="true"><g style="stroke:var(--ac);stroke-opacity:.42;stroke-width:3">' + Array.from({ length: 12 }, (_, i) => `<line x1="${-100 + i * 40}" y1="400" x2="${300 + i * 40}" y2="0"/>`).join("") + "</g></svg>"
+  ];
+  const deco = DECO[decoStyle];
+  const ICON = {
+    clock: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" style="fill:none;stroke:currentColor;stroke-width:2"/><path d="M12 7v5l3 2" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"/></svg>',
+    check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" style="fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"/></svg>'
+  };
+  const endsChip = ends ? `<p class="g-chip">${ICON.clock}<span>${esc3(ends)}</span></p>` : `<p class="g-cta">${esc3(verbs.cta)}</p>`;
+  const feats = (list2) => list2?.length ? `<ul class="g-feats">${list2.slice(0, 3).map((f) => `<li>${ICON.check}<span>${esc3(String(f).slice(0, 40))}</span></li>`).join("")}</ul>` : "";
+  const sticker = (pct) => pct ? `<div class="g-stk"><b>-${pct}%</b></div>` : "";
+  const pctOf = (it) => {
+    const n = (v) => Number(String(v ?? "").replace(/[^0-9.]/g, ""));
+    const a = n(it.price), b = n(it.originalPrice);
+    return a && b > a ? Math.round((1 - a / b) * 100) : null;
+  };
   const h1 = deck.next("launch", event);
   posts.push({
     id: "offer",
     format: "post",
     title: "Offer announcement",
     hook: h1,
-    html: head(`<div class="g-mid">${visual(null, "big", 936)}</div><div class="g-bot">${offerHead(h1)}${priceRow}<p class="g-cta">${esc3(ends ?? "Shop now")}</p></div>`),
+    html: head(`<div class="g-mid">${visual(null, "big", 936)}</div><div class="g-bot">${offerHead(h1)}${priceRow}${feats(o.features)}${endsChip}</div>`),
     caption: caps(h1, "offer", o.price ? [{ name: product, price: o.price, originalPrice: o.originalPrice }] : products, ["instagram", "whatsapp", "x"])
   });
   products.slice(0, 3).forEach((p, i) => {
@@ -43116,7 +43139,7 @@ function buildKit(o) {
       format: "square",
       title: `Spotlight: ${p.name}`,
       hook: h,
-      html: head(`<div class="g-mid">${visual(p)}</div><div class="g-bot"><h2 class="g-h sm">${esc3(p.name)}</h2><p class="g-pr"><b>${esc3(p.price ?? "")}</b>${p.originalPrice ? `<s>${esc3(p.originalPrice)}</s>` : ""}</p></div>`),
+      html: head(`${p.image ? sticker(pctOf(p)) : ""}<div class="g-mid">${visual(p)}</div><div class="g-bot"><h2 class="g-h sm">${esc3(p.name)}</h2><p class="g-pr"><b>${esc3(p.price ?? "")}</b>${p.originalPrice ? `<s>${esc3(p.originalPrice)}</s>` : ""}</p>${p.note ? feats([p.note]) : ""}</div>`),
       caption: caps(h, "product", [p], ["instagram", "whatsapp", "x"])
     });
   });
@@ -43135,7 +43158,7 @@ function buildKit(o) {
     format: "story",
     title: "Story / WhatsApp Status",
     hook: hs,
-    html: head(`<div class="g-mid">${visual(null, "big", 936)}</div><div class="g-bot">${offerHead(hs)}${priceRow}<p class="g-pill">${esc3(link && /wa\.me/.test(link) ? "Tap to order on WhatsApp" : "Tap the link to shop")}</p></div>`),
+    html: head(`<div class="g-mid">${visual(null, "big", 936)}</div><div class="g-bot">${offerHead(hs)}${priceRow}${feats(o.features)}<p class="g-pill">${esc3(link && /wa\.me/.test(link) ? offerType === "physical" ? "Tap to order on WhatsApp" : "Tap to message us on WhatsApp" : `Tap the link to ${verbs.cta.replace(/ now$/i, "").toLowerCase()}`)}</p></div>`),
     caption: caps(hs, "offer", products.length ? products : [{ name: product, price: o.price }], ["whatsapp", "instagram"])
   });
   if (ends) {
@@ -43145,7 +43168,7 @@ function buildKit(o) {
       format: "story",
       title: "Last call",
       hook: hl,
-      html: head(`<div class="g-mid"><h2 class="g-h xl">${esc3(hl)}</h2></div><div class="g-bot"><p class="g-pill">${esc3(ends)}</p></div>`),
+      html: head(`<div class="g-mid"><h2 class="g-h xl">${esc3(hl)}</h2></div><div class="g-bot"><p class="g-pill g-pill-ic">${ICON.clock}<span>${esc3(ends)}</span></p></div>`),
       caption: caps(hl, "last-call", products, ["whatsapp", "instagram"])
     });
   }
@@ -43155,7 +43178,7 @@ function buildKit(o) {
     format: "wide",
     title: "X / LinkedIn card",
     hook: hw,
-    html: head(`<div class="g-row"><div class="g-col"><h2 class="g-h">${esc3(offTxt ? `${offTxt} ${product}` : hw)}</h2>${priceRow}<p class="g-cta">${esc3(ends ?? "Shop now")}</p></div>${visual(null, "side", 620)}</div>`),
+    html: head(`<div class="g-row"><div class="g-col"><h2 class="g-h">${esc3(offTxt ? `${offTxt} ${product}` : hw)}</h2>${priceRow}${endsChip}</div>${visual(null, "side", 620)}</div>`),
     caption: caps(hw, "offer", products, ["x", "linkedin"])
   });
   for (const ov of o.posts ?? []) {
@@ -43185,21 +43208,42 @@ function buildKit(o) {
 }
 function graphic(fmt, inner, wm, key) {
   const f = KIT_FORMATS[fmt];
-  return `<div class="fit" style="--w:${f.w};--h:${f.h}"><div class="g g-${fmt}" data-g="${key}" style="width:${f.w}px;height:${f.h}px">${inner}${wm}</div></div>`;
+  const bleed = /<div class="g-mid"><div class="ph [^"]*" data-p="m/.test(inner);
+  return `<div class="fit" style="--w:${f.w};--h:${f.h}"><div class="g g-${fmt}${bleed ? " bleed" : ""}" data-g="${key}" style="width:${f.w}px;height:${f.h}px">${inner}${wm}</div></div>`;
 }
+var UI = {
+  share: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  download: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10.5 18h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+  instagram: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.2" fill="currentColor"/></svg>',
+  whatsapp: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35zM12.05 21.8a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37A9.86 9.86 0 0 1 2.16 12C2.16 6.55 6.6 2.1 12.06 2.1a9.82 9.82 0 0 1 9.88 9.89c0 5.45-4.44 9.81-9.89 9.81z"/></svg>',
+  x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.68l7.73-8.84L1.25 2.25h6.83l4.71 6.23zm-1.16 17.52h1.83L7.08 4.13H5.12z"/></svg>',
+  facebook: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07"/></svg>',
+  linkedin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>',
+  telegram: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.78 15.27l-.4 5.6c.57 0 .82-.25 1.12-.54l2.68-2.56 5.56 4.07c1.02.56 1.74.27 2.02-.94l3.65-17.12c.33-1.51-.54-2.1-1.53-1.73L1.4 9.86c-1.48.57-1.46 1.4-.25 1.78l5.48 1.71L19.36 5.3c.6-.4 1.15-.18.7.22z"/></svg>'
+};
+var APP = { instagram: "Instagram", whatsapp: "WhatsApp", x: "X", linkedin: "LinkedIn", facebook: "Facebook" };
 function page({ o, t, posts, wm, link, product }) {
   const fonts = [.../* @__PURE__ */ new Set([t.display, t.body, "Inter"])].map((f) => `family=${f.replace(/ /g, "+")}:wght@400;600;700;800`).join("&");
   const cards = posts.map((p, i) => {
     const frames = (p.slides ?? [p.html]).map((h, j) => graphic(p.format, h, wm, `${i}-${j}`)).join("");
     const caps = Object.entries(p.caption);
+    const fmt = KIT_FORMATS[p.format];
     return `<article class="card" data-post="${i}">
-<header><div><h2>${esc3(p.title)}</h2><p class="k">${esc3(KIT_FORMATS[p.format].label)} \xB7 ${KIT_FORMATS[p.format].w}\xD7${KIT_FORMATS[p.format].h}${p.slides ? ` \xB7 ${p.slides.length} slides` : ""}</p></div><span class="st" data-st>Ready</span></header>
 <div class="frames${p.slides ? " many" : ""}">${frames}</div>
-<div class="cap"><div class="tabs" role="tablist">${caps.map(([k], j) => `<button type="button" role="tab" aria-selected="${j === 0}" data-tab="${k}">${esc3({ instagram: "Instagram", whatsapp: "WhatsApp", x: "X", linkedin: "LinkedIn", facebook: "Facebook" }[k] ?? k)}</button>`).join("")}</div>
-${caps.map(([k, v], j) => `<textarea data-cap="${k}" rows="7" aria-label="Caption for ${esc3(k)}"${j ? " hidden" : ""}>${esc3(v)}</textarea>`).join("")}</div>
-<div class="acts"><button type="button" class="pri" data-share>Share</button><button type="button" data-dl>Download${p.slides ? ` ${p.slides.length} slides` : ""}</button><button type="button" data-copy>Copy caption</button></div>
-<div class="links"><span>Or post to</span><a data-l="wa" target="_blank" rel="noopener">WhatsApp</a><a data-l="x" target="_blank" rel="noopener">X</a><a data-l="fb" target="_blank" rel="noopener">Facebook</a><a data-l="li" target="_blank" rel="noopener">LinkedIn</a><a data-l="tg" target="_blank" rel="noopener">Telegram</a></div>
+<div class="cbody">
+<div class="chead"><div><h2>${esc3(p.title)}</h2><p class="k">${esc3(fmt.label.replace(/ \(.*\)$/, ""))} \xB7 ${fmt.w}\xD7${fmt.h}${p.slides ? ` \xB7 ${p.slides.length} slides` : ""}</p></div><span class="st" data-st role="img" aria-label="Ready" title="Ready">${UI.check}</span></div>
+<div class="tabs" role="tablist" aria-label="Caption for">${caps.map(([k], j) => `<button type="button" role="tab" aria-selected="${j === 0}" data-tab="${k}">${UI[k] ?? ""}<span>${esc3(APP[k] ?? k)}</span></button>`).join("")}</div>
+${caps.map(([k, v], j) => `<textarea data-cap="${k}" rows="6" aria-label="${esc3(APP[k] ?? k)} caption"${j ? " hidden" : ""}>${esc3(v)}</textarea>`).join("")}
+<div class="actions">
+<div class="tools"><button type="button" class="ib" data-dl aria-label="Download${p.slides ? ` ${p.slides.length} slides` : ""}" title="Download${p.slides ? ` ${p.slides.length} slides` : ""}">${UI.download}</button><button type="button" class="ib" data-copy aria-label="Copy caption" title="Copy caption">${UI.copy}</button><span class="sep" aria-hidden="true"></span><a class="ib" data-l="wa" target="_blank" rel="noopener" aria-label="Post to WhatsApp" title="WhatsApp">${UI.whatsapp}</a><a class="ib" data-l="x" target="_blank" rel="noopener" aria-label="Post to X" title="X">${UI.x}</a><a class="ib" data-l="fb" target="_blank" rel="noopener" aria-label="Share on Facebook" title="Facebook">${UI.facebook}</a><a class="ib" data-l="li" target="_blank" rel="noopener" aria-label="Share on LinkedIn" title="LinkedIn">${UI.linkedin}</a><a class="ib" data-l="tg" target="_blank" rel="noopener" aria-label="Share on Telegram" title="Telegram">${UI.telegram}</a></div>
+<button type="button" class="share" data-share>${UI.share}<span>Share</span></button>
+</div>
 <p class="msg" data-msg aria-live="polite"></p>
+</div>
 </article>`;
   }).join("");
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -43209,26 +43253,43 @@ ${caps.map(([k, v], j) => `<textarea data-cap="${k}" rows="7" aria-label="Captio
 <style>
 :root{--bg:${t.bg};--sf:${t.surface};--tx:${t.text};--mu:${t.muted};--ac:${t.accent};--ac2:${t.accent2};--at:${t.accentText};--d:'${t.display}',Impact,sans-serif;--b:'${t.body}',system-ui,sans-serif}
 :root{--kbg:${t.bg};--kcard:${t.surface};--kink:${t.text};--kmu:${t.muted};--kline:${t.border ?? "rgba(127,127,127,.25)"};--kfield:color-mix(in srgb,${t.surface} 85%,${t.bg});--kac:${t.accent};--kact:${t.accentText}}
-*{box-sizing:border-box}body{margin:0;background:var(--kbg);color:var(--kink);font:400 16px/1.55 var(--b)}
-.bar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--kbg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--kline)}
-.bar-in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:16px}.bar-b{font-weight:800;font-size:16px}.bar-c{color:var(--kmu);font-size:14px;flex:1}
-.bar-dl{min-height:40px;padding:0 18px;border-radius:999px;border:0;background:var(--kac);color:var(--kact);font:700 14px var(--b);cursor:pointer}
-.top{max-width:1180px;margin:0 auto;padding:40px 16px 8px}.eyebrow{margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--kmu)}
-.top h1{font:700 clamp(30px,4.4vw,48px)/1.05 var(--d);letter-spacing:-.025em;margin:0 0 12px}.top p{margin:0;color:var(--kmu);max-width:62ch;font-size:17px}.top a{color:var(--kink)}
-.grid{max-width:1180px;margin:0 auto;padding:24px 16px 80px;display:grid;gap:20px}@media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}@media(min-width:1100px){.grid{grid-template-columns:1fr 1fr 1fr}}
-.card{background:var(--kcard);border:1px solid var(--kline);border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0;box-shadow:0 1px 2px rgba(20,19,15,.04)}
-.card header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.card header h2{font:700 18px/1.25 var(--b);margin:0 0 4px}.k{margin:0;color:var(--kmu);font-size:13px}
-.st{flex:none;font:700 12px/1 var(--b);padding:7px 10px;border-radius:999px;background:#e7f5ec;color:#17603a}.rep-card .st{background:var(--kcard)2c2;color:#7a5600}
-.frames{display:grid;gap:8px}.frames.many{grid-auto-flow:column;grid-auto-columns:82%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}.frames.many .fit{scroll-snap-align:start}
-.fit{position:relative;width:100%;aspect-ratio:var(--w)/var(--h);overflow:hidden;border-radius:12px;background:#ddd}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;background:var(--kbg);color:var(--kink);font:400 15px/1.55 var(--b);-webkit-font-smoothing:antialiased}
+svg{display:block}
+.bar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--kbg) 82%,transparent);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--kline)}
+.bar-in{max-width:1240px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:12px;min-height:60px}
+.mark{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--kac);color:var(--kact);font:700 15px/1 var(--d)}
+.bar-b{font:600 15px/1.2 var(--b);letter-spacing:-.01em}.bar-c{color:var(--kmu);font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-dl{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:12px;border:0;background:var(--kink);color:var(--kbg);font:600 14px var(--b);cursor:pointer;transition:transform .15s,opacity .15s}.bar-dl svg{width:18px;height:18px}.bar-dl:hover{opacity:.9}.bar-dl:active{transform:scale(.97)}
+.top{max-width:1240px;margin:0 auto;padding:48px 20px 8px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;margin:0 0 14px;padding:6px 12px;border-radius:999px;background:color-mix(in srgb,var(--kac) 14%,transparent);color:var(--kink);font:600 12px/1 var(--b);letter-spacing:.04em}
+.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--kac)}
+.top h1{font:700 clamp(28px,3.6vw,44px)/1.08 var(--d);letter-spacing:-.025em;margin:0 0 10px;max-width:22ch}
+.top p{margin:0;color:var(--kmu);max-width:60ch;font-size:16px}.top a{color:var(--kink);text-underline-offset:3px}
+.how{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 0;padding:0;list-style:none}
+.how li{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;background:var(--kcard);border:1px solid var(--kline);font-size:13px;color:var(--kink)}.how svg{width:16px;height:16px;color:var(--kac)}
+.grid{max-width:1240px;margin:0 auto;padding:28px 20px 96px;display:grid;gap:24px;align-items:start}
+@media(min-width:720px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(min-width:1120px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.card{background:var(--kcard);border:1px solid var(--kline);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;min-width:0;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px -18px rgba(0,0,0,.18);transition:box-shadow .2s,transform .2s}
+.card:hover{box-shadow:0 1px 2px rgba(0,0,0,.05),0 22px 48px -22px rgba(0,0,0,.28)}
+.frames{display:grid;gap:10px;padding:12px 12px 0}.frames.many{grid-auto-flow:column;grid-auto-columns:84%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px;scrollbar-width:thin}.frames.many .fit{scroll-snap-align:start}
+.fit{position:relative;width:100%;aspect-ratio:var(--w)/var(--h);overflow:hidden;border-radius:12px;background:var(--kfield)}
 .fit .g{position:absolute;top:0;left:0;transform-origin:0 0}
-.cap textarea{width:100%;border:1px solid var(--kline);border-radius:14px;padding:12px 14px;font:inherit;font-size:15px;line-height:1.55;resize:vertical;background:var(--kfield);color:var(--kink)}
-.tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}.tabs button{border:1px solid var(--kline);background:var(--kcard);border-radius:999px;padding:5px 12px;font:600 13px var(--b);cursor:pointer}.tabs button[aria-selected=true]{background:var(--kink);color:var(--kbg);border-color:var(--kink)}
-.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.acts button{min-height:48px;border-radius:14px;border:1px solid var(--kline);background:var(--kcard);font:700 15px var(--b);cursor:pointer;color:var(--kink)}.acts .pri{grid-column:1/-1;background:var(--kac);border-color:var(--kac);color:var(--kact);min-height:52px}
-.links{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:14px}.links span{color:var(--kmu)}.links a{color:var(--kink);font-weight:600;text-decoration:none;border-bottom:1px solid var(--kline);cursor:pointer}
-.msg{margin:0;min-height:1.4em;font-size:14px;color:var(--kmu)}
-.up{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:14px;border:1px dashed var(--kline);font:700 15px var(--b);cursor:pointer;color:var(--kink)}.up:focus-within{outline:3px solid var(--kac);outline-offset:2px}
-button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid var(--kac);outline-offset:2px}
+.cbody{display:flex;flex-direction:column;gap:12px;padding:16px 16px 14px}
+.chead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.chead h2{font:600 16px/1.3 var(--b);letter-spacing:-.01em;margin:0 0 2px}.k{margin:0;color:var(--kmu);font-size:12.5px}
+.st{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,#16a34a 16%,transparent);color:#15803d}.st svg{width:14px;height:14px}.rep-card .st{background:color-mix(in srgb,#d97706 18%,transparent);color:#b45309}
+.tabs{display:flex;gap:4px;padding:4px;border-radius:12px;background:var(--kfield);border:1px solid var(--kline);width:max-content;max-width:100%;overflow-x:auto}
+.tabs button{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--kmu);font:600 12.5px var(--b);cursor:pointer;white-space:nowrap}.tabs button svg{width:15px;height:15px}
+.tabs button[aria-selected=true]{background:var(--kcard);color:var(--kink);box-shadow:0 1px 2px rgba(0,0,0,.08),0 0 0 1px var(--kline)}
+textarea{width:100%;border:1px solid var(--kline);border-radius:12px;padding:12px 14px;font:inherit;font-size:14px;line-height:1.6;resize:vertical;background:var(--kfield);color:var(--kink);min-height:132px}
+textarea:focus{outline:none;border-color:var(--kac);box-shadow:0 0 0 3px color-mix(in srgb,var(--kac) 22%,transparent)}
+.actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.tools{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.ib{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;border:0;background:transparent;color:var(--kink);cursor:pointer;text-decoration:none;transition:background .15s,color .15s}.ib svg{width:19px;height:19px}
+.ib:hover{background:var(--kfield)}.ib[hidden]{display:none}.sep{width:1px;height:22px;background:var(--kline);margin:0 4px}
+.share{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 14px;border-radius:12px;border:0;background:var(--kac);color:var(--kact);font:600 14px var(--b);cursor:pointer;transition:transform .15s,filter .15s}.share svg{width:18px;height:18px}.share:hover{filter:brightness(1.06)}.share:active{transform:scale(.97)}
+.msg{margin:0;min-height:1.2em;font-size:12.5px;color:var(--kmu)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--kac);outline-offset:2px}
+@media(max-width:420px){.sep{display:none}.share span{display:none}.share{width:40px;padding:0;justify-content:center}}
 /* graphics */
 .g{background:radial-gradient(90% 60% at 50% 40%,color-mix(in srgb,var(--ac) 22%,transparent),transparent 70%),var(--bg);color:var(--tx);font-family:var(--b);display:flex;flex-direction:column;gap:40px;padding:72px;overflow:hidden}
 .g-wide{padding:64px 80px}
@@ -43249,11 +43310,33 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
 .ty{width:auto;max-width:100%;height:auto;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--d);line-height:.82;letter-spacing:-.02em;color:var(--ac);text-align:center}.ty span{display:block}.ty em{display:block;font-style:normal;font-size:.34em;letter-spacing:.06em;text-transform:uppercase;color:var(--tx);margin-top:.12em}
 .g-row{flex:1;display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;padding-top:30px}.g-col{display:flex;flex-direction:column;gap:18px}.g-wide .g-h{font-size:110px}
 .g-row .ph,.g-row .ty{height:100%;max-height:640px;width:100%}
+/* layers: decoration behind, content above */
+.deco{position:absolute;z-index:0;pointer-events:none}
+.d-rings{width:760px;height:760px;top:-260px;right:-260px}.d-dots{width:420px;height:420px;top:40px;right:-60px}
+.d-arc{width:900px;height:900px;right:-380px;top:-380px}.d-lines{width:520px;height:520px;top:-120px;right:-140px}
+.g-story .d-rings,.g-story .d-lines{top:-160px}.g-wide .d-arc{width:760px;height:760px;top:-380px;right:-300px}
+.g-top,.g-mid,.g-bot,.g-row{position:relative;z-index:1}
+.g-chip{display:inline-flex;align-items:center;gap:14px;align-self:flex-start;margin:4px 0 0;padding:16px 26px;border-radius:999px;background:color-mix(in srgb,var(--tx) 9%,var(--bg));font:600 32px/1 var(--b);color:var(--tx)}
+.g-chip svg,.g-pill-ic svg{width:34px;height:34px;flex:none}.g-pill-ic{display:inline-flex;align-items:center;gap:14px}
+.g-feats{display:flex;flex-wrap:wrap;gap:12px;margin:0;padding:0;list-style:none}
+.g-feats li{display:inline-flex;align-items:center;gap:10px;padding:12px 20px;border-radius:999px;background:var(--bg);border:2px solid color-mix(in srgb,var(--tx) 20%,transparent);font:600 26px/1 var(--b)}.g-feats svg{width:26px;height:26px;color:var(--ac)}
+.g-stk{position:absolute;z-index:2;top:150px;right:60px;width:200px;height:200px;border-radius:50%;background:var(--ac);color:var(--at);display:grid;place-items:center;transform:rotate(-12deg);box-shadow:0 22px 44px -20px rgba(0,0,0,.55)}.g-stk b{font:400 70px/1 var(--d)}
+.g-story .g-stk{top:190px}
+/* full bleed: the photo is the canvas; a soft scrim keeps text readable */
+/* product photos show the whole product (no crop) on a clean panel */
+.ph:not([data-p^="m"]){background:#fff}.ph:not([data-p^="m"]) img{object-fit:contain;padding:24px}
+/* flex items with a z-index form their own layer, so the photo's container must not have one */
+.g.bleed .g-mid{position:static;z-index:auto}.g.bleed .g-top,.g.bleed .g-bot{z-index:2}.g.bleed .g-mid .ph{position:absolute;inset:0;border-radius:0;z-index:0;background:#111}
+.g.bleed::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,0) 24%,rgba(0,0,0,0) 46%,rgba(0,0,0,.82) 100%)}
+.g.bleed .g-top,.g.bleed .g-bot{color:#fff}.g.bleed .g-pr s{color:rgba(255,255,255,.72)}.g.bleed .g-cta{color:rgba(255,255,255,.88)}
+.g.bleed .g-chip{background:rgba(255,255,255,.16);color:#fff}.g.bleed .g-feats li{border-color:rgba(255,255,255,.4);color:#fff}.g.bleed .deco{display:none}
+.g.bleed .rep-l{top:150px;left:72px;bottom:auto;z-index:2}.g.bleed .q4wm{color:#fff;z-index:3}
 .q4wm{display:none;position:absolute;right:28px;bottom:24px;font:600 22px/1 var(--b);color:var(--tx);opacity:.6}
 ${o.watermark ? ".q4wm{display:block}" : ""}
 </style></head><body>
-<div class="bar"><div class="bar-in"><b class="bar-b">${esc3(o.brand)}</b><span class="bar-c" data-count>${posts.length} posts</span><button type="button" class="bar-dl" data-dlall>Download all</button></div></div>
-<div class="top"><p class="eyebrow">Content kit${THEMES[o.theme] ? ` \xB7 ${esc3(t.eyebrow)}` : ""}</p><h1>${posts.length} posts, ready to share</h1><p>Each post has a caption written for the app. Edit anything, then tap <b>Share</b> on your phone to post to Instagram, TikTok or WhatsApp with the image attached, or download it.${link ? ` Every post links to <a href="${esc3(link)}">${esc3(link.replace(/^https?:\/\//, ""))}</a>.` : ""}</p></div>
+<div class="bar"><div class="bar-in"><span class="mark" aria-hidden="true">${esc3(o.brand.slice(0, 1).toUpperCase())}</span><b class="bar-b">${esc3(o.brand)}</b><span class="bar-c" data-count>${posts.length} posts</span><button type="button" class="bar-dl" data-dlall>${UI.download}<span>Download all</span></button></div></div>
+<header class="top"><p class="eyebrow"><i></i>Content kit${THEMES[o.theme] ? ` \xB7 ${esc3(t.eyebrow)}` : ""}</p><h1>${posts.length} posts, ready to share</h1><p>Captions are written for each app. Edit anything, then share straight from your phone.${link ? ` Every post links to <a href="${esc3(link)}">${esc3(link.replace(/^https?:\/\//, ""))}</a>.` : ""}</p>
+<ul class="how"><li>${UI.phone}Share on your phone posts the image to Instagram, TikTok or WhatsApp</li><li>${UI.download}Download PNGs on a computer</li><li>${UI.edit}Tap a caption to edit it</li></ul></header>
 <main class="grid">${cards}</main>
 <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
 <script>
@@ -43271,8 +43354,8 @@ function png(g){var w=parseFloat(g.style.width),h=parseFloat(g.style.height);ret
 function name(card,j){return (${JSON.stringify(o.brand.replace(/[^a-z0-9]+/gi, "-").toLowerCase())}+'-'+card.querySelector('h2').textContent.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+(j?'-'+(j+1):'')+'.png')}
 function files(card){return Promise.all(Array.prototype.map.call(card.querySelectorAll('.g'),function(g,j){return png(g).then(function(b){return new File([b],name(card,j),{type:'image/png'})})}))}
 function save(f){var a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}
-function refresh(){document.querySelectorAll('.card').forEach(function(c){var st=c.querySelector('[data-st]');var r=c.querySelector('.ph.rep');c.classList.toggle('rep-card',!!r);if(st)st.textContent=r?'Ready \xB7 representative photo':'Ready'});var cnt=document.querySelector('[data-count]');if(cnt)cnt.textContent=document.querySelectorAll('.card').length+' posts ready'}
-document.addEventListener('click',function(e){if(!e.target.closest('[data-dlall]'))return;var cards=[].slice.call(document.querySelectorAll('.card'));var b=e.target.closest('[data-dlall]');b.textContent='Preparing...';cards.reduce(function(pr,c){return pr.then(function(){return files(c).then(function(fs){fs.forEach(save)})})},Promise.resolve()).then(function(){b.textContent='Download all'},function(){b.textContent='Try again'})});
+function refresh(){document.querySelectorAll('.card').forEach(function(c){var st=c.querySelector('[data-st]');var r=c.querySelector('.ph.rep');c.classList.toggle('rep-card',!!r);if(st){var lab=r?'Ready, uses a representative photo':'Ready';st.title=lab;st.setAttribute('aria-label',lab)}});var cnt=document.querySelector('[data-count]');if(cnt)cnt.textContent=document.querySelectorAll('.card').length+' posts ready'}
+document.addEventListener('click',function(e){if(!e.target.closest('[data-dlall]'))return;var cards=[].slice.call(document.querySelectorAll('.card'));var b=e.target.closest('[data-dlall]');b.lastChild.textContent='Preparing...';cards.reduce(function(pr,c){return pr.then(function(){return files(c).then(function(fs){fs.forEach(save)})})},Promise.resolve()).then(function(){b.lastChild.textContent='Download all'},function(){b.lastChild.textContent='Try again'})});
 var KIT=window.Q4_KIT||null;
 function setPhoto(key,url,scope){(/^m/.test(key)?scope:document).querySelectorAll('.ph[data-p="'+key+'"]').forEach(function(ph){ph.classList.remove('need');ph.classList.remove('rep');var tag=ph.querySelector('.rep-l');if(tag)tag.remove();var im=ph.querySelector('img')||document.createElement('img');im.removeAttribute('crossorigin');im.src=url;im.alt='';if(!im.parentNode)ph.insertBefore(im,ph.firstChild)});refresh()}
 document.querySelectorAll('.card').forEach(function(card){
@@ -43290,7 +43373,7 @@ refresh();
 }
 
 // src/server.js
-var VERSION = "0.5.0";
+var VERSION = "0.6.0";
 var date5 = external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD");
 var list = external_exports.union([external_exports.array(external_exports.string()), external_exports.string()]);
 var platformList = list.describe(`Platforms, any spelling: ${PLATFORM_IDS.join(", ")} (also "ig", "tik tok", "newsletter", "status")`);
@@ -43721,6 +43804,7 @@ Images: the seller's own photos are best (products[].image or images). If you ca
       brandStyle,
       ...copyFields,
       autoImages: external_exports.boolean().optional().describe("Find free photos when none are given (default true)"),
+      features: external_exports.array(external_exports.string().max(40)).max(3).optional().describe('Up to 3 short facts shown as chips on the offer post, e.g. "Free delivery in Lagos", "Cancel anytime". Only real facts from the seller.'),
       productPhotos: external_exports.enum(["own", "representative", "none"]).optional().describe('What the seller chose for products without photos: "own" (they are sending photos: pass them as products[].image), "representative" (closest real photo, tagged "Representative image"), "none" (text-led product posts). If you can generate images and the seller wants that, generate them and pass the URLs as products[].image. Ask the seller before choosing.'),
       kitId: external_exports.string().regex(/^[a-f0-9]{12}$/).optional().describe("Update an existing kit at the same link (e.g. after the seller sends new photos)"),
       outputPath: external_exports.string().optional().describe("Local mode: where to write the kit .html")

@@ -54,7 +54,7 @@ const BY_PHASE = {
     'Week to go. Here is your shortlist.',
   ],
   'early-access': [
-    'You are on the list, so you shop first.',
+    'Before it ends: our most picked {product}.', 'You are on the list, so you shop first.',
     'Early access is open. The public gets it tomorrow.',
     'First pick goes to the people who signed up.',
     'This link is only for our list. Please do not share it yet.',

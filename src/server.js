@@ -22,7 +22,7 @@ import { buildPlan } from './plan.js';
 import { buildKit } from './kit.js';
 import { getSpecs, PLATFORM_IDS } from './specs.js';
 
-export const VERSION = '0.5.0';
+export const VERSION = '0.6.0';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD');
 // Loose inputs: real users write "ig, tik tok", "Lagos", "black friday". Normalised in the engine.
@@ -454,6 +454,7 @@ Images: the seller's own photos are best (products[].image or images). If you ca
       brandColor: z.string().optional().describe('Pro: brand colour, e.g. "#e11d48"'),
       brandStyle, ...copyFields,
       autoImages: z.boolean().optional().describe('Find free photos when none are given (default true)'),
+      features: z.array(z.string().max(40)).max(3).optional().describe('Up to 3 short facts shown as chips on the offer post, e.g. "Free delivery in Lagos", "Cancel anytime". Only real facts from the seller.'),
       productPhotos: z.enum(['own', 'representative', 'none']).optional().describe('What the seller chose for products without photos: "own" (they are sending photos: pass them as products[].image), "representative" (closest real photo, tagged "Representative image"), "none" (text-led product posts). If you can generate images and the seller wants that, generate them and pass the URLs as products[].image. Ask the seller before choosing.'),
       kitId: z.string().regex(/^[a-f0-9]{12}$/).optional().describe('Update an existing kit at the same link (e.g. after the seller sends new photos)'),
       outputPath: z.string().optional().describe('Local mode: where to write the kit .html'),
