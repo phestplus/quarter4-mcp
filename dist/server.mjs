@@ -41082,10 +41082,18 @@ async function matchingImages({ nicheId, product = "", attributes = "", mood = "
   const own2 = String(product).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3).map((w) => w.replace(/(es|s)$/, ""));
   const words = [.../* @__PURE__ */ new Set([...SUBJECT_WORDS[nicheId] ?? [], ...own2])];
   const query = [attributes, product || words[0], mood].filter(Boolean).join(" ").trim();
-  const r = search ? await search(query, { orientation, count: Math.max(count * 4, 15) }) : await findImages(query, { orientation, count: Math.max(count * 4, 12) });
+  const r = search ? await search(query, { orientation, count: 40 }) : await findImages(query, { orientation, count: Math.max(count * 4, 12) });
   const hit = (im) => words.some((w) => new RegExp(`(^|[^a-z])${w}`, "i").test(im.alt ?? ""));
   const clean2 = r.images.filter((im) => !brandRisk(`${im.alt} ${im.page}`));
-  return { query, images: clean2.filter(hit).slice(0, count), providersTried: r.providersTried ?? ["quarter4-cloud"], words };
+  const attrs = String(attributes).toLowerCase().split(/\s+/).filter(Boolean);
+  const rank = (im) => {
+    const alt = String(im.alt ?? "").toLowerCase();
+    const tags = alt.includes(",") ? alt.split(/\s*,\s*/) : null;
+    const pos = tags ? tags.findIndex((t) => words.some((w) => new RegExp(`(^|[^a-z])${w}`).test(t))) : 0;
+    return { im, pos, attr: attrs.filter((x) => alt.includes(x)).length };
+  };
+  const ranked = clean2.filter(hit).map(rank).filter((x) => x.pos >= 0 && x.pos <= 2).sort((a, b) => b.attr - a.attr || a.pos - b.pos).map((x) => x.im);
+  return { query, images: ranked.slice(0, count), providersTried: r.providersTried ?? ["quarter4-cloud"], words };
 }
 
 // src/ask.js
@@ -43088,7 +43096,7 @@ refresh();
 }
 
 // src/server.js
-var VERSION = "0.4.0";
+var VERSION = "0.4.1";
 var date5 = external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD");
 var list = external_exports.union([external_exports.array(external_exports.string()), external_exports.string()]);
 var platformList = list.describe(`Platforms, any spelling: ${PLATFORM_IDS.join(", ")} (also "ig", "tik tok", "newsletter", "status")`);

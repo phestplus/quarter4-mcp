@@ -22,7 +22,7 @@ import { buildPlan } from './plan.js';
 import { buildKit } from './kit.js';
 import { getSpecs, PLATFORM_IDS } from './specs.js';
 
-export const VERSION = '0.4.0';
+export const VERSION = '0.4.1';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD');
 // Loose inputs: real users write "ig, tik tok", "Lagos", "black friday". Normalised in the engine.

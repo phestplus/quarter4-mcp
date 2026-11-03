@@ -145,11 +145,21 @@ export async function matchingImages({ nicheId, product = '', attributes = '', m
   const own = String(product).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3).map((w) => w.replace(/(es|s)$/, ''));
   const words = [...new Set([...(SUBJECT_WORDS[nicheId] ?? []), ...own])];
   const query = [attributes, product || words[0], mood].filter(Boolean).join(' ').trim();
-  const r = search ? await search(query, { orientation, count: Math.max(count * 4, 15) }) : await findImages(query, { orientation, count: Math.max(count * 4, 12) });
+  const r = search ? await search(query, { orientation, count: 40 }) : await findImages(query, { orientation, count: Math.max(count * 4, 12) });
   // Judge by the photo's own description only (a page URL or file name is not evidence).
   const hit = (im) => words.some((w) => new RegExp(`(^|[^a-z])${w}`, 'i').test(im.alt ?? ''));
   const clean = r.images.filter((im) => !brandRisk(`${im.alt} ${im.page}`));
-  return { query, images: clean.filter(hit).slice(0, count), providersTried: r.providersTried ?? ['quarter4-cloud'], words };
+  // Tag lists (Pixabay) put the main subject first: keep photos where the product is among the first
+  // tags, then prefer the requested attributes (e.g. "white") and earlier positions.
+  const attrs = String(attributes).toLowerCase().split(/\s+/).filter(Boolean);
+  const rank = (im) => {
+    const alt = String(im.alt ?? '').toLowerCase();
+    const tags = alt.includes(',') ? alt.split(/\s*,\s*/) : null;
+    const pos = tags ? tags.findIndex((t) => words.some((w) => new RegExp(`(^|[^a-z])${w}`).test(t))) : 0;
+    return { im, pos, attr: attrs.filter((x) => alt.includes(x)).length };
+  };
+  const ranked = clean.filter(hit).map(rank).filter((x) => x.pos >= 0 && x.pos <= 2).sort((a, b) => b.attr - a.attr || a.pos - b.pos).map((x) => x.im);
+  return { query, images: ranked.slice(0, count), providersTried: r.providersTried ?? ['quarter4-cloud'], words };
 }
 
 export { brandRisk };

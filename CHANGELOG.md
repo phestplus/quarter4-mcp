@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.4.0 (unreleased)
+## 0.4.1 (2026-11-03)
+
+- **Better photo matches:** photos are ranked by whether the product is the main subject (first tags), then by requested details such as colour, from a wider pool of results.
+
+## 0.4.0 (2026-11-03)
 
 - **Connect without copying keys:** `cloud_account` action `connect` shows a link and code; the user approves in the browser and the key is saved locally. No config edits, no restart.
 - **Dashboard link:** `cloud_account` action `dashboard`; `page_stats` results include it.
