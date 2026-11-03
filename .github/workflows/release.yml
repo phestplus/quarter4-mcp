@@ -32,7 +32,8 @@ jobs:
       - name: Publish to npm (skipped if this version is already published)
         run: |
           V="$(node -p "require('./package.json').version")"
-          if npm view "quarter4-mcp@$V" version >/dev/null 2>&1; then
+          # npm view can exit 0 with empty output for a version that does not exist, so compare the text.
+          if [ "$(npm view "quarter4-mcp@$V" version 2>/dev/null)" = "$V" ]; then
             echo "quarter4-mcp@$V is already on npm, skipping publish"
           else
             npm publish --access public
