@@ -122,9 +122,12 @@ export async function findImages(query, o = {}) {
   };
 }
 
+const PEOPLE = /(^|[^a-z])(woman|women|man|men|girl|boy|child|children|kid|baby|people|person|couple|family|lady|guy|model|bride|crowd|portrait|face)s?([^a-z]|$)/;
+
 // Words a photo's description must contain to count as showing this kind of product.
 export const SUBJECT_WORDS = {
-  footwear: ['sneaker', 'shoe', 'trainer', 'footwear', 'boot', 'sandal', 'slide', 'loafer', 'heel'],
+  // Unambiguous words only ("slide" also means playground slides, "heel" a body part).
+  footwear: ['sneaker', 'shoe', 'trainer', 'footwear', 'boot', 'sandal', 'loafer', 'slipper'],
   fashion: ['dress', 'outfit', 'fashion', 'clothing', 'clothes', 'shirt', 'skirt', 'jacket', 'gown', 'wear', 'model', 'style'],
   beauty: ['skincare', 'cosmetic', 'cream', 'serum', 'lotion', 'makeup', 'beauty', 'bottle', 'perfume', 'skin'],
   jewelry: ['jewelry', 'jewellery', 'ring', 'necklace', 'bracelet', 'earring', 'gold', 'diamond', 'gem'],
@@ -141,11 +144,12 @@ export const SUBJECT_WORDS = {
  * (from the niche and the seller's own product words) and carry no third-party brand.
  * Returns [] rather than a loosely related photo.
  */
-export async function matchingImages({ nicheId, product = '', attributes = '', mood = '', orientation, count = 3, search = null }) {
+export async function matchingImages({ nicheId, product = '', attributes = '', mood = '', orientation, count = 3, search = null, productShot = false, mustMatch = null }) {
   const own = String(product).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3).map((w) => w.replace(/(es|s)$/, ''));
   const words = [...new Set([...(SUBJECT_WORDS[nicheId] ?? []), ...own])];
   const query = [attributes, product || words[0], mood].filter(Boolean).join(' ').trim();
-  const r = search ? await search(query, { orientation, count: 40 }) : await findImages(query, { orientation, count: Math.max(count * 4, 12) });
+  const run = (q) => (search ? search(q, { orientation, count: 40 }) : findImages(q, { orientation, count: Math.max(count * 4, 12) }));
+  let r = await run(query);
   // Judge by the photo's own description only (a page URL or file name is not evidence).
   const hit = (im) => words.some((w) => new RegExp(`(^|[^a-z])${w}`, 'i').test(im.alt ?? ''));
   const clean = r.images.filter((im) => !brandRisk(`${im.alt} ${im.page}`));
@@ -156,10 +160,29 @@ export async function matchingImages({ nicheId, product = '', attributes = '', m
     const alt = String(im.alt ?? '').toLowerCase();
     const tags = alt.includes(',') ? alt.split(/\s*,\s*/) : null;
     const pos = tags ? tags.findIndex((t) => words.some((w) => new RegExp(`(^|[^a-z])${w}`).test(t))) : 0;
-    return { im, pos, attr: attrs.filter((x) => alt.includes(x)).length };
+    const people = tags ? tags.slice(0, 6).some((t) => PEOPLE.test(t)) : PEOPLE.test(alt);
+    const studio = /isolated|white background|studio|product|still life/.test(alt) ? 1 : 0;
+    return { im, pos, people, studio, attr: attrs.filter((x) => alt.includes(x)).length };
   };
-  const ranked = clean.filter(hit).map(rank).filter((x) => x.pos >= 0 && x.pos <= 2).sort((a, b) => b.attr - a.attr || a.pos - b.pos).map((x) => x.im);
+  // A representative product photo shows the product on its own, not a social scene.
+  // When the product name names its type (slide, boot, heel...), the photo must show that type.
+  const typeOk = (im) => !mustMatch?.length || mustMatch.some((w) => new RegExp('(^|[^a-z])' + w).test(String(im.alt ?? '').toLowerCase()));
+  const ranked = clean.filter(hit).filter(typeOk).map(rank).filter((x) => x.pos >= 0 && x.pos <= 2 && !(productShot && x.people)).sort((a, b) => b.studio - a.studio || b.attr - a.attr || a.pos - b.pos).map((x) => x.im);
+  // Very specific searches can come back empty: retry once with just the product type.
+  const broad = [product || words[0], mood].filter(Boolean).join(' ').trim();
+  if (!ranked.length && broad && broad !== query) return matchingImages({ nicheId, product, attributes: '', mood: '', orientation, count, search, productShot, mustMatch });
   return { query, images: ranked.slice(0, count), providersTried: r.providersTried ?? ['quarter4-cloud'], words };
+}
+
+/** Product-type words implied by a product name, e.g. "Street Slide" needs a slide or sandal. */
+export function typeWords(name) {
+  const n = String(name ?? '').toLowerCase();
+  if (/slide|sandal|slipper|flip.?flop/.test(n)) return ['slide', 'sandal', 'slipper', 'flip'];
+  if (/boot/.test(n)) return ['boot'];
+  if (/heel|pump|stiletto/.test(n)) return ['heel', 'pump', 'stiletto'];
+  if (/loafer|moccasin/.test(n)) return ['loafer', 'moccasin'];
+  if (/sneaker|trainer|runner|court|kick/.test(n)) return ['sneaker', 'trainer', 'running shoe', 'sport shoe'];
+  return null;
 }
 
 export { brandRisk };

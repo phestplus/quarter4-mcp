@@ -3,6 +3,8 @@
 ## 0.4.1 (2026-11-03)
 
 - **Better photo matches:** photos are ranked by whether the product is the main subject (first tags), then by requested details such as colour, from a wider pool of results.
+- **Representative photos must be the same kind of product:** a "Street Slide" only gets a slide or sandal photo, a boot only a boot; product photos with people as the subject are skipped; ambiguous words ("slide", "heel") no longer match unrelated photos. When nothing fits, the post uses the type-led layout instead of a wrong picture.
+- **Broader retry:** very specific searches that find nothing retry once with just the product type.
 
 ## 0.4.0 (2026-11-03)
 

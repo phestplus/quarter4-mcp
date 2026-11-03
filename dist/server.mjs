@@ -41066,8 +41066,10 @@ async function findImages(query, o = {}) {
     ].filter(Boolean).join(" ")
   };
 }
+var PEOPLE = /(^|[^a-z])(woman|women|man|men|girl|boy|child|children|kid|baby|people|person|couple|family|lady|guy|model|bride|crowd|portrait|face)s?([^a-z]|$)/;
 var SUBJECT_WORDS = {
-  footwear: ["sneaker", "shoe", "trainer", "footwear", "boot", "sandal", "slide", "loafer", "heel"],
+  // Unambiguous words only ("slide" also means playground slides, "heel" a body part).
+  footwear: ["sneaker", "shoe", "trainer", "footwear", "boot", "sandal", "loafer", "slipper"],
   fashion: ["dress", "outfit", "fashion", "clothing", "clothes", "shirt", "skirt", "jacket", "gown", "wear", "model", "style"],
   beauty: ["skincare", "cosmetic", "cream", "serum", "lotion", "makeup", "beauty", "bottle", "perfume", "skin"],
   jewelry: ["jewelry", "jewellery", "ring", "necklace", "bracelet", "earring", "gold", "diamond", "gem"],
@@ -41078,11 +41080,12 @@ var SUBJECT_WORDS = {
   fitness: ["fitness", "gym", "workout", "exercise", "training", "yoga", "run"],
   kids: ["child", "kid", "toy", "baby", "children"]
 };
-async function matchingImages({ nicheId, product = "", attributes = "", mood = "", orientation, count = 3, search = null }) {
+async function matchingImages({ nicheId, product = "", attributes = "", mood = "", orientation, count = 3, search = null, productShot = false, mustMatch = null }) {
   const own2 = String(product).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3).map((w) => w.replace(/(es|s)$/, ""));
   const words = [.../* @__PURE__ */ new Set([...SUBJECT_WORDS[nicheId] ?? [], ...own2])];
   const query = [attributes, product || words[0], mood].filter(Boolean).join(" ").trim();
-  const r = search ? await search(query, { orientation, count: 40 }) : await findImages(query, { orientation, count: Math.max(count * 4, 12) });
+  const run = (q) => search ? search(q, { orientation, count: 40 }) : findImages(q, { orientation, count: Math.max(count * 4, 12) });
+  let r = await run(query);
   const hit = (im) => words.some((w) => new RegExp(`(^|[^a-z])${w}`, "i").test(im.alt ?? ""));
   const clean2 = r.images.filter((im) => !brandRisk(`${im.alt} ${im.page}`));
   const attrs = String(attributes).toLowerCase().split(/\s+/).filter(Boolean);
@@ -41090,10 +41093,24 @@ async function matchingImages({ nicheId, product = "", attributes = "", mood = "
     const alt = String(im.alt ?? "").toLowerCase();
     const tags = alt.includes(",") ? alt.split(/\s*,\s*/) : null;
     const pos = tags ? tags.findIndex((t) => words.some((w) => new RegExp(`(^|[^a-z])${w}`).test(t))) : 0;
-    return { im, pos, attr: attrs.filter((x) => alt.includes(x)).length };
+    const people = tags ? tags.slice(0, 6).some((t) => PEOPLE.test(t)) : PEOPLE.test(alt);
+    const studio = /isolated|white background|studio|product|still life/.test(alt) ? 1 : 0;
+    return { im, pos, people, studio, attr: attrs.filter((x) => alt.includes(x)).length };
   };
-  const ranked = clean2.filter(hit).map(rank).filter((x) => x.pos >= 0 && x.pos <= 2).sort((a, b) => b.attr - a.attr || a.pos - b.pos).map((x) => x.im);
+  const typeOk = (im) => !mustMatch?.length || mustMatch.some((w) => new RegExp("(^|[^a-z])" + w).test(String(im.alt ?? "").toLowerCase()));
+  const ranked = clean2.filter(hit).filter(typeOk).map(rank).filter((x) => x.pos >= 0 && x.pos <= 2 && !(productShot && x.people)).sort((a, b) => b.studio - a.studio || b.attr - a.attr || a.pos - b.pos).map((x) => x.im);
+  const broad = [product || words[0], mood].filter(Boolean).join(" ").trim();
+  if (!ranked.length && broad && broad !== query) return matchingImages({ nicheId, product, attributes: "", mood: "", orientation, count, search, productShot, mustMatch });
   return { query, images: ranked.slice(0, count), providersTried: r.providersTried ?? ["quarter4-cloud"], words };
+}
+function typeWords(name) {
+  const n = String(name ?? "").toLowerCase();
+  if (/slide|sandal|slipper|flip.?flop/.test(n)) return ["slide", "sandal", "slipper", "flip"];
+  if (/boot/.test(n)) return ["boot"];
+  if (/heel|pump|stiletto/.test(n)) return ["heel", "pump", "stiletto"];
+  if (/loafer|moccasin/.test(n)) return ["loafer", "moccasin"];
+  if (/sneaker|trainer|runner|court|kick/.test(n)) return ["sneaker", "trainer", "running shoe", "sport shoe"];
+  return null;
 }
 
 // src/ask.js
@@ -43540,7 +43557,7 @@ Images: the seller's own photos are best (products[].image or images). If you ca
       const filled = await Promise.all(a.products.map(async (p) => {
         if (p.image) return p;
         const attributes = (p.name.match(/\b(white|black|red|blue|green|pink|brown|grey|gray|gold|silver|leather|suede|denim|silk|linen|low|high|slide|sandal|boot|runner|running)\b/gi) ?? []).join(" ");
-        const r = await Promise.race([matchingImages({ nicheId, product: a.product ?? p.name, attributes, orientation: "squarish", count: 4, search }).catch(() => null), new Promise((res) => setTimeout(() => res(null), 9e3))]);
+        const r = await Promise.race([matchingImages({ nicheId, product: a.product ?? p.name, attributes, orientation: "squarish", count: 4, search, productShot: true, mustMatch: typeWords(p.name) }).catch(() => null), new Promise((res) => setTimeout(() => res(null), 9e3))]);
         const pick2 = r?.images.find((im) => !used.has(im.url));
         if (!pick2) return p;
         used.add(pick2.url);

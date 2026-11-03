@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { buildBrief, ASSET_TYPES } from './brief.js';
 import { EVENT_IDS, listEvents } from './calendar.js';
 import { createCloud } from './cloud.js';
-import { findImages, matchingImages } from './images.js';
+import { findImages, matchingImages, typeWords } from './images.js';
 import { ASK_RULE, questionsFor } from './ask.js';
 import { upcomingHolidays, whatsOn } from './live.js';
 import { NICHES, classifyNiche } from './niches.js';
@@ -468,7 +468,7 @@ Images: the seller's own photos are best (products[].image or images). If you ca
       const filled = await Promise.all(a.products.map(async (p) => {
         if (p.image) return p;
         const attributes = (p.name.match(/\b(white|black|red|blue|green|pink|brown|grey|gray|gold|silver|leather|suede|denim|silk|linen|low|high|slide|sandal|boot|runner|running)\b/gi) ?? []).join(' ');
-        const r = await Promise.race([matchingImages({ nicheId, product: a.product ?? p.name, attributes, orientation: 'squarish', count: 4, search }).catch(() => null), new Promise((res) => setTimeout(() => res(null), 9000))]);
+        const r = await Promise.race([matchingImages({ nicheId, product: a.product ?? p.name, attributes, orientation: 'squarish', count: 4, search, productShot: true, mustMatch: typeWords(p.name) }).catch(() => null), new Promise((res) => setTimeout(() => res(null), 9000))]);
         const pick = r?.images.find((im) => !used.has(im.url));
         if (!pick) return p;
         used.add(pick.url);
