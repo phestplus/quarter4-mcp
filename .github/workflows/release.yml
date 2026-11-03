@@ -35,8 +35,21 @@ jobs:
           # npm view can exit 0 with empty output for a version that does not exist, so compare the text.
           if [ "$(npm view "quarter4-mcp@$V" version 2>/dev/null)" = "$V" ]; then
             echo "quarter4-mcp@$V is already on npm, skipping publish"
-          else
-            npm publish --access public
+            exit 0
+          fi
+          # A re-run right after a publish can hit npm while the version is still being processed
+          # ("previously staged"): that version is already on its way, so it counts as success.
+          set +e
+          npm publish --access public > publish.log 2>&1
+          rc=$?
+          set -e
+          cat publish.log
+          if [ $rc -ne 0 ]; then
+            if grep -qiE "E409|previously staged|cannot publish over" publish.log; then
+              echo "quarter4-mcp@$V was already published and is still being processed by npm."
+            else
+              exit $rc
+            fi
           fi
 
       - name: GitHub release with notes from CHANGELOG
