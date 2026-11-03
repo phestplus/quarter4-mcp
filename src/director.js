@@ -43,10 +43,13 @@ const NICHE_HEADS = {
 
 const NICHE_CTA = { footwear: 'Shop the drop', fashion: 'Shop the edit', beauty: 'Shop the set', jewelry: 'Shop the collection', electronics: 'Shop the deals', automotive: 'Book a test drive', home: 'Shop the room', food: 'Order now', fitness: 'Join now', courses: 'Enroll now', software: 'Start now', digital: 'Get the bundle', services: 'Book now', kids: 'Shop gifts', general: 'Shop now' };
 
-const ARCH_BY_NICHE = { footwear: 'stage', beauty: 'stage', jewelry: 'stage', kids: 'stage', electronics: 'cinematic', automotive: 'cinematic', fitness: 'cinematic', fashion: 'split', home: 'split', food: 'split', services: 'split', courses: 'editorial', software: 'editorial', digital: 'editorial', general: 'cinematic' };
+const ARCH_BY_NICHE = { footwear: 'stage', beauty: 'stage', jewelry: 'stage', kids: 'stage', electronics: 'cinematic', automotive: 'cinematic', fitness: 'cinematic', fashion: 'split', home: 'split', food: 'split', services: 'split', courses: 'editorial', software: 'editorial', apps: 'editorial', digital: 'editorial', general: 'cinematic' };
 
 // Holiday themes bring their own palette; only unthemed pages take colour from the photo.
 const THEMED = new Set(['Black Friday', 'Cyber Monday', 'Christmas', 'Diwali', 'Hanukkah', 'Halloween', 'Thanksgiving', 'Boxing Day', 'New Year']);
+
+/** Attribute values never contain a raw ">" (scroll effects use a:b>c), so text extractors cannot leak markup. */
+const escapeFx = (html) => html.replace(/data-fx="([^"]*)"/g, (m, v) => `data-fx="${v.replace(/>/g, '&gt;')}"`);
 
 export function archetypeFor(nicheId) { return ARCH_BY_NICHE[nicheId] ?? 'cinematic'; }
 
@@ -59,7 +62,8 @@ export function renderDirector(x) {
   const arch = ['cinematic', 'split', 'stage', 'editorial'].includes(o.archetype) ? o.archetype : archetypeFor(nicheId);
   const seed = hash(`${o.brand}|${c.product}|${o.variant ?? 0}`);
   const pick = (arr, salt) => arr[(seed >> salt) % arr.length];
-  const [display, body] = pick(PAIRINGS[arch], 1);
+  // Brand fonts when given; otherwise a pairing that suits the layout.
+  const [display, body] = t.fontsFromBrand ? [t.display, t.body] : pick(PAIRINGS[arch], 1);
   const nav = pick(NAVS, 4), button = pick(BUTTONS, 7), clock = pick(CLOCKS, 10);
   const images = [...(o.images ?? [])].map((im) => (typeof im === 'string' ? { url: im } : im)).filter((im) => /^https?:\/\/|^\.\/|^\/|^data:image\//.test(im.url ?? ''));
   const hero = o.productImage ? { url: o.productImage, alt: o.imageAlt ?? c.product } : images[0] ?? (o.imageUrl ? { url: o.imageUrl, alt: o.imageAlt } : null);
@@ -76,7 +80,9 @@ export function renderDirector(x) {
 
   // Button and label speak the niche, not the holiday ("Book a test drive", not "Shop gifts").
   c = { ...c, ctaText: o.ctaText ? c.ctaText : NICHE_CTA[nicheId] ?? c.ctaText };
-  const eyebrow = eventName ?? `${o.brand} · ${c.product}`;
+  // Eyebrows are short labels: the event, or the brand. Never the raw product field, never the brand twice.
+  const eyebrow = eventName ?? o.brand;
+  const eyebrowWithBrand = eventName ? `${eventName} · ${o.brand}` : o.brand;
   const btn = (label, cls = '') => `<a class="b b-${button} ${cls}" href="${esc(cta)}" data-cta><span>${esc(label)}</span><i aria-hidden="true">→</i></a>`;
 
   const clockHtml = !deadlineMs ? '' : clock === 'inline'
@@ -152,12 +158,12 @@ ${it.image ? `<a class="pc-img" href="${esc(itemLink(it))}" data-cta><img src="$
   let main;
   if (arch === 'cinematic') {
     main = `
-<section class="hero-c" data-scene data-hero style="--h:260vh"><div class="pin">
+<section class="hero-c${hero ? '' : ' noimg'}" data-scene data-hero style="--h:260vh"><div class="pin">
   <div class="hc-bg" style="${bg(hero)}" data-fx="scale:1.35>1;y:0>-6vh" data-range="0,1"></div>
   <div class="hc-sweep" data-fx="x:-60vw>60vw;opacity:0.9>0" data-range="0,0.7"></div>
   <div class="hc-shade" data-fx="opacity:0.9>0.6" data-range="0,0.6"></div>
   <h1 class="hc-h" aria-label="${esc(headline)}">${words(headline).map((w, i) => `<span data-fx="scale:1>${(2.6 + (i % 3) * 0.6).toFixed(1)};opacity:1>0;y:0>${i % 2 ? -18 : 14}vh;blur:0>10" data-range="0.05,0.55">${w}</span>`).join(' ')}</h1>
-  <div class="hc-deal" data-fx="opacity:0>1;y:12vh>0" data-range="0.45,0.85" data-rest="end"><p class="ey">${esc(eyebrow)} · ${esc(o.brand)}</p>${priceHtml}${clockHtml}${btn(c.ctaText)}</div>
+  <div class="hc-deal" data-fx="opacity:0>1;y:12vh>0" data-range="0.45,0.85" data-rest="end"><p class="ey">${esc(eyebrowWithBrand)}</p>${priceHtml}${clockHtml}${btn(c.ctaText)}</div>
   <div class="hc-scroll" data-fx="opacity:1>0" data-range="0,0.1">Scroll</div>
 </div></section>
 ${productsHtml}
@@ -200,7 +206,7 @@ ${faqHtml}`;
   } else {
     main = `
 <section class="ed">
-  <p class="ey">${esc(eyebrow)} · ${esc(o.brand)}</p>
+  <p class="ey">${esc(eyebrowWithBrand)}</p>
   <h1 class="ed-h">${words(headline).map((w, i) => `<span style="--i:${i}">${w}</span>`).join(' ')}</h1>
   <div class="ed-row"><p class="lead">${esc(c.subheadline)}</p><div>${priceHtml}${clockHtml}${btn(c.ctaText)}</div></div>
   ${hero ? `<div class="ed-img" data-depth="-0.08" style="${bg(hero)}" role="img" aria-label="${esc(hero.alt ?? c.product)}"></div>` : ''}
@@ -224,7 +230,7 @@ ${faqHtml}`;
   const paletteSrc = !o.brandColor && !THEMED.has(eventName) && hero ? hero.url : null;
   const js = buildJs({ deadlineMs, hasPaletteImg: Boolean(paletteSrc) });
 
-  return `<!doctype html>
+  return escapeFx(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -246,7 +252,7 @@ ${jsonLd}
 ${ld}
 <style>${css}</style>
 </head>
-<body class="a-${arch} n-${nav} bt-${button}">
+<body class="a-${arch} n-${nav} bt-${button}${t.mode === 'light' ? ' m-light' : ''}">
 ${navHtml}
 <main>
 ${main}
@@ -257,7 +263,7 @@ ${paletteSrc ? `<img src="${esc(paletteSrc)}" alt="" crossorigin="anonymous" dat
 <script>${js}</script>
 </body>
 </html>
-`;
+`);
 }
 
 function buildCss({ t, arch, display, body }) {
@@ -430,6 +436,10 @@ model-viewer.pv{--poster-color:transparent;background:transparent}
 body.n-pill .sticky{display:none}
 @media(min-width:900px){.sticky{display:none}}
 .st-stage{display:contents}
+/* light brands: a hero without a photo uses the brand's text colour, not white on a dark shade */
+.m-light .hero-c.noimg .hc-shade,.m-light .hero-c.noimg .hc-deal::before,.m-light .hero-c.noimg .hc-sweep{display:none}
+.m-light .hero-c.noimg .hc-h,.m-light .hero-c.noimg .hc-deal,.m-light .hero-c.noimg .hc-deal .ey,.m-light .hero-c.noimg .hc-scroll{color:var(--tx);text-shadow:none}
+.m-light .hero-c.noimg .hc-bg{background:radial-gradient(90% 70% at 50% 30%,color-mix(in srgb,var(--ac) 14%,transparent),transparent 70%),var(--bg)}
 /* phones and tablets: the opening section is laid out top to bottom, nothing overlaps */
 @media(max-width:899px){
 [data-hero]{height:auto!important}[data-hero]>.pin{position:relative;height:auto;min-height:0;overflow:hidden}

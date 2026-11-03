@@ -77,11 +77,11 @@ test('publish, measure and upgrade through MCP tools', { skip, timeout: 30000 },
     // Brand profile: saved once, reused by the kit.
     const saved = await call('brand_profile', { action: 'save', profile: { voice: 'short and confident', ctaUrl: 'https://wa.me/2348031234567', brandColor: '#e11d48', products: [{ name: 'Runner One', price: '₦63,000' }] } });
     assert.equal(saved.data.profile.voice, 'short and confident');
-    assert.match(saved.data.note, /Pro/);
+    assert.equal(saved.data.note, undefined, 'colours are saved and used on every plan');
     const k2 = await call('content_kit', { brand: 'Kora Kicks', autoImages: false, productPhotos: 'none' });
     assert.ok(!k2.err, k2.text);
     assert.ok(k2.data.notes.some((n) => /saved brand profile: .*products/.test(n)));
-    assert.ok(k2.data.notes.some((n) => /part of Pro/.test(n)), 'free plan: brand colour not applied');
+    assert.ok(!k2.data.notes.some((n) => /part of Pro/.test(n)), 'brand colours are not paywalled (only the logo is Pro)');
     assert.equal(st.data.pages[0].byItem['Runner One'], 1);
 
     const up = await call('cloud_account', { action: 'upgrade', plan: 'pro', currency: 'NGN' });

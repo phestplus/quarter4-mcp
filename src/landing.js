@@ -1,6 +1,7 @@
 import { archetypeFor, renderDirector } from './director.js';
 import { classifyNiche } from './niches.js';
 import { SCENES } from './scenes.js';
+import { brandTheme, brandTokens, hasBrandLook } from './brand.js';
 // Sales landing page generator. One self-contained HTML file with a premium look:
 // four distinct layouts, 3D tilt offer card, holiday particle effects, aurora/grid
 // backgrounds, kinetic type, marquees and scroll reveals. Works from minimal input
@@ -145,6 +146,9 @@ export function buildLanding(o) {
   const t = { ...THEMES[themeKey] };
   const custom = hex(o.brandColor);
   if (custom) { t.accent = custom; t.accentText = readableOn(custom); t.glow = [custom, t.glow[1], t.glow[2]]; }
+  // The brand's own look wins over the event theme: the event keeps only its label and ornament.
+  const branded = hasBrandLook(brandTokens(o));
+  if (branded) Object.assign(t, brandTheme(t, brandTokens(o)));
   const scene = SCENES[themeKey];
   let layout = LAYOUTS.includes(o.layout) ? o.layout : scene ? 'signature' : t.layout;
   if (layout === 'signature' && !scene) layout = t.layout;
@@ -182,7 +186,7 @@ export function buildLanding(o) {
   const legacy = ['signature', 'aurora', 'editorial', 'poster', 'bento'].includes(o.layout);
   const hasMedia = Boolean(o.images?.length || o.productImage || o.videoUrl || o.modelUrl);
   if (o.layout === 'director' || (!legacy && (cls.id !== 'general' || hasMedia))) {
-    const dt = THEMES[o.theme] ? { ...t } : { ...t, bg: '#0b0b0c', surface: '#161618', text: '#f5f5f4', muted: '#a8a29e', accent: custom ?? '#f5f5f4', accentText: custom ? t.accentText : '#0b0b0c', accent2: '#78716c', border: 'rgba(255,255,255,.12)', eyebrow: 'Limited time' };
+    const dt = branded || THEMES[o.theme] ? { ...t } : { ...t, bg: '#0b0b0c', surface: '#161618', text: '#f5f5f4', muted: '#a8a29e', accent: custom ?? '#f5f5f4', accentText: custom ? t.accentText : '#0b0b0c', accent2: '#78716c', border: 'rgba(255,255,255,.12)', eyebrow: 'Limited time' };
     return renderDirector({ esc, c, o, t: dt, discount, deadlineMs, deadlineLabel, cta, terms, year, title, jsonLd: jsonLdTag, hash, nicheId: cls.id, eventName: THEMES[o.theme] ? EVENT_NAMES[o.theme] : (o.eventName ?? null) });
   }
 

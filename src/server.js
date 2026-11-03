@@ -1,8 +1,8 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { extname, resolve } from 'node:path';
+import { dirname, extname, resolve } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { buildBrief, ASSET_TYPES } from './brief.js';
@@ -22,7 +22,7 @@ import { buildPlan } from './plan.js';
 import { buildKit } from './kit.js';
 import { getSpecs, PLATFORM_IDS } from './specs.js';
 
-export const VERSION = '0.4.1';
+export const VERSION = '0.5.0';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD');
 // Loose inputs: real users write "ig, tik tok", "Lagos", "black friday". Normalised in the engine.
@@ -38,6 +38,26 @@ const wrap = (fn) => async (args) => { try { return await fn(args); } catch (e) 
 /** @param {{ allowFileWrites?: boolean }} opts */
 export function createServer({ allowFileWrites = false } = {}) {
   const server = new McpServer({ name: 'quarter4', version: VERSION });
+  const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+  const brandStyle = z.object({
+    mode: z.enum(['light', 'dark']).optional(),
+    palette: z.object({ bg: hexColor.optional(), surface: hexColor.optional(), text: hexColor.optional(), muted: hexColor.optional(), accent: hexColor.optional(), accent2: hexColor.optional() }).optional(),
+    fontDisplay: z.string().max(40).optional().describe('Google Fonts family for headings, e.g. "Inter"'),
+    fontBody: z.string().max(40).optional().describe('Google Fonts family for text'),
+  }).optional().describe('The brand\'s own look. It always wins over the event theme; the event only adds its label. Ask the seller for their colours and fonts (or read them from their site) rather than guessing.');
+  const copyFields = {
+    displayName: z.string().max(40).optional().describe('Short name used in copy, e.g. "Brightly Premium". Never pass long internal product phrases as headings.'),
+    offerType: z.enum(['physical', 'subscription', 'course', 'service', 'digital']).optional().describe('How it is bought; decides the verbs (shop, start your plan, enrol, book, get). Inferred when missing.'),
+  };
+  // A saved brand profile fills anything the caller did not pass (look, voice, names, links).
+  const withProfile = async (a, keys, notes) => {
+    if (!cloud.hasKey()) return a;
+    const saved = (await cloud.brand().catch(() => null))?.profile;
+    if (!saved) return a;
+    const fill = Object.fromEntries(keys.filter((k) => a[k] === undefined && saved[k] !== undefined).map((k) => [k, saved[k]]));
+    if (Object.keys(fill).length) notes.push(`Filled from your saved brand profile: ${Object.keys(fill).join(', ')}.`);
+    return { ...fill, ...a };
+  };
   // Local (stdio) servers can save the key that "connect" receives; the hosted server cannot.
   const cloud = createCloud({ persist: allowFileWrites, client: 'AI app' });
   server.server.oninitialized = () => { const c = server.server.getClientVersion?.(); if (c?.name) cloud.clientName?.(c.name); };
@@ -48,6 +68,7 @@ export function createServer({ allowFileWrites = false } = {}) {
     const ext = extname(outputPath).toLowerCase();
     if (!allowed.includes(ext)) throw new Error(`outputPath must end with ${allowed.join(' or ')}`);
     const full = resolve(outputPath);
+    await mkdir(dirname(full), { recursive: true });
     await writeFile(full, content, 'utf8');
     return full;
   }
@@ -177,6 +198,7 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
       faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       terms: z.string().optional(),
       brandColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+      brandStyle, ...copyFields,
       pageUrl: z.string().optional(),
       effects: z.boolean().optional().describe('false turns off particles and 3D motion'),
       outputPath: z.string().optional().describe('Local mode only: write the HTML here (.html)'),
@@ -184,6 +206,7 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   }, wrap(async (a) => {
     const notes = [];
+    a = await withProfile(a, ['brandStyle', 'brandColor', 'displayName', 'offerType', 'ctaUrl'], notes);
     const hasMedia = a.images?.length || a.productImage || a.videoUrl || a.modelUrl || a.imageUrl;
     if (!hasMedia && a.autoImages !== false && a.layout !== 'signature') {
       const nicheId = classifyNiche(`${a.niche ?? ''} ${a.product ?? ''}`).id;
@@ -400,6 +423,7 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
       profile: z.object({
         brand: z.string().optional(), niche: z.string().optional(), voice: z.string().max(300).optional().describe('How the brand talks, e.g. "playful, Lagos slang, short sentences"'),
         ctaUrl: z.string().optional(), logoUrl: z.string().optional(), brandColor: z.string().optional(),
+        brandStyle, ...copyFields,
         products: z.array(z.object({ name: z.string(), price: z.string().optional(), originalPrice: z.string().optional(), note: z.string().optional(), image: z.string().optional() })).max(20).optional(),
       }).optional(),
     },
@@ -424,10 +448,11 @@ Images: the seller's own photos are best (products[].image or images). If you ca
       pageUrl: z.string().optional().describe('The live sales page link from publish_page, used in captions and share links'),
       products: z.array(z.object({ name: z.string(), price: z.string().optional(), originalPrice: z.string().optional(), note: z.string().optional(), image: z.string().optional() })).max(6).optional(),
       images: z.array(z.object({ url: z.string(), alt: z.string().optional() })).max(6).optional(),
-      posts: z.array(z.object({ id: z.string().optional(), format: z.enum(['post', 'square', 'story', 'wide']).optional(), title: z.string().optional(), headline: z.string().optional(), sub: z.string().optional(), caption: z.string().optional(), image: z.string().optional() })).max(12).optional()
+      posts: z.array(z.object({ id: z.string().optional(), format: z.enum(['post', 'square', 'story', 'wide']).optional(), title: z.string().optional(), hook: z.string().optional(), headline: z.string().optional(), sub: z.string().optional(), caption: z.string().optional(), image: z.string().optional() })).max(12).optional()
         .describe('Your own copy: replace a caption by id (offer, product-1, carousel, story, last-call, wide) or add extra posts with a headline'),
       logoUrl: z.string().optional().describe('Pro: brand logo (https)'),
       brandColor: z.string().optional().describe('Pro: brand colour, e.g. "#e11d48"'),
+      brandStyle, ...copyFields,
       autoImages: z.boolean().optional().describe('Find free photos when none are given (default true)'),
       productPhotos: z.enum(['own', 'representative', 'none']).optional().describe('What the seller chose for products without photos: "own" (they are sending photos: pass them as products[].image), "representative" (closest real photo, tagged "Representative image"), "none" (text-led product posts). If you can generate images and the seller wants that, generate them and pass the URLs as products[].image. Ask the seller before choosing.'),
       kitId: z.string().regex(/^[a-f0-9]{12}$/).optional().describe('Update an existing kit at the same link (e.g. after the seller sends new photos)'),
@@ -442,12 +467,12 @@ Images: the seller's own photos are best (products[].image or images). If you ca
       // Saved brand profile fills anything not given in this request.
       const saved = (await cloud.brand().catch(() => null))?.profile;
       if (saved) {
-        const fill = Object.fromEntries(['product', 'niche', 'ctaUrl', 'logoUrl', 'brandColor', 'products'].filter((k) => a[k] === undefined && saved[k] !== undefined).map((k) => [k, saved[k]]));
+        const fill = Object.fromEntries(['product', 'niche', 'ctaUrl', 'logoUrl', 'brandColor', 'products', 'brandStyle', 'displayName', 'offerType'].filter((k) => a[k] === undefined && saved[k] !== undefined).map((k) => [k, saved[k]]));
         if (Object.keys(fill).length) { a = { ...fill, ...a }; notes.push(`Filled from your saved brand profile: ${Object.keys(fill).join(', ')}.`); }
       }
     }
     const paid = plan !== 'free';
-    if (!paid && (a.logoUrl || a.brandColor)) { notes.push('Your logo and brand colour on graphics are part of Pro. This kit uses the event look; upgrade with cloud_account action "upgrade".'); a = { ...a, logoUrl: undefined, brandColor: undefined }; }
+    if (!paid && a.logoUrl) { notes.push('Your logo on graphics is part of Pro; upgrade with cloud_account action "upgrade".'); a = { ...a, logoUrl: undefined }; }
     // Mood photos must actually show this kind of product (and no other brand). Products themselves are
     // only shown with the seller's photos; kit graphics wait for an upload otherwise.
     // Photos are decided in the chat, before anything is made: if a product has no photo and the
@@ -503,9 +528,10 @@ Images: the seller's own photos are best (products[].image or images). If you ca
     }
     const kit = buildKit({ ...a, watermark: !paid, proxy: hosted ? (url, i) => (/^data:/.test(url) ? url : `/__q4/img/__KIT__/${i}`) : undefined });
     const { askUser, assumed } = questionsFor('kit', a);
+    if (a.discountPercent || /\d\s*%|off/i.test(a.offer ?? '') || a.originalPrice) notes.push('Before you share: make sure your checkout or app actually charges the advertised sale price. Advertising a price you do not charge is a consumer-law risk (for example under Nigeria\'s FCCPA).');
     const summary = { posts: kit.posts, notes, ...(askUser.length ? { askUser, howToAsk: ASK_RULE } : {}), assumed };
     if (hosted) {
-      const body = { brand: a.brand, html: kit.html, images: kit.images.filter((u) => !/^data:/.test(u)), title: `${a.brand} content kit` };
+      const body = { brand: a.brand, html: kit.html, images: kit.images.filter((u) => !/^data:/.test(u)), title: `${a.brand} content kit`, ...(a.deadline ? { deadline: a.deadline } : {}) };
       const r = a.kitId ? await cloud.updateKit(a.kitId, body) : await cloud.kit(body);
       for (const f of localFiles) {
         const ok = await cloud.kitPhoto(r.id, f.key, f.buf, f.type).then(() => true, () => false);

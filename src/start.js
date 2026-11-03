@@ -20,6 +20,7 @@ export const MOOD_QUERIES = {
   food: ['holiday food table', 'pastries close up', 'restaurant warm light'],
   fitness: ['gym training dramatic light', 'running sunrise city', 'yoga studio calm'],
   courses: ['person studying laptop night', 'notebook desk coffee', 'creative workspace'],
+  apps: ['person smiling at phone home', 'couple using phone together', 'phone in hand warm light'],
   software: ['abstract technology light', 'laptop dark desk', 'minimal workspace'],
   digital: ['creative workspace screens', 'designer desk', 'abstract gradient light'],
   services: ['salon interior', 'professional at work', 'calm studio space'],
@@ -45,7 +46,7 @@ export function startCampaign(o) {
   const cls = classifyNiche(`${o.description ?? ''} ${o.product ?? ''}`);
   const niche = NICHES[cls.id];
   const product = o.product || cls.matched[0] || null;
-  if (cls.confidence === 'low') questions.push({ field: 'product', question: 'What do you sell? (e.g. sneakers, skincare gift sets, an online course)', blocking: false, defaultUsed: 'general business angles' });
+  if (cls.confidence !== 'high') questions.push({ field: 'product', question: `What exactly do you sell, and how do people buy it? (a product they order, an app or subscription, a course, a booked service)`, blocking: true, defaultUsed: `${NICHES[cls.id]?.label ?? 'general'} (a guess; the plan, posts and page depend on this)` });
 
   // Platforms
   let platforms = o.platforms ? normalizePlatforms(o.platforms).values : findPlatformsInText(text);
@@ -104,7 +105,7 @@ export function startCampaign(o) {
     assumptions,
     // Never blocking: ask these in one message and keep working with the defaults.
     questions: ['product', 'offer', 'brand', 'location'].map((f) => questions.find((q) => q.field === f)).filter(Boolean).slice(0, 3),
-    canProceed: true,
+    canProceed: !questions.some((x) => x.blocking),
     mainEvent: main ? { id: main.id, name: main.name, date: main.date, daysUntil: lead, promoStart: main.promoStart, phaseNow } : null,
     urgency,
     events: events.map((e) => ({ id: e.id, name: e.name, date: e.date, daysUntil: e.daysUntil, promoStart: e.promoStart, why: e.relevance.reasons })),
@@ -114,7 +115,7 @@ export function startCampaign(o) {
     compliance: niche.compliance,
     landing: { direction: niche.archetype, theme, imageQueries: MOOD_QUERIES[cls.id] ?? MOOD_QUERIES.general },
     nextCalls: [
-      { tool: 'q4_content_plan', args: planArgs },
+      { tool: 'content_plan', args: planArgs },
       { tool: 'find_images', args: { query: (MOOD_QUERIES[cls.id] ?? MOOD_QUERIES.general)[0], orientation: 'landscape' } },
       { tool: 'landing_page', args: { brand: brand ?? '<brand>', ...(product ? { product } : {}), theme, ...(offer?.type === 'percent' ? { discountPercent: offer.value } : offer ? { offer: offer.text } : {}), ...(deadline ? { deadline: `${deadline}T23:59:00Z` } : {}) } },
     ],

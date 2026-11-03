@@ -178,9 +178,26 @@ export const NICHES = {
     compliance: ['Income or job claims must be typical and substantiated.'],
     eventFit: { 'cyber-monday': 1.5, 'black-friday': 1.3, 'new-year': 1.5, christmas: 0.8 },
   },
+  apps: {
+    label: 'Consumer apps and subscriptions', kind: 'digital', archetype: 'editorial',
+    keywords: ['mobile app', 'dating app', 'relationship app', 'marriage app', 'couples app', 'wellness app', 'meditation app', 'fitness app', 'finance app', 'budgeting app', 'savings app', 'premium plan', 'yearly plan', 'monthly plan', 'subscription', 'membership', 'relationship', 'marriage', 'couples', 'dating', 'meditation', 'budgeting'],
+    phases: {
+      tease: ['One screen from the app, no words', 'A question your users ask themselves (no answer yet)'],
+      'warm-up': ['What changes in the first week of using it', 'Free vs paid: what you actually get', 'A real user story (with permission)'],
+      'early-access': ['Existing members get the offer first'],
+      launch: ['The yearly price, the monthly equivalent and what is included', 'Screen recording of the main feature'],
+      'last-chance': ['The offer ends at the stated time (with time zone)'],
+      'thank-you': ['Getting started tips for new members', 'What we are building next'],
+    },
+    hooks: ['The 5 minutes a day that changed how we talk to each other.', 'What you get with Premium, in one screen.', 'Free or Premium? Here is the honest difference.', 'A small habit, kept for a year.'],
+    shots: ['Phone screen recording with a finger tap', 'Real people using the app at home (with consent)', 'Feature close-up on a phone mockup', 'Founder or team to camera'],
+    proof: ['user stories with permission', 'app store rating (real, with date)', 'member count (real)'],
+    compliance: ['State the renewal price, billing period and how to cancel for any discounted subscription.', 'Make sure the app or checkout actually charges the advertised sale price before you publish.', 'Wellness, relationship or finance claims must be general and honest; no guaranteed outcomes.'],
+    eventFit: { 'black-friday': 1.3, 'cyber-monday': 1.4, 'new-year': 1.5, valentines: 1.6, christmas: 0.8, halloween: 0.4 },
+  },
   software: {
     label: 'Software and SaaS', kind: 'digital', archetype: 'editorial',
-    keywords: ['saas', 'software', 'app', 'apps', 'tool', 'platform', 'plugin', 'subscription software', 'api', 'startup'],
+    keywords: ['saas', 'software', 'tool', 'platform', 'plugin', 'subscription software', 'api', 'startup', 'b2b', 'crm', 'dashboard'],
     phases: {
       tease: ['Feature teaser: one screen, no words', 'Changelog highlights of the year'],
       'warm-up': ['Workflow demo in 30 seconds', 'Customer use case', 'Plan comparison'],

@@ -3488,9 +3488,9 @@ var require_utils = __commonJS({
       let output2 = "";
       for (let i = 0; i < input2.length; i++) {
         if (input2[i] === "%" && i + 2 < input2.length) {
-          const hex5 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex5)) {
-            const normalizedHex = hex5.toUpperCase();
+          const hex6 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex6)) {
+            const normalizedHex = hex6.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decodeUnreserved && isUnreserved(decoded)) {
               output2 += decoded;
@@ -3510,9 +3510,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex5 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex5)) {
-            const normalizedHex = hex5.toUpperCase();
+          const hex6 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex6)) {
+            const normalizedHex = hex6.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decoded !== "." && isUnreserved(decoded)) {
               output2 += decoded;
@@ -3552,9 +3552,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex5 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex5)) {
-            output2 += "%" + hex5.toUpperCase();
+          const hex6 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex6)) {
+            output2 += "%" + hex6.toUpperCase();
             i += 2;
             continue;
           }
@@ -3590,9 +3590,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex5 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex5)) {
-            output2 += "%" + hex5.toUpperCase();
+          const hex6 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex6)) {
+            output2 += "%" + hex6.toUpperCase();
             i += 2;
             continue;
           }
@@ -3637,9 +3637,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex5 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex5)) {
-            const normalizedHex = hex5.toUpperCase();
+          const hex6 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex6)) {
+            const normalizedHex = hex6.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (isUnreserved(decoded)) {
               output2 += decoded;
@@ -3677,9 +3677,9 @@ var require_utils = __commonJS({
       let output2 = "";
       for (let i = 0; i < input2.length; i++) {
         if (input2[i] === "%" && i + 2 < input2.length) {
-          const hex5 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex5)) {
-            output2 += "%" + hex5.toUpperCase();
+          const hex6 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex6)) {
+            output2 += "%" + hex6.toUpperCase();
             i += 2;
             continue;
           }
@@ -8670,8 +8670,8 @@ function base64urlToUint8Array(base64url3) {
 function uint8ArrayToBase64url(bytes) {
   return uint8ArrayToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
-function hexToUint8Array(hex5) {
-  const cleanHex = hex5.replace(/^0x/, "");
+function hexToUint8Array(hex6) {
+  const cleanHex = hex6.replace(/^0x/, "");
   if (cleanHex.length % 2 !== 0) {
     throw new Error("Invalid hex string length");
   }
@@ -30841,11 +30841,11 @@ var StreamableHTTPServerTransport = class {
 };
 
 // src/server.js
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { extname, resolve } from "node:path";
+import { dirname, extname, resolve } from "node:path";
 
 // node_modules/zod/v3/helpers/util.js
 var util;
@@ -39981,11 +39981,30 @@ var NICHES = {
     compliance: ["Income or job claims must be typical and substantiated."],
     eventFit: { "cyber-monday": 1.5, "black-friday": 1.3, "new-year": 1.5, christmas: 0.8 }
   },
+  apps: {
+    label: "Consumer apps and subscriptions",
+    kind: "digital",
+    archetype: "editorial",
+    keywords: ["mobile app", "dating app", "relationship app", "marriage app", "couples app", "wellness app", "meditation app", "fitness app", "finance app", "budgeting app", "savings app", "premium plan", "yearly plan", "monthly plan", "subscription", "membership", "relationship", "marriage", "couples", "dating", "meditation", "budgeting"],
+    phases: {
+      tease: ["One screen from the app, no words", "A question your users ask themselves (no answer yet)"],
+      "warm-up": ["What changes in the first week of using it", "Free vs paid: what you actually get", "A real user story (with permission)"],
+      "early-access": ["Existing members get the offer first"],
+      launch: ["The yearly price, the monthly equivalent and what is included", "Screen recording of the main feature"],
+      "last-chance": ["The offer ends at the stated time (with time zone)"],
+      "thank-you": ["Getting started tips for new members", "What we are building next"]
+    },
+    hooks: ["The 5 minutes a day that changed how we talk to each other.", "What you get with Premium, in one screen.", "Free or Premium? Here is the honest difference.", "A small habit, kept for a year."],
+    shots: ["Phone screen recording with a finger tap", "Real people using the app at home (with consent)", "Feature close-up on a phone mockup", "Founder or team to camera"],
+    proof: ["user stories with permission", "app store rating (real, with date)", "member count (real)"],
+    compliance: ["State the renewal price, billing period and how to cancel for any discounted subscription.", "Make sure the app or checkout actually charges the advertised sale price before you publish.", "Wellness, relationship or finance claims must be general and honest; no guaranteed outcomes."],
+    eventFit: { "black-friday": 1.3, "cyber-monday": 1.4, "new-year": 1.5, valentines: 1.6, christmas: 0.8, halloween: 0.4 }
+  },
   software: {
     label: "Software and SaaS",
     kind: "digital",
     archetype: "editorial",
-    keywords: ["saas", "software", "app", "apps", "tool", "platform", "plugin", "subscription software", "api", "startup"],
+    keywords: ["saas", "software", "tool", "platform", "plugin", "subscription software", "api", "startup", "b2b", "crm", "dashboard"],
     phases: {
       tease: ["Feature teaser: one screen, no words", "Changelog highlights of the year"],
       "warm-up": ["Workflow demo in 30 seconds", "Customer use case", "Plan comparison"],
@@ -40633,16 +40652,54 @@ var BY_PHASE = {
     "You asked, we answered: sizes, prices, delivery."
   ]
 };
+var PHYSICAL_ONLY = /* @__PURE__ */ new Set([
+  "If it was in your cart, now is the time.",
+  "{discount} off and free advice on what to pick.",
+  "Which one would you pick? Vote in the comments.",
+  "Budget, mid, treat yourself: {product} at every level.",
+  "Gift idea for someone who has everything: {product}.",
+  "From our studio to your door: how an order works.",
+  "Ranking our best {product} before {event}.",
+  "Your orders are on the way. Here is what happens next.",
+  "Show us how you are wearing it. We share our favourites.",
+  "How to care for your new {product}.",
+  "Behind the scenes of one order.",
+  "Three ways to use one {product}.",
+  "Before and after, no filters.",
+  "Pick one: which would you take home?",
+  "Week to go. Here is your shortlist.",
+  "What we would buy if we were you.",
+  "{event} is here. Everything you saved is on sale.",
+  "Your {event} shopping starts and ends here.",
+  "Prices dropped. Tap before you forget.",
+  "What {discount} off actually looks like on our best sellers.",
+  "The {product} our customers reorder most.",
+  "Mistakes people make buying {product} on sale.",
+  "You are on the list, so you shop first.",
+  "The {product} drop we have been planning all year.",
+  "If you have been waiting to buy {product}, wait a few more days."
+]);
+var NON_PHYSICAL = {
+  tease: ["Something new is coming to {brand} members.", "Our best price on {product} is close. Turn on notifications."],
+  "warm-up": ["What you actually get with {product}, in one minute.", "Free vs paid: the honest difference.", "Who {product} is for, and who it is not for.", "What changes in your first week."],
+  "early-access": ["You are on the list, so you get the offer first."],
+  launch: ["{discount} off {product}, from today.", "The {event} offer on {product} is live.", "Start today and pay less for the whole year."],
+  "last-chance": ["The {event} price on {product} ends soon.", "Last days to start at this price."],
+  "thank-you": ["Welcome to everyone who joined this week.", "Getting started: three things to try first."],
+  evergreen: ["What our members say after a month.", "One feature people miss.", "A question we hear every week, answered."]
+};
 var NEAR = { tease: ["warm-up"], "warm-up": ["tease"], "early-access": ["launch"], "last-chance": ["launch"], launch: ["last-chance"], "thank-you": [] };
 var phaseOf = (p) => BY_PHASE[p] ? p : p === "observance" ? null : "evergreen";
-function hookDeck({ nicheHooks = [], product, discount = null, brand = "us", seed = 0 }) {
+function hookDeck({ nicheHooks = [], product, discount = null, brand = "us", seed = 0, offerType = "physical" }) {
   const used = /* @__PURE__ */ new Set();
   let repeats = 0;
   const usable = (t, event) => (!t.includes("{discount}") || discount) && (!t.includes("{event}") || event);
   const fill = (t, event) => t.replaceAll("{product}", product).replaceAll("{discount}", discount ?? "").replaceAll("{event}", event ?? "").replaceAll("{brand}", brand).replaceAll("{date}", event ?? "this week");
   const pool = (phase) => {
     const own2 = ["tease", "warm-up", "evergreen"].includes(phase) ? nicheHooks.map((t, i) => ({ t, k: `n${i}` })) : [];
-    const gen = (BY_PHASE[phase] ?? []).map((t, i) => ({ t, k: `${phase}${i}` }));
+    const physical = offerType === "physical";
+    const base2 = (BY_PHASE[phase] ?? []).filter((t) => physical || !PHYSICAL_ONLY.has(t));
+    const gen = [...physical ? [] : NON_PHYSICAL[phase] ?? [], ...base2].map((t, i) => ({ t, k: `${phase}${i}` }));
     const mixed = [];
     for (let i = 0; i < Math.max(own2.length, gen.length); i++) {
       if (gen[i]) mixed.push(gen[i]);
@@ -40670,8 +40727,8 @@ function hookDeck({ nicheHooks = [], product, discount = null, brand = "us", see
     size: () => used.size
   };
 }
-function hooksFor({ nicheHooks = [], phase = "evergreen", product, discount = null, event = null, brand = "us", limit = 10 }) {
-  const deck = hookDeck({ nicheHooks, product, discount, brand });
+function hooksFor({ nicheHooks = [], phase = "evergreen", product, discount = null, event = null, brand = "us", limit = 10, offerType = "physical" }) {
+  const deck = hookDeck({ nicheHooks, product, discount, brand, offerType });
   const out = [];
   for (let i = 0; i < limit; i++) {
     const h = deck.next(phase, event);
@@ -40681,6 +40738,35 @@ function hooksFor({ nicheHooks = [], phase = "evergreen", product, discount = nu
   return out;
 }
 var HOOK_COUNT = Object.values(BY_PHASE).reduce((a, l) => a + l.length, 0);
+
+// src/offer.js
+var BY_NICHE = { apps: "subscription", software: "subscription", courses: "course", digital: "digital", services: "service", fitness: "service" };
+function offerTypeOf(nicheId, text = "") {
+  const t = String(text).toLowerCase();
+  if (/\b(subscription|subscribe|membership|premium plan|yearly plan|monthly plan|annual plan|app\b|saas)/.test(t)) return "subscription";
+  if (/\b(course|cohort|class|bootcamp|masterclass|enrol)/.test(t)) return "course";
+  if (/\b(booking|appointment|session|consultation|service)\b/.test(t)) return "service";
+  return BY_NICHE[nicheId] ?? (NICHES[nicheId]?.kind === "digital" ? "digital" : "physical");
+}
+var VERBS = {
+  physical: { cta: "Shop now", order: "Order", grid: "Shop the sale", wa: "Reply to this message to order.", ig: "Shop through the link in our bio.", igWa: "Tap the link in our bio to order on WhatsApp.", link: "Order here" },
+  subscription: { cta: "Start your plan", order: "Choose this plan", grid: "Choose your plan", wa: "Reply and we will send you the link.", ig: "Start your plan from the link in our bio.", igWa: "Tap the link in our bio to get started.", link: "Start here" },
+  course: { cta: "Enrol now", order: "Enrol", grid: "Choose your plan", wa: "Reply and we will send you the enrolment link.", ig: "Enrol through the link in our bio.", igWa: "Tap the link in our bio to enrol.", link: "Enrol here" },
+  service: { cta: "Book now", order: "Book", grid: "Pick a package", wa: "Reply to book your slot.", ig: "Book through the link in our bio.", igWa: "Tap the link in our bio to book on WhatsApp.", link: "Book here" },
+  digital: { cta: "Get it now", order: "Get it", grid: "Pick yours", wa: "Reply and we will send you the link.", ig: "Get it from the link in our bio.", igWa: "Tap the link in our bio to get it.", link: "Get it here" }
+};
+var PHASE_CTA = {
+  physical: { tease: "Join the waitlist / turn on notifications", "warm-up": "Save this post / add to wishlist", "early-access": "Get early access (link in bio / email)", launch: "Shop now", "last-chance": "Ends soon. Shop now", "thank-you": "Share your purchase / leave a review" },
+  subscription: { tease: "Turn on notifications", "warm-up": "Save this post / try the free version", "early-access": "Get the offer first (link in bio / email)", launch: "Start your plan", "last-chance": "Ends soon. Start your plan", "thank-you": "Tell us how it is going / leave a review" },
+  course: { tease: "Join the waitlist", "warm-up": "Save this post / watch the free lesson", "early-access": "Enrol early (link in bio / email)", launch: "Enrol now", "last-chance": "Enrolment closes soon", "thank-you": "Share your progress / leave a review" },
+  service: { tease: "Turn on notifications", "warm-up": "Save this post / ask us a question", "early-access": "Book early (link in bio)", launch: "Book now", "last-chance": "Last slots at this price. Book now", "thank-you": "Share your experience / leave a review" },
+  digital: { tease: "Turn on notifications", "warm-up": "Save this post / see a preview", "early-access": "Get early access (link in bio / email)", launch: "Get it now", "last-chance": "Ends soon. Get it now", "thank-you": "Share what you made / leave a review" }
+};
+function displayNameOf(o, product) {
+  if (o.displayName) return o.displayName;
+  const p = String(product ?? "").trim();
+  return p && p.split(/\s+/).length <= 3 ? p : o.brand;
+}
 
 // src/brief.js
 var COMPLIANCE = {
@@ -40749,7 +40835,7 @@ function buildBrief(o) {
       angles: o.phase ? phaseAngles(nicheId, o.phase, product) : []
     },
     copy: {
-      hooks: hooksFor({ nicheHooks: niche.hooks, phase: o.phase ?? (ev ? "launch" : "evergreen"), product, discount: offer?.type === "percent" ? `${offer.value}%` : null, event: ev?.name ?? null, brand: o.brand ?? "us", limit: 10 }),
+      hooks: hooksFor({ offerType: offerTypeOf(nicheId, `${o.niche ?? ""} ${o.product ?? ""}`), nicheHooks: niche.hooks, phase: o.phase ?? (ev ? "launch" : "evergreen"), product, discount: offer?.type === "percent" ? `${offer.value}%` : null, event: ev?.name ?? null, brand: o.brand ?? "us", limit: 10 }),
       structure: ["Hook (first line / first 2 seconds)", "Value or proof", "Offer with real terms", "One clear CTA"],
       captionLimit: p.caption
     },
@@ -41119,10 +41205,11 @@ function questionsFor(task, o) {
   const q = [];
   const assumed = [];
   const products = (o.products ?? []).filter((p) => p?.name);
-  const noPhoto = products.filter((p) => !p.image || p.representative);
+  const noPhoto = o.productPhotos === "none" ? [] : products.filter((p) => !p.image || p.representative);
+  const digital = /app|software|saas|subscription|course|digital|platform|membership/i.test(`${o.niche ?? ""} ${o.product ?? ""} ${o.offerType ?? ""}`);
   const stand = noPhoto.length && noPhoto.every((p) => p.representative);
   if (noPhoto.length) {
-    q.push({ field: "photos", question: `Send a photo of ${noPhoto.length === 1 ? noPhoto[0].name : `each product (${noPhoto.slice(0, 4).map((p) => p.name).join(", ")}${noPhoto.length > 4 ? ", ..." : ""})`}. A clear phone photo on a plain background is perfect.`, why: stand ? "The kit is ready now with representative photos (tagged as such). Your own photos look more trustworthy and sell better." : "Without a photo these posts cannot be shared." });
+    q.push({ field: "photos", question: digital ? `Send screenshots of ${noPhoto.length === 1 ? noPhoto[0].name : "the app or product"} (the screens buyers care about most).` : `Send a photo of ${noPhoto.length === 1 ? noPhoto[0].name : `each product (${noPhoto.slice(0, 4).map((p) => p.name).join(", ")}${noPhoto.length > 4 ? ", ..." : ""})`}. A clear phone photo on a plain background is perfect.`, why: stand ? "The kit is ready now with representative photos (tagged as such). Your own photos look more trustworthy and sell better." : "Without a photo these posts cannot be shared." });
   } else if (!products.length && !o.images?.length && task === "kit") {
     assumed.push("No product photos given, so offer posts use matching licensed photos or bold type. Add product photos to feature specific items.");
   }
@@ -41266,6 +41353,7 @@ var MOOD_QUERIES = {
   food: ["holiday food table", "pastries close up", "restaurant warm light"],
   fitness: ["gym training dramatic light", "running sunrise city", "yoga studio calm"],
   courses: ["person studying laptop night", "notebook desk coffee", "creative workspace"],
+  apps: ["person smiling at phone home", "couple using phone together", "phone in hand warm light"],
   software: ["abstract technology light", "laptop dark desk", "minimal workspace"],
   digital: ["creative workspace screens", "designer desk", "abstract gradient light"],
   services: ["salon interior", "professional at work", "calm studio space"],
@@ -41281,7 +41369,7 @@ function startCampaign(o) {
   const cls = classifyNiche(`${o.description ?? ""} ${o.product ?? ""}`);
   const niche = NICHES[cls.id];
   const product = o.product || cls.matched[0] || null;
-  if (cls.confidence === "low") questions.push({ field: "product", question: "What do you sell? (e.g. sneakers, skincare gift sets, an online course)", blocking: false, defaultUsed: "general business angles" });
+  if (cls.confidence !== "high") questions.push({ field: "product", question: `What exactly do you sell, and how do people buy it? (a product they order, an app or subscription, a course, a booked service)`, blocking: true, defaultUsed: `${NICHES[cls.id]?.label ?? "general"} (a guess; the plan, posts and page depend on this)` });
   let platforms = o.platforms ? normalizePlatforms(o.platforms).values : findPlatformsInText(text);
   const placeInfo = o.regions ? normalizeRegions(o.regions) : null;
   let regions = placeInfo ? placeInfo.values : findRegionInText(text);
@@ -41329,7 +41417,7 @@ function startCampaign(o) {
     assumptions,
     // Never blocking: ask these in one message and keep working with the defaults.
     questions: ["product", "offer", "brand", "location"].map((f) => questions.find((q) => q.field === f)).filter(Boolean).slice(0, 3),
-    canProceed: true,
+    canProceed: !questions.some((x) => x.blocking),
     mainEvent: main ? { id: main.id, name: main.name, date: main.date, daysUntil: lead, promoStart: main.promoStart, phaseNow } : null,
     urgency,
     events: events.map((e) => ({ id: e.id, name: e.name, date: e.date, daysUntil: e.daysUntil, promoStart: e.promoStart, why: e.relevance.reasons })),
@@ -41337,7 +41425,7 @@ function startCampaign(o) {
     compliance: niche.compliance,
     landing: { direction: niche.archetype, theme, imageQueries: MOOD_QUERIES[cls.id] ?? MOOD_QUERIES.general },
     nextCalls: [
-      { tool: "q4_content_plan", args: planArgs },
+      { tool: "content_plan", args: planArgs },
       { tool: "find_images", args: { query: (MOOD_QUERIES[cls.id] ?? MOOD_QUERIES.general)[0], orientation: "landscape" } },
       { tool: "landing_page", args: { brand: brand ?? "<brand>", ...product ? { product } : {}, theme, ...offer?.type === "percent" ? { discountPercent: offer.value } : offer ? { offer: offer.text } : {}, ...deadline ? { deadline: `${deadline}T23:59:00Z` } : {} } }
     ]
@@ -41446,8 +41534,9 @@ var NICHE_HEADS = {
   general: ["Our best offer of the season.", "The moment you waited for.", "Made for you. Priced for now."]
 };
 var NICHE_CTA = { footwear: "Shop the drop", fashion: "Shop the edit", beauty: "Shop the set", jewelry: "Shop the collection", electronics: "Shop the deals", automotive: "Book a test drive", home: "Shop the room", food: "Order now", fitness: "Join now", courses: "Enroll now", software: "Start now", digital: "Get the bundle", services: "Book now", kids: "Shop gifts", general: "Shop now" };
-var ARCH_BY_NICHE = { footwear: "stage", beauty: "stage", jewelry: "stage", kids: "stage", electronics: "cinematic", automotive: "cinematic", fitness: "cinematic", fashion: "split", home: "split", food: "split", services: "split", courses: "editorial", software: "editorial", digital: "editorial", general: "cinematic" };
+var ARCH_BY_NICHE = { footwear: "stage", beauty: "stage", jewelry: "stage", kids: "stage", electronics: "cinematic", automotive: "cinematic", fitness: "cinematic", fashion: "split", home: "split", food: "split", services: "split", courses: "editorial", software: "editorial", apps: "editorial", digital: "editorial", general: "cinematic" };
 var THEMED = /* @__PURE__ */ new Set(["Black Friday", "Cyber Monday", "Christmas", "Diwali", "Hanukkah", "Halloween", "Thanksgiving", "Boxing Day", "New Year"]);
+var escapeFx = (html) => html.replace(/data-fx="([^"]*)"/g, (m, v) => `data-fx="${v.replace(/>/g, "&gt;")}"`);
 function archetypeFor(nicheId) {
   return ARCH_BY_NICHE[nicheId] ?? "cinematic";
 }
@@ -41457,7 +41546,7 @@ function renderDirector(x) {
   const arch = ["cinematic", "split", "stage", "editorial"].includes(o.archetype) ? o.archetype : archetypeFor(nicheId);
   const seed = hash3(`${o.brand}|${c.product}|${o.variant ?? 0}`);
   const pick2 = (arr, salt) => arr[(seed >> salt) % arr.length];
-  const [display, body] = pick2(PAIRINGS[arch], 1);
+  const [display, body] = t.fontsFromBrand ? [t.display, t.body] : pick2(PAIRINGS[arch], 1);
   const nav = pick2(NAVS, 4), button = pick2(BUTTONS, 7), clock = pick2(CLOCKS, 10);
   const images = [...o.images ?? []].map((im) => typeof im === "string" ? { url: im } : im).filter((im) => /^https?:\/\/|^\.\/|^\/|^data:image\//.test(im.url ?? ""));
   const hero = o.productImage ? { url: o.productImage, alt: o.imageAlt ?? c.product } : images[0] ?? (o.imageUrl ? { url: o.imageUrl, alt: o.imageAlt } : null);
@@ -41471,7 +41560,8 @@ function renderDirector(x) {
   const bg = (im) => im ? `background-image:url('${esc4(im.url).replace(/'/g, "%27")}')` : "";
   const credits = [...hero ? [hero] : [], ...gallery].filter((im) => im.credit || im.attribution).map((im) => esc4(im.credit ?? im.attribution));
   c = { ...c, ctaText: o.ctaText ? c.ctaText : NICHE_CTA[nicheId] ?? c.ctaText };
-  const eyebrow = eventName ?? `${o.brand} \xB7 ${c.product}`;
+  const eyebrow = eventName ?? o.brand;
+  const eyebrowWithBrand = eventName ? `${eventName} \xB7 ${o.brand}` : o.brand;
   const btn = (label, cls = "") => `<a class="b b-${button} ${cls}" href="${esc4(cta)}" data-cta><span>${esc4(label)}</span><i aria-hidden="true">\u2192</i></a>`;
   const clockHtml = !deadlineMs ? "" : clock === "inline" ? `<p class="ck ck-inline" data-cd>Ends in <b data-u="d">00</b>d <b data-u="h">00</b>h <b data-u="m">00</b>m <b data-u="s">00</b>s</p>` : clock === "bar" ? `<div class="ck ck-bar" data-cd><div class="bt"><span>Time left</span><b><b data-u="d">00</b>d <b data-u="h">00</b>h <b data-u="m">00</b>m <b data-u="s">00</b>s</b></div><div class="bw"><i data-bar></i></div></div>` : clock === "giant" ? `<div class="ck ck-giant" data-cd><b data-u="d">00</b><div><span>days left</span><small><b data-u="h">00</b>:<b data-u="m">00</b>:<b data-u="s">00</b></small></div></div>` : `<div class="ck ck-${clock}" data-cd>${["d", "h", "m", "s"].map((u, i) => `<div><b data-u="${u}">00</b><span>${["Days", "Hrs", "Min", "Sec"][i]}</span></div>`).join("")}</div>`;
   const priceHtml = o.price ? `<p class="pr"><b>${esc4(o.price)}</b>${o.originalPrice ? `<s><span class="sr">Was </span>${esc4(o.originalPrice)}</s>` : ""}${off ? `<em>${esc4(off)}</em>` : ""}</p>` : off ? `<p class="pr"><em>${esc4(off)}</em></p>` : "";
@@ -41503,12 +41593,12 @@ ${it.image ? `<a class="pc-img" href="${esc4(itemLink(it))}" data-cta><img src="
   let main;
   if (arch === "cinematic") {
     main = `
-<section class="hero-c" data-scene data-hero style="--h:260vh"><div class="pin">
+<section class="hero-c${hero ? "" : " noimg"}" data-scene data-hero style="--h:260vh"><div class="pin">
   <div class="hc-bg" style="${bg(hero)}" data-fx="scale:1.35>1;y:0>-6vh" data-range="0,1"></div>
   <div class="hc-sweep" data-fx="x:-60vw>60vw;opacity:0.9>0" data-range="0,0.7"></div>
   <div class="hc-shade" data-fx="opacity:0.9>0.6" data-range="0,0.6"></div>
   <h1 class="hc-h" aria-label="${esc4(headline)}">${words(headline).map((w, i) => `<span data-fx="scale:1>${(2.6 + i % 3 * 0.6).toFixed(1)};opacity:1>0;y:0>${i % 2 ? -18 : 14}vh;blur:0>10" data-range="0.05,0.55">${w}</span>`).join(" ")}</h1>
-  <div class="hc-deal" data-fx="opacity:0>1;y:12vh>0" data-range="0.45,0.85" data-rest="end"><p class="ey">${esc4(eyebrow)} \xB7 ${esc4(o.brand)}</p>${priceHtml}${clockHtml}${btn(c.ctaText)}</div>
+  <div class="hc-deal" data-fx="opacity:0>1;y:12vh>0" data-range="0.45,0.85" data-rest="end"><p class="ey">${esc4(eyebrowWithBrand)}</p>${priceHtml}${clockHtml}${btn(c.ctaText)}</div>
   <div class="hc-scroll" data-fx="opacity:1>0" data-range="0,0.1">Scroll</div>
 </div></section>
 ${productsHtml}
@@ -41551,7 +41641,7 @@ ${faqHtml}`;
   } else {
     main = `
 <section class="ed">
-  <p class="ey">${esc4(eyebrow)} \xB7 ${esc4(o.brand)}</p>
+  <p class="ey">${esc4(eyebrowWithBrand)}</p>
   <h1 class="ed-h">${words(headline).map((w, i) => `<span style="--i:${i}">${w}</span>`).join(" ")}</h1>
   <div class="ed-row"><p class="lead">${esc4(c.subheadline)}</p><div>${priceHtml}${clockHtml}${btn(c.ctaText)}</div></div>
   ${hero ? `<div class="ed-img" data-depth="-0.08" style="${bg(hero)}" role="img" aria-label="${esc4(hero.alt ?? c.product)}"></div>` : ""}
@@ -41572,7 +41662,7 @@ ${faqHtml}`;
   const css = buildCss({ t, arch, display, body, button, nav, clock });
   const paletteSrc = !o.brandColor && !THEMED.has(eventName) && hero ? hero.url : null;
   const js = buildJs({ deadlineMs, hasPaletteImg: Boolean(paletteSrc) });
-  return `<!doctype html>
+  return escapeFx(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -41596,7 +41686,7 @@ ${jsonLd}
 ${ld}
 <style>${css}</style>
 </head>
-<body class="a-${arch} n-${nav} bt-${button}">
+<body class="a-${arch} n-${nav} bt-${button}${t.mode === "light" ? " m-light" : ""}">
 ${navHtml}
 <main>
 ${main}
@@ -41607,7 +41697,7 @@ ${paletteSrc ? `<img src="${esc4(paletteSrc)}" alt="" crossorigin="anonymous" da
 <script>${js}</script>
 </body>
 </html>
-`;
+`);
 }
 function buildCss({ t, arch, display, body }) {
   return `
@@ -41779,6 +41869,10 @@ model-viewer.pv{--poster-color:transparent;background:transparent}
 body.n-pill .sticky{display:none}
 @media(min-width:900px){.sticky{display:none}}
 .st-stage{display:contents}
+/* light brands: a hero without a photo uses the brand's text colour, not white on a dark shade */
+.m-light .hero-c.noimg .hc-shade,.m-light .hero-c.noimg .hc-deal::before,.m-light .hero-c.noimg .hc-sweep{display:none}
+.m-light .hero-c.noimg .hc-h,.m-light .hero-c.noimg .hc-deal,.m-light .hero-c.noimg .hc-deal .ey,.m-light .hero-c.noimg .hc-scroll{color:var(--tx);text-shadow:none}
+.m-light .hero-c.noimg .hc-bg{background:radial-gradient(90% 70% at 50% 30%,color-mix(in srgb,var(--ac) 14%,transparent),transparent 70%),var(--bg)}
 /* phones and tablets: the opening section is laid out top to bottom, nothing overlaps */
 @media(max-width:899px){
 [data-hero]{height:auto!important}[data-hero]>.pin{position:relative;height:auto;min-height:0;overflow:hidden}
@@ -42206,6 +42300,70 @@ var cta=document.querySelectorAll('[data-cta]');Array.prototype.forEach.call(cta
 };
 var SCENE_THEMES = Object.keys(SCENES);
 
+// src/brand.js
+var HEX = /^#[0-9a-f]{6}$/i;
+var FONT = /^[A-Za-z0-9 ]{2,40}$/;
+var hex3 = (c) => typeof c === "string" && HEX.test(c) ? c.toLowerCase() : null;
+var luminance = (c) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255).map((v) => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+var isLight = (c) => luminance(c) > 0.45;
+var contrast = (a, b) => {
+  const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m);
+  return (x + 0.05) / (y + 0.05);
+};
+var mix = (a, b, t) => `#${[1, 3, 5].map((i) => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, "0")).join("")}`;
+var BASES = {
+  light: { bg: "#faf8f5", surface: "#ffffff", text: "#1c1917", muted: "#6b6560", border: "rgba(28,25,23,.12)" },
+  dark: { bg: "#0b0b0c", surface: "#161618", text: "#f5f5f4", muted: "#a8a29e", border: "rgba(255,255,255,.12)" }
+};
+function hasBrandLook(b) {
+  return Boolean(b && (b.mode || b.fontDisplay || b.fontBody || Object.values(b.palette ?? {}).some(hex3)));
+}
+function brandTheme(t, b = {}) {
+  const p = b.palette ?? {};
+  const bg0 = hex3(p.bg);
+  const mode = b.mode === "light" || b.mode === "dark" ? b.mode : bg0 ? isLight(bg0) ? "light" : "dark" : t.bg && isLight(t.bg) ? "light" : "dark";
+  const base2 = BASES[mode];
+  const bg = bg0 ?? base2.bg;
+  let text = hex3(p.text) ?? base2.text;
+  if (contrast(text, bg) < 4.5) text = isLight(bg) ? "#1c1917" : "#f5f5f4";
+  const surface = hex3(p.surface) ?? (mode === "light" ? bg === "#ffffff" ? "#f6f4f1" : "#ffffff" : mix(bg, "#ffffff", 0.06));
+  let muted = hex3(p.muted) ?? mix(text, bg, 0.42);
+  if (contrast(muted, bg) < 3) muted = mix(text, bg, 0.3);
+  const accent = hex3(p.accent) ?? hex3(b.brandColor) ?? t.accent;
+  const accent2 = hex3(p.accent2) ?? mix(accent, bg, 0.55);
+  const out = {
+    ...t,
+    mode,
+    bg,
+    surface,
+    text,
+    muted,
+    accent,
+    accent2,
+    accentText: readableOn(accent),
+    border: typeof p.border === "string" && p.border.length < 40 ? p.border : mode === "light" ? "rgba(28,25,23,.12)" : "rgba(255,255,255,.12)",
+    glow: [accent, accent2, mix(accent, bg, 0.8)]
+  };
+  if (FONT.test(b.fontDisplay ?? "") || FONT.test(b.fontBody ?? "")) out.fontsFromBrand = true;
+  if (FONT.test(b.fontDisplay ?? "")) out.display = b.fontDisplay;
+  if (FONT.test(b.fontBody ?? "")) out.body = b.fontBody;
+  if (out.display && !FONT.test(b.fontDisplay ?? "") && FONT.test(b.fontBody ?? "")) out.display = b.fontBody;
+  return out;
+}
+function brandTokens(o = {}) {
+  const b = o.brandStyle ?? {};
+  return {
+    mode: b.mode ?? o.mode,
+    palette: { ...o.palette ?? {}, ...b.palette ?? {} },
+    fontDisplay: b.fontDisplay ?? o.fontDisplay,
+    fontBody: b.fontBody ?? o.fontBody,
+    brandColor: o.brandColor
+  };
+}
+
 // src/landing.js
 var FONT_AXES2 = { Anton: "", "Bebas Neue": "", "Archivo Black": "", "DM Serif Display": "", Caveat: ":wght@600", Fraunces: ":ital,wght@0,400;0,600;1,400", "Playfair Display": ":ital,wght@0,400;0,700;0,900;1,400" };
 var LAYOUTS = ["director", "signature", "aurora", "editorial", "poster", "bento"];
@@ -42242,7 +42400,7 @@ function safeUrl(u, fallback = "#") {
   const s = String(u).trim();
   return /^(https?:\/\/|mailto:|\/|#|\.\/)/i.test(s) ? s : fallback;
 }
-var hex3 = (c) => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c) ? c : null;
+var hex4 = (c) => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c) ? c : null;
 function readableOn(bgHex) {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(bgHex.slice(i, i + 2), 16) / 255).map((v) => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
   const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -42297,12 +42455,14 @@ function buildLanding(o) {
   if (!o.brand) throw new Error("brand is required");
   const themeKey = THEMES[o.theme] ? o.theme : "default";
   const t = { ...THEMES[themeKey] };
-  const custom2 = hex3(o.brandColor);
+  const custom2 = hex4(o.brandColor);
   if (custom2) {
     t.accent = custom2;
     t.accentText = readableOn(custom2);
     t.glow = [custom2, t.glow[1], t.glow[2]];
   }
+  const branded = hasBrandLook(brandTokens(o));
+  if (branded) Object.assign(t, brandTheme(t, brandTokens(o)));
   const scene = SCENES[themeKey];
   let layout = LAYOUTS.includes(o.layout) ? o.layout : scene ? "signature" : t.layout;
   if (layout === "signature" && !scene) layout = t.layout;
@@ -42344,7 +42504,7 @@ function buildLanding(o) {
   const legacy = ["signature", "aurora", "editorial", "poster", "bento"].includes(o.layout);
   const hasMedia = Boolean(o.images?.length || o.productImage || o.videoUrl || o.modelUrl);
   if (o.layout === "director" || !legacy && (cls.id !== "general" || hasMedia)) {
-    const dt = THEMES[o.theme] ? { ...t } : { ...t, bg: "#0b0b0c", surface: "#161618", text: "#f5f5f4", muted: "#a8a29e", accent: custom2 ?? "#f5f5f4", accentText: custom2 ? t.accentText : "#0b0b0c", accent2: "#78716c", border: "rgba(255,255,255,.12)", eyebrow: "Limited time" };
+    const dt = branded || THEMES[o.theme] ? { ...t } : { ...t, bg: "#0b0b0c", surface: "#161618", text: "#f5f5f4", muted: "#a8a29e", accent: custom2 ?? "#f5f5f4", accentText: custom2 ? t.accentText : "#0b0b0c", accent2: "#78716c", border: "rgba(255,255,255,.12)", eyebrow: "Limited time" };
     return renderDirector({ esc: esc2, c, o, t: dt, discount, deadlineMs, deadlineLabel, cta, terms, year, title, jsonLd: jsonLdTag, hash: hash2, nicheId: cls.id, eventName: THEMES[o.theme] ? EVENT_NAMES2[o.theme] : o.eventName ?? null });
   }
   const btn = (label, cls2 = "") => `<a class="btn ${cls2}" href="${esc2(cta)}" data-cta><span>${esc2(label)}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`;
@@ -42729,7 +42889,8 @@ function buildPlan(o) {
   }
   if (sellsProducts) focus = focus.filter((e) => e.salesAppropriate || wanted.includes(e.id));
   const observances = all.filter((e) => !e.salesAppropriate && e.date >= start && e.date <= end && e.relevance.score > 0);
-  const deck = hookDeck({ nicheHooks: niche.hooks, product, discount: offer?.type === "percent" ? `${offer.value}%` : null, brand: o.brand ?? "us" });
+  const offerType = o.offerType ?? offerTypeOf(nicheId, `${o.niche ?? ""} ${o.product ?? ""}`);
+  const deck = hookDeck({ nicheHooks: niche.hooks, product: displayNameOf({ brand: o.brand ?? "us", displayName: o.displayName }, product), discount: offer?.type === "percent" ? `${offer.value}%` : null, brand: o.brand ?? "us", offerType });
   const featured = (o.featured ?? []).filter(Boolean).slice(0, 5);
   const weights = featured.flatMap((name, i) => Array(Math.max(1, 3 - i)).fill(name));
   let featureIdx = 0;
@@ -42777,7 +42938,7 @@ function buildPlan(o) {
           eventDate: top.ev.date,
           phase: top.phase,
           objective: ph.objective,
-          cta: sellsProducts ? ph.cta : "Save / share / follow",
+          cta: sellsProducts ? PHASE_CTA[offerType]?.[top.phase] ?? ph.cta : "Save / share / follow",
           angle,
           hook: deck.next(top.phase, top.ev.name),
           ...featured.length && ["warm-up", "early-access", "launch", "last-chance"].includes(top.phase) ? { feature: feature() } : {},
@@ -42816,9 +42977,11 @@ function buildPlan(o) {
     niche: { id: nicheId, label: niche.label, kind: niche.kind },
     product,
     offer,
+    offerType,
     interpreted: { platforms, regions, niche: niche.label, notes },
     ...featured.length ? { featured } : {},
     window: { start, end },
+    postsPerWeekPerPlatform: perWeek,
     cadence: Object.fromEntries(platforms.map((p) => [p, `${Math.min(perWeek, PLATFORMS[p].cadencePerWeek ?? 7)}/week + key sale days`])),
     platforms,
     eventsCovered,
@@ -42848,19 +43011,20 @@ function captionsFor(c) {
   const item = c.items?.[0];
   const priceOf = (p) => p?.price ? `${p.price}${p.originalPrice ? ` (was ${p.originalPrice})` : ""}` : null;
   const offerLine = c.offTxt ? `${cap2(c.offTxt)}${c.kind === "product" && item ? "" : ` ${c.product}`}${c.event ? ` this ${c.event}` : ""}.` : c.event ? `${c.event} at ${c.brand}.` : null;
-  const num = (v) => Number(String(v ?? "").replace(/[^0-9.]/g, "")) || null;
+  const num = (v2) => Number(String(v2 ?? "").replace(/[^0-9.]/g, "")) || null;
   const priced = (c.items ?? []).filter((p) => num(p.price));
   const lowest = priced.length > 1 ? priced.reduce((a, b) => num(b.price) < num(a.price) ? b : a) : null;
   const generic = item && item.name === c.product;
   const middle = c.kind === "product" && item ? [`${item.name}: ${priceOf(item) ?? "message us for the price"}.`, item.note ? sentence(item.note) : null].filter(Boolean) : c.kind === "list" ? c.items.slice(0, 5).map((p) => `${p.name}${p.price ? `: ${priceOf(p)}` : ""}`) : c.kind === "last-call" ? [] : lowest ? [`Prices from ${lowest.price}.`] : item?.price ? [`${generic ? "Now" : `${item.name} now`} ${priceOf(item)}.`] : [];
   const endsLine = c.ends ? `Offer ${c.ends.charAt(0).toLowerCase()}${c.ends.slice(1)}.` : null;
-  const igAction = c.isWhatsApp ? "Tap the link in our bio to order on WhatsApp." : "Shop through the link in our bio.";
+  const v = VERBS[c.offerType] ?? VERBS.physical;
+  const igAction = c.isWhatsApp ? v.igWa : v.ig;
   const tags = (c.tags ?? []).slice(0, 5).join(" ");
   const body = c.kind === "product" ? [...middle, offerLine] : [offerLine, ...middle];
   const instagram = [c.hook, "", ...body, endsLine, "", igAction, "", tags].filter((l, i, a) => l !== null && !(l === "" && a[i - 1] === "")).join("\n").trim();
   const waOffer = c.offTxt ? `${c.offTxt} ${c.product}` : null;
   const waGreeting = c.kind === "last-call" ? `Quick reminder from ${c.brand}: ${waOffer ?? "the sale"} ${c.ends ? c.ends.replace(/^Ends/, "ends") : "ends soon"}.` : `Hi! ${c.event ? `It's ${c.event} at ${c.brand}` : `New at ${c.brand}`}${waOffer && c.kind !== "product" ? `: ${waOffer}` : ""}.`;
-  const whatsapp = [waGreeting, ...middle, c.kind === "last-call" ? null : endsLine, c.link ? `Order here: ${c.link}` : "Reply to this message to order."].filter(Boolean).join("\n");
+  const whatsapp = [waGreeting, ...middle, c.kind === "last-call" ? null : endsLine, c.link ? `${v.link}: ${c.link}` : v.wa].filter(Boolean).join("\n");
   let x = [c.hook, c.offTxt && !c.hook.toLowerCase().includes(c.offTxt.toLowerCase()) ? cap2(c.offTxt) + "." : null, endsLine, c.link].filter(Boolean).join(" ");
   if (c.tags?.[0] && xLength(`${x} ${c.tags[0]}`) <= X_LIMIT) x += ` ${c.tags[0]}`;
   while (xLength(x) > X_LIMIT) x = x.replace(/\s*\S+(?=\s+https?:\/\/|$)/, "");
@@ -42872,7 +43036,7 @@ var cap2 = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // src/kit.js
 var esc3 = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-var hex4 = (c) => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c) ? c : null;
+var hex5 = (c) => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c) ? c : null;
 var KIT_FORMATS = {
   post: { w: 1080, h: 1350, label: "Instagram / Facebook post (4:5)", platforms: ["instagram", "facebook"] },
   square: { w: 1080, h: 1080, label: "Square post (1:1)", platforms: ["instagram", "facebook", "linkedin"] },
@@ -42889,9 +43053,12 @@ function buildKit(o) {
   if (!o.brand) throw new Error('Send "brand".');
   const nicheId = NICHES[o.nicheId] ? o.nicheId : classifyNiche(`${o.niche ?? ""} ${o.product ?? ""}`).id;
   const niche = NICHES[nicheId];
-  const product = o.product || "our products";
-  const t = { ...THEMES[o.theme] ?? THEMES.default };
-  const brandColor = hex4(o.brandColor);
+  const rawProduct = o.product || "our products";
+  const offerType = o.offerType ?? offerTypeOf(nicheId, `${o.niche ?? ""} ${o.product ?? ""}`);
+  const product = displayNameOf(o, rawProduct);
+  let t = { ...THEMES[o.theme] ?? THEMES.default };
+  if (hasBrandLook(brandTokens(o))) t = brandTheme(t, brandTokens(o));
+  const brandColor = hex5(o.brandColor);
   if (brandColor) {
     t.accent = brandColor;
     t.accentText = readableOn(brandColor);
@@ -42901,7 +43068,7 @@ function buildKit(o) {
   const ends = deadlineText(o.deadline, o.timeZone);
   const event = THEMES[o.theme] ? t.eyebrow : null;
   const link = o.pageUrl || o.ctaUrl || "";
-  const deck = hookDeck({ nicheHooks: niche.hooks, product, discount: off ? `${off}%` : null, brand: o.brand, seed: o.brand.length });
+  const deck = hookDeck({ nicheHooks: niche.hooks, product, discount: off ? `${off}%` : null, brand: o.brand, seed: o.brand.length, offerType });
   const products = (o.products ?? []).filter((p) => p?.name).slice(0, 6);
   const photos = (o.images ?? []).filter((im) => im?.url);
   const imgs = [];
@@ -42910,10 +43077,14 @@ function buildKit(o) {
     if (!imgs.includes(url2)) imgs.push(url2);
     return o.proxy ? o.proxy(url2, imgs.indexOf(url2)) : url2;
   };
-  const tags = [`#${o.brand.replace(/[^a-z0-9]/gi, "")}`, ...event ? [`#${event.replace(/[^a-z0-9]/gi, "")}`] : [], `#${product.replace(/[^a-z0-9]/gi, "")}`].filter((x) => x.length > 2);
+  const tag = (t2) => {
+    const h = String(t2 ?? "").replace(/[^a-z0-9]/gi, "");
+    return h.length > 2 && h.length <= 20 ? `#${h}` : null;
+  };
+  const tags = [tag(o.brand), event ? tag(event) : null, product.split(/\s+/).length <= 2 ? tag(product) : null].filter(Boolean);
   const isWhatsApp = /wa\.me|whatsapp/i.test(link);
   const caps = (hook, kind, items, apps) => {
-    const all = captionsFor({ hook, brand: o.brand, product, event, offTxt, ends, link, isWhatsApp, items, tags, kind });
+    const all = captionsFor({ hook, brand: o.brand, product, event, offTxt, ends, link, isWhatsApp, items, tags, kind, offerType });
     return Object.fromEntries(apps.map((k) => [k, all[k]]));
   };
   const posts = [];
@@ -42990,6 +43161,11 @@ function buildKit(o) {
   for (const ov of o.posts ?? []) {
     const target = posts.find((p) => p.id === ov.id);
     if (target) {
+      const newHook = ov.hook ?? ov.headline;
+      if (newHook) {
+        target.hook = newHook;
+        for (const k of Object.keys(target.caption)) target.caption[k] = target.caption[k].replace(/^[^\n]*/, newHook);
+      }
       if (ov.caption) target.caption = typeof ov.caption === "string" ? Object.fromEntries(Object.keys(target.caption).map((k) => [k, ov.caption])) : ov.caption;
       continue;
     }
@@ -43032,26 +43208,27 @@ ${caps.map(([k, v], j) => `<textarea data-cap="${k}" rows="7" aria-label="Captio
 <link href="https://fonts.googleapis.com/css2?${fonts}&display=swap" rel="stylesheet" crossorigin="anonymous">
 <style>
 :root{--bg:${t.bg};--sf:${t.surface};--tx:${t.text};--mu:${t.muted};--ac:${t.accent};--ac2:${t.accent2};--at:${t.accentText};--d:'${t.display}',Impact,sans-serif;--b:'${t.body}',system-ui,sans-serif}
-*{box-sizing:border-box}body{margin:0;background:#f4f3ef;color:#16150f;font:400 16px/1.55 Inter,system-ui,sans-serif}
-.bar{position:sticky;top:0;z-index:10;background:rgba(244,243,239,.88);backdrop-filter:blur(12px);border-bottom:1px solid #e6e2d8}
-.bar-in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:16px}.bar-b{font-weight:800;font-size:16px}.bar-c{color:#6f6a5f;font-size:14px;flex:1}
-.bar-dl{min-height:40px;padding:0 18px;border-radius:999px;border:0;background:#16150f;color:#fff;font:700 14px Inter,sans-serif;cursor:pointer}
-.top{max-width:1180px;margin:0 auto;padding:40px 16px 8px}.eyebrow{margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6f6a5f}
-.top h1{font:800 clamp(30px,4.4vw,48px)/1.05 Inter,sans-serif;letter-spacing:-.025em;margin:0 0 12px}.top p{margin:0;color:#4d4940;max-width:62ch;font-size:17px}.top a{color:#16150f}
+:root{--kbg:${t.bg};--kcard:${t.surface};--kink:${t.text};--kmu:${t.muted};--kline:${t.border ?? "rgba(127,127,127,.25)"};--kfield:color-mix(in srgb,${t.surface} 85%,${t.bg});--kac:${t.accent};--kact:${t.accentText}}
+*{box-sizing:border-box}body{margin:0;background:var(--kbg);color:var(--kink);font:400 16px/1.55 var(--b)}
+.bar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--kbg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--kline)}
+.bar-in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:16px}.bar-b{font-weight:800;font-size:16px}.bar-c{color:var(--kmu);font-size:14px;flex:1}
+.bar-dl{min-height:40px;padding:0 18px;border-radius:999px;border:0;background:var(--kac);color:var(--kact);font:700 14px var(--b);cursor:pointer}
+.top{max-width:1180px;margin:0 auto;padding:40px 16px 8px}.eyebrow{margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--kmu)}
+.top h1{font:700 clamp(30px,4.4vw,48px)/1.05 var(--d);letter-spacing:-.025em;margin:0 0 12px}.top p{margin:0;color:var(--kmu);max-width:62ch;font-size:17px}.top a{color:var(--kink)}
 .grid{max-width:1180px;margin:0 auto;padding:24px 16px 80px;display:grid;gap:20px}@media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}@media(min-width:1100px){.grid{grid-template-columns:1fr 1fr 1fr}}
-.card{background:#fff;border:1px solid #e6e2d8;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0;box-shadow:0 1px 2px rgba(20,19,15,.04)}
-.card header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.card header h2{font:700 18px/1.25 Inter,sans-serif;margin:0 0 4px}.k{margin:0;color:#6f6a5f;font-size:13px}
-.st{flex:none;font:700 12px/1 Inter,sans-serif;padding:7px 10px;border-radius:999px;background:#e7f5ec;color:#17603a}.rep-card .st{background:#fff2c2;color:#7a5600}
+.card{background:var(--kcard);border:1px solid var(--kline);border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0;box-shadow:0 1px 2px rgba(20,19,15,.04)}
+.card header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.card header h2{font:700 18px/1.25 var(--b);margin:0 0 4px}.k{margin:0;color:var(--kmu);font-size:13px}
+.st{flex:none;font:700 12px/1 var(--b);padding:7px 10px;border-radius:999px;background:#e7f5ec;color:#17603a}.rep-card .st{background:var(--kcard)2c2;color:#7a5600}
 .frames{display:grid;gap:8px}.frames.many{grid-auto-flow:column;grid-auto-columns:82%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}.frames.many .fit{scroll-snap-align:start}
 .fit{position:relative;width:100%;aspect-ratio:var(--w)/var(--h);overflow:hidden;border-radius:12px;background:#ddd}
 .fit .g{position:absolute;top:0;left:0;transform-origin:0 0}
-.cap textarea{width:100%;border:1px solid #e6e2d8;border-radius:14px;padding:12px 14px;font:inherit;font-size:15px;line-height:1.55;resize:vertical;background:#fbfaf7;color:#16150f}
-.tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}.tabs button{border:1px solid #e6e2d8;background:#fff;border-radius:999px;padding:5px 12px;font:600 13px Inter,sans-serif;cursor:pointer}.tabs button[aria-selected=true]{background:#16150f;color:#fff;border-color:#16150f}
-.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.acts button{min-height:48px;border-radius:14px;border:1px solid #d9d4c7;background:#fff;font:700 15px Inter,sans-serif;cursor:pointer;color:#16150f}.acts .pri{grid-column:1/-1;background:#16150f;border-color:#16150f;color:#fff;min-height:52px}
-.links{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:14px}.links span{color:#6f6a5f}.links a{color:#16150f;font-weight:600;text-decoration:none;border-bottom:1px solid #cfc9bb;cursor:pointer}
-.msg{margin:0;min-height:1.4em;font-size:14px;color:#5f5a4f}
-.up{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:14px;border:1px dashed #b9b3a4;font:700 15px Inter,sans-serif;cursor:pointer;color:#16150f}.up:focus-within{outline:3px solid #ffd426;outline-offset:2px}
-button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid #ffd426;outline-offset:2px}
+.cap textarea{width:100%;border:1px solid var(--kline);border-radius:14px;padding:12px 14px;font:inherit;font-size:15px;line-height:1.55;resize:vertical;background:var(--kfield);color:var(--kink)}
+.tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}.tabs button{border:1px solid var(--kline);background:var(--kcard);border-radius:999px;padding:5px 12px;font:600 13px var(--b);cursor:pointer}.tabs button[aria-selected=true]{background:var(--kink);color:var(--kbg);border-color:var(--kink)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.acts button{min-height:48px;border-radius:14px;border:1px solid var(--kline);background:var(--kcard);font:700 15px var(--b);cursor:pointer;color:var(--kink)}.acts .pri{grid-column:1/-1;background:var(--kac);border-color:var(--kac);color:var(--kact);min-height:52px}
+.links{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:14px}.links span{color:var(--kmu)}.links a{color:var(--kink);font-weight:600;text-decoration:none;border-bottom:1px solid var(--kline);cursor:pointer}
+.msg{margin:0;min-height:1.4em;font-size:14px;color:var(--kmu)}
+.up{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:14px;border:1px dashed var(--kline);font:700 15px var(--b);cursor:pointer;color:var(--kink)}.up:focus-within{outline:3px solid var(--kac);outline-offset:2px}
+button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid var(--kac);outline-offset:2px}
 /* graphics */
 .g{background:radial-gradient(90% 60% at 50% 40%,color-mix(in srgb,var(--ac) 22%,transparent),transparent 70%),var(--bg);color:var(--tx);font-family:var(--b);display:flex;flex-direction:column;gap:40px;padding:72px;overflow:hidden}
 .g-wide{padding:64px 80px}
@@ -43113,7 +43290,7 @@ refresh();
 }
 
 // src/server.js
-var VERSION = "0.4.1";
+var VERSION = "0.5.0";
 var date5 = external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD");
 var list = external_exports.union([external_exports.array(external_exports.string()), external_exports.string()]);
 var platformList = list.describe(`Platforms, any spelling: ${PLATFORM_IDS.join(", ")} (also "ig", "tik tok", "newsletter", "status")`);
@@ -43130,6 +43307,25 @@ var wrap = (fn) => async (args2) => {
 };
 function createServer2({ allowFileWrites = false } = {}) {
   const server = new McpServer({ name: "quarter4", version: VERSION });
+  const hexColor = external_exports.string().regex(/^#[0-9a-fA-F]{6}$/);
+  const brandStyle = external_exports.object({
+    mode: external_exports.enum(["light", "dark"]).optional(),
+    palette: external_exports.object({ bg: hexColor.optional(), surface: hexColor.optional(), text: hexColor.optional(), muted: hexColor.optional(), accent: hexColor.optional(), accent2: hexColor.optional() }).optional(),
+    fontDisplay: external_exports.string().max(40).optional().describe('Google Fonts family for headings, e.g. "Inter"'),
+    fontBody: external_exports.string().max(40).optional().describe("Google Fonts family for text")
+  }).optional().describe("The brand's own look. It always wins over the event theme; the event only adds its label. Ask the seller for their colours and fonts (or read them from their site) rather than guessing.");
+  const copyFields = {
+    displayName: external_exports.string().max(40).optional().describe('Short name used in copy, e.g. "Brightly Premium". Never pass long internal product phrases as headings.'),
+    offerType: external_exports.enum(["physical", "subscription", "course", "service", "digital"]).optional().describe("How it is bought; decides the verbs (shop, start your plan, enrol, book, get). Inferred when missing.")
+  };
+  const withProfile = async (a, keys, notes) => {
+    if (!cloud.hasKey()) return a;
+    const saved = (await cloud.brand().catch(() => null))?.profile;
+    if (!saved) return a;
+    const fill = Object.fromEntries(keys.filter((k) => a[k] === void 0 && saved[k] !== void 0).map((k) => [k, saved[k]]));
+    if (Object.keys(fill).length) notes.push(`Filled from your saved brand profile: ${Object.keys(fill).join(", ")}.`);
+    return { ...fill, ...a };
+  };
   const cloud = createCloud({ persist: allowFileWrites, client: "AI app" });
   server.server.oninitialized = () => {
     const c = server.server.getClientVersion?.();
@@ -43141,6 +43337,7 @@ function createServer2({ allowFileWrites = false } = {}) {
     const ext = extname(outputPath).toLowerCase();
     if (!allowed.includes(ext)) throw new Error(`outputPath must end with ${allowed.join(" or ")}`);
     const full = resolve(outputPath);
+    await mkdir(dirname(full), { recursive: true });
     await writeFile(full, content, "utf8");
     return full;
   }
@@ -43265,6 +43462,8 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
       faq: external_exports.array(external_exports.object({ q: external_exports.string(), a: external_exports.string() })).optional(),
       terms: external_exports.string().optional(),
       brandColor: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+      brandStyle,
+      ...copyFields,
       pageUrl: external_exports.string().optional(),
       effects: external_exports.boolean().optional().describe("false turns off particles and 3D motion"),
       outputPath: external_exports.string().optional().describe("Local mode only: write the HTML here (.html)")
@@ -43272,6 +43471,7 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
   }, wrap(async (a) => {
     const notes = [];
+    a = await withProfile(a, ["brandStyle", "brandColor", "displayName", "offerType", "ctaUrl"], notes);
     const hasMedia = a.images?.length || a.productImage || a.videoUrl || a.modelUrl || a.imageUrl;
     if (!hasMedia && a.autoImages !== false && a.layout !== "signature") {
       const nicheId = classifyNiche(`${a.niche ?? ""} ${a.product ?? ""}`).id;
@@ -43488,6 +43688,8 @@ ${html}` }] };
         ctaUrl: external_exports.string().optional(),
         logoUrl: external_exports.string().optional(),
         brandColor: external_exports.string().optional(),
+        brandStyle,
+        ...copyFields,
         products: external_exports.array(external_exports.object({ name: external_exports.string(), price: external_exports.string().optional(), originalPrice: external_exports.string().optional(), note: external_exports.string().optional(), image: external_exports.string().optional() })).max(20).optional()
       }).optional()
     },
@@ -43513,9 +43715,11 @@ Images: the seller's own photos are best (products[].image or images). If you ca
       pageUrl: external_exports.string().optional().describe("The live sales page link from publish_page, used in captions and share links"),
       products: external_exports.array(external_exports.object({ name: external_exports.string(), price: external_exports.string().optional(), originalPrice: external_exports.string().optional(), note: external_exports.string().optional(), image: external_exports.string().optional() })).max(6).optional(),
       images: external_exports.array(external_exports.object({ url: external_exports.string(), alt: external_exports.string().optional() })).max(6).optional(),
-      posts: external_exports.array(external_exports.object({ id: external_exports.string().optional(), format: external_exports.enum(["post", "square", "story", "wide"]).optional(), title: external_exports.string().optional(), headline: external_exports.string().optional(), sub: external_exports.string().optional(), caption: external_exports.string().optional(), image: external_exports.string().optional() })).max(12).optional().describe("Your own copy: replace a caption by id (offer, product-1, carousel, story, last-call, wide) or add extra posts with a headline"),
+      posts: external_exports.array(external_exports.object({ id: external_exports.string().optional(), format: external_exports.enum(["post", "square", "story", "wide"]).optional(), title: external_exports.string().optional(), hook: external_exports.string().optional(), headline: external_exports.string().optional(), sub: external_exports.string().optional(), caption: external_exports.string().optional(), image: external_exports.string().optional() })).max(12).optional().describe("Your own copy: replace a caption by id (offer, product-1, carousel, story, last-call, wide) or add extra posts with a headline"),
       logoUrl: external_exports.string().optional().describe("Pro: brand logo (https)"),
       brandColor: external_exports.string().optional().describe('Pro: brand colour, e.g. "#e11d48"'),
+      brandStyle,
+      ...copyFields,
       autoImages: external_exports.boolean().optional().describe("Find free photos when none are given (default true)"),
       productPhotos: external_exports.enum(["own", "representative", "none"]).optional().describe('What the seller chose for products without photos: "own" (they are sending photos: pass them as products[].image), "representative" (closest real photo, tagged "Representative image"), "none" (text-led product posts). If you can generate images and the seller wants that, generate them and pass the URLs as products[].image. Ask the seller before choosing.'),
       kitId: external_exports.string().regex(/^[a-f0-9]{12}$/).optional().describe("Update an existing kit at the same link (e.g. after the seller sends new photos)"),
@@ -43529,7 +43733,7 @@ Images: the seller's own photos are best (products[].image or images). If you ca
       plan = (await cloud.me().catch(() => null))?.plan ?? "free";
       const saved = (await cloud.brand().catch(() => null))?.profile;
       if (saved) {
-        const fill = Object.fromEntries(["product", "niche", "ctaUrl", "logoUrl", "brandColor", "products"].filter((k) => a[k] === void 0 && saved[k] !== void 0).map((k) => [k, saved[k]]));
+        const fill = Object.fromEntries(["product", "niche", "ctaUrl", "logoUrl", "brandColor", "products", "brandStyle", "displayName", "offerType"].filter((k) => a[k] === void 0 && saved[k] !== void 0).map((k) => [k, saved[k]]));
         if (Object.keys(fill).length) {
           a = { ...fill, ...a };
           notes.push(`Filled from your saved brand profile: ${Object.keys(fill).join(", ")}.`);
@@ -43537,9 +43741,9 @@ Images: the seller's own photos are best (products[].image or images). If you ca
       }
     }
     const paid = plan !== "free";
-    if (!paid && (a.logoUrl || a.brandColor)) {
-      notes.push('Your logo and brand colour on graphics are part of Pro. This kit uses the event look; upgrade with cloud_account action "upgrade".');
-      a = { ...a, logoUrl: void 0, brandColor: void 0 };
+    if (!paid && a.logoUrl) {
+      notes.push('Your logo on graphics is part of Pro; upgrade with cloud_account action "upgrade".');
+      a = { ...a, logoUrl: void 0 };
     }
     const missing = (a.products ?? []).filter((p) => !p.image);
     if (missing.length && !a.productPhotos) {
@@ -43591,9 +43795,10 @@ Images: the seller's own photos are best (products[].image or images). If you ca
     }
     const kit = buildKit({ ...a, watermark: !paid, proxy: hosted ? (url2, i) => /^data:/.test(url2) ? url2 : `/__q4/img/__KIT__/${i}` : void 0 });
     const { askUser, assumed } = questionsFor("kit", a);
+    if (a.discountPercent || /\d\s*%|off/i.test(a.offer ?? "") || a.originalPrice) notes.push("Before you share: make sure your checkout or app actually charges the advertised sale price. Advertising a price you do not charge is a consumer-law risk (for example under Nigeria's FCCPA).");
     const summary = { posts: kit.posts, notes, ...askUser.length ? { askUser, howToAsk: ASK_RULE } : {}, assumed };
     if (hosted) {
-      const body = { brand: a.brand, html: kit.html, images: kit.images.filter((u) => !/^data:/.test(u)), title: `${a.brand} content kit` };
+      const body = { brand: a.brand, html: kit.html, images: kit.images.filter((u) => !/^data:/.test(u)), title: `${a.brand} content kit`, ...a.deadline ? { deadline: a.deadline } : {} };
       const r = a.kitId ? await cloud.updateKit(a.kitId, body) : await cloud.kit(body);
       for (const f of localFiles) {
         const ok = await cloud.kitPhoto(r.id, f.key, f.buf, f.type).then(() => true, () => false);

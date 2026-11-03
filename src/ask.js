@@ -16,10 +16,11 @@ export function questionsFor(task, o) {
   const q = [];
   const assumed = [];
   const products = (o.products ?? []).filter((p) => p?.name);
-  const noPhoto = products.filter((p) => !p.image || p.representative);
+  const noPhoto = o.productPhotos === 'none' ? [] : products.filter((p) => !p.image || p.representative);
+  const digital = /app|software|saas|subscription|course|digital|platform|membership/i.test(`${o.niche ?? ''} ${o.product ?? ''} ${o.offerType ?? ''}`);
   const stand = noPhoto.length && noPhoto.every((p) => p.representative);
   if (noPhoto.length) {
-    q.push({ field: 'photos', question: `Send a photo of ${noPhoto.length === 1 ? noPhoto[0].name : `each product (${noPhoto.slice(0, 4).map((p) => p.name).join(', ')}${noPhoto.length > 4 ? ', ...' : ''})`}. A clear phone photo on a plain background is perfect.`, why: stand ? 'The kit is ready now with representative photos (tagged as such). Your own photos look more trustworthy and sell better.' : 'Without a photo these posts cannot be shared.' });
+    q.push({ field: 'photos', question: digital ? `Send screenshots of ${noPhoto.length === 1 ? noPhoto[0].name : 'the app or product'} (the screens buyers care about most).` : `Send a photo of ${noPhoto.length === 1 ? noPhoto[0].name : `each product (${noPhoto.slice(0, 4).map((p) => p.name).join(', ')}${noPhoto.length > 4 ? ', ...' : ''})`}. A clear phone photo on a plain background is perfect.`, why: stand ? 'The kit is ready now with representative photos (tagged as such). Your own photos look more trustworthy and sell better.' : 'Without a photo these posts cannot be shared.' });
   } else if (!products.length && !o.images?.length && task === 'kit') {
     assumed.push('No product photos given, so offer posts use matching licensed photos or bold type. Add product photos to feature specific items.');
   }

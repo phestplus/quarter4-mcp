@@ -4,6 +4,7 @@ import { classifyNiche, NICHES, phaseAngles, SHIPPING_EVENTS, shipsByPost } from
 import { findEventsInText, normalizePlatforms, normalizeRegions, parseOffer } from './normalize.js';
 import { PLATFORMS } from './specs.js';
 import { hookDeck } from './hooks.js';
+import { PHASE_CTA, displayNameOf, offerTypeOf } from './offer.js';
 
 // Campaign phases relative to an event, as fractions of its lead time.
 // Each phase carries the objective and the call-to-action style for content in it.
@@ -112,7 +113,8 @@ export function buildPlan(o) {
   const observances = all.filter((e) => !e.salesAppropriate && e.date >= start && e.date <= end && e.relevance.score > 0);
 
   // One deck per plan: no hook is used twice in the same calendar.
-  const deck = hookDeck({ nicheHooks: niche.hooks, product, discount: offer?.type === 'percent' ? `${offer.value}%` : null, brand: o.brand ?? 'us' });
+  const offerType = o.offerType ?? offerTypeOf(nicheId, `${o.niche ?? ''} ${o.product ?? ''}`);
+  const deck = hookDeck({ nicheHooks: niche.hooks, product: displayNameOf({ brand: o.brand ?? 'us', displayName: o.displayName }, product), discount: offer?.type === 'percent' ? `${offer.value}%` : null, brand: o.brand ?? 'us', offerType });
   // Best sellers (from sales stats or the seller) are featured in selling posts, top seller most often.
   const featured = (o.featured ?? []).filter(Boolean).slice(0, 5);
   const weights = featured.flatMap((name, i) => Array(Math.max(1, 3 - i)).fill(name));
@@ -157,7 +159,7 @@ export function buildPlan(o) {
         const angles = phaseAngles(nicheId, top.phase, product);
         const angle = angles.length ? angles[(slots.length + pi) % angles.length] : top.ev.angles[0];
         slot = { kind: 'campaign', event: top.ev.name, eventId: top.ev.id, eventDate: top.ev.date, phase: top.phase,
-          objective: ph.objective, cta: sellsProducts ? ph.cta : 'Save / share / follow', angle,
+          objective: ph.objective, cta: sellsProducts ? (PHASE_CTA[offerType]?.[top.phase] ?? ph.cta) : 'Save / share / follow', angle,
           hook: deck.next(top.phase, top.ev.name),
           ...(featured.length && ['warm-up', 'early-access', 'launch', 'last-chance'].includes(top.phase) ? { feature: feature() } : {}),
           hashtags: top.ev.hashtags.slice(0, 3),
@@ -181,10 +183,11 @@ export function buildPlan(o) {
   return {
     brand: o.brand,
     niche: { id: nicheId, label: niche.label, kind: niche.kind },
-    product, offer,
+    product, offer, offerType,
     interpreted: { platforms, regions, niche: niche.label, notes },
     ...(featured.length ? { featured } : {}),
     window: { start, end },
+    postsPerWeekPerPlatform: perWeek,
     cadence: Object.fromEntries(platforms.map((p) => [p, `${Math.min(perWeek, PLATFORMS[p].cadencePerWeek ?? 7)}/week + key sale days`])),
     platforms,
     eventsCovered,

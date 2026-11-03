@@ -111,7 +111,8 @@ test('art director: archetype follows the product, chrome varies by brand', () =
 test('art director: scroll-linked scenes, media and credits', () => {
   const html = buildLanding({ brand: 'Drive', product: 'used cars', ctaUrl: 'https://x.y', images: [{ url: 'https://example.com/a.jpg', attribution: 'Photo by A on Pexels' }, { url: 'https://example.com/b.jpg' }, { url: 'https://example.com/c.jpg' }] });
   assert.match(html, /data-scene/);
-  assert.match(html, /data-fx="scale:1\.35>1/, 'hero image is scrubbed by scroll');
+  assert.match(html, /data-fx="scale:1\.35(>|&gt;)1/, 'hero image is scrubbed by scroll');
+  assert.ok(!/data-fx="[^"]*>/.test(html), 'no raw ">" inside data-fx values');
   assert.match(html, /data-track/, 'horizontal gallery for 2+ extra images');
   assert.match(html, /Photo by A on Pexels/, 'attribution is printed');
   const vid = buildLanding({ brand: 'Kora', product: 'sneakers', videoUrl: 'https://example.com/spin.mp4' });

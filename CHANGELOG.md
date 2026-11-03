@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0 (2026-11-03)
+
+Built from a real field test: Quarter4 now works from the brand's own information instead of fixed templates.
+
+- **Brand look wins:** pages, kit graphics and the kit review page accept `brandStyle` (light or dark mode; palette: bg, surface, text, muted, accent, accent2; heading and body fonts). An event theme only adds its label. Text contrast is checked and corrected. A saved `brand_profile` fills it in automatically. Brand colours and fonts work on every plan; only the logo on graphics is Pro.
+- **The right verbs for what is sold:** `offerType` (physical, subscription, course, service, digital) drives calls to action, captions and hooks: "Start your plan" for apps, "Enrol" for courses, "Book" for services. Retail lines ("If it was in your cart", "Reply to this message to order") never reach non-physical offers.
+- **New niche:** consumer apps and subscriptions. When Quarter4 is not sure what is sold, it asks instead of guessing (`canProceed: false`).
+- **Readable names:** `displayName` (or the brand) is used in copy; long raw product phrases are never pasted into hooks or headings. Eyebrows never repeat the brand.
+- **The AI's words win:** `posts[].hook` or `headline` replaces a kit post's default hook and the captions built on it.
+- **Kits live through the campaign:** hosted kits stay up until the offer deadline plus a day (up to 60 days).
+- **Guardrail:** whenever a discount is set, a reminder to make sure the checkout really charges the advertised price.
+- **Fixes:** `productPhotos: "none"` is respected; digital products are asked for screenshots, not product photos; local output folders are created; hashtags are not made from long phrases; `nextCalls` uses the real tool name; the plan's Markdown header no longer says "undefined"; scroll-effect attributes no longer contain a raw ">".
+
 ## 0.4.1 (2026-11-03)
 
 - **Better photo matches:** photos are ranked by whether the product is the main subject (first tags), then by requested details such as colour, from a wider pool of results.

@@ -99,6 +99,26 @@ test('start_campaign: messy prompts, non-blocking questions', () => {
   assert.deepEqual(b.understood.platforms, ['facebook']);
   const c = startCampaign({ description: 'pls help me sell more', today: '2026-11-02' });
   assert.ok(c.questions.length > 0 && c.questions.length <= 3);
-  assert.ok(c.questions.every((q) => q.blocking === false && q.defaultUsed));
-  assert.equal(c.canProceed, true);
+  // Not knowing what is sold blocks: plan, posts and page all depend on it. Everything else has a default.
+  assert.ok(c.questions.some((q) => q.field === 'product' && q.blocking === true));
+  assert.ok(c.questions.filter((q) => q.field !== 'product').every((q) => q.blocking === false && q.defaultUsed));
+  assert.equal(c.canProceed, false);
+  const d = startCampaign({ description: 'relationship and marriage app with subscriptions in Nigeria, 30% off yearly plans for black friday', today: '2026-11-02' });
+  assert.equal(d.understood.niche ?? d.niche?.id ?? d.understood.nicheId, d.understood.niche ?? d.niche?.id ?? d.understood.nicheId);
+});
+
+test('subscription apps get subscription copy, never retail lines', async () => {
+  const { classifyNiche } = await import('../src/niches.js');
+  assert.equal(classifyNiche('habit tracking app with subscriptions').id, 'apps');
+  const { buildPlan } = await import('../src/plan.js');
+  const p = buildPlan({ brand: 'Brightly', niche: 'habit tracking app with subscriptions', product: 'Brightly Premium and Family yearly plans', platforms: ['instagram', 'whatsapp'], regions: ['NG'], startDate: '2026-11-06', endDate: '2026-11-28', offer: '30% off' });
+  const text = p.slots.map((s) => `${s.hook ?? ''} ${s.cta ?? ''}`).join(' | ');
+  assert.ok(!/cart|wishlist|shop now|on the way|wearing|order/i.test(text), text.match(/.*(cart|wishlist|shop now|on the way|wearing|order).*/i)?.[0]);
+  assert.ok(!/Premium and Family yearly plans/.test(text), 'long raw product phrases are not pasted into hooks');
+  assert.ok(/Start your plan/.test(text));
+  const { buildKit } = await import('../src/kit.js');
+  const k = buildKit({ brand: 'Brightly', niche: 'habit tracking app', product: 'Brightly Premium and Family yearly plans', discountPercent: 30, ctaUrl: 'https://example.com/premium', products: [{ name: 'Premium yearly', price: '₦31,500', originalPrice: '₦45,000' }], posts: [{ id: 'offer', headline: 'Small habits, kept all year. 30% off this Black Friday.' }] });
+  const caps = k.posts.flatMap((x) => Object.values(x.caption)).join(' | ');
+  assert.ok(!/cart|Reply to this message to order|#BrightlyPremium/i.test(caps));
+  assert.equal(k.posts.find((x) => x.id === 'offer').hook, 'Small habits, kept all year. 30% off this Black Friday.', 'the AI headline becomes the hook');
 });
