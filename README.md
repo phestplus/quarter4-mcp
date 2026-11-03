@@ -36,7 +36,9 @@ Works with Claude (Code and Desktop), ChatGPT and Codex, or any MCP client.
 | `publish_page` | Puts the page online at `q4-<brand>.erasstack.com` and returns the link to share. |
 | `page_stats` | Views and WhatsApp order clicks per product. |
 | `connect_domain` | Pro: serve pages on your own domain with automatic HTTPS. |
-| `cloud_account` | Free API key by email, plan status, and Flutterwave upgrade links. |
+| `cloud_account` | Connect in one step (browser approval), plan status, dashboard link, and Flutterwave upgrade links. |
+| `content_kit` | Finished graphics with captions (post, spotlights, carousel, Story/Status, X/LinkedIn) on a review page: share from the phone, copy captions, download PNGs. |
+| `brand_profile` | Save voice, products, order link, logo and colours once; kits and pages reuse them. |
 
 Skills for Claude Code and Codex: `/quarter4:campaign` (does everything), `/quarter4:plan`, `/quarter4:posts`, `/quarter4:visuals`, `/quarter4:landing`, `/quarter4:trends`.
 
@@ -83,7 +85,11 @@ Health check: `GET /health`. In HTTP mode the server never writes files.
 
 `publish_page` puts a page online in seconds and returns a link like `https://q4-korakicks.erasstack.com/black-friday`. `page_stats` shows views and WhatsApp order clicks per product.
 
-Get a free key by asking your assistant to run `cloud_account` with your email, then add it to your MCP config:
+**Connect in one step.** Say "connect my Quarter4 account". Your assistant shows a link and a code; open the link, check the code matches, confirm your email and press Approve. The key is saved on your computer (`~/.quarter4/credentials.json`), so there is nothing to paste and no restart. New emails get a free account.
+
+Your dashboard at https://q4.erasstack.com/dashboard shows views, WhatsApp taps per product, visitor countries and your plan. Sign in with your email; no password.
+
+Prefer setting a key yourself (CI, hosted connectors)? Create one in the dashboard and add it to your MCP config:
 
 ```json
 "env": { "QUARTER4_API_KEY": "q4_..." }
@@ -91,9 +97,9 @@ Get a free key by asking your assistant to run `cloud_account` with your email, 
 
 | Plan | Price | Includes |
 |---|---|---|
-| Free | ₦0 | 1 site, 3 live pages, 7-day analytics, small badge |
-| Pro | ₦9,900 or $9 a month | Your own domain, no badge, 100 pages, 12-month analytics |
-| Business | ₦39,000 or $39 a month | 10 brands, 10 custom domains |
+| Free | ₦0 / $0 | 1 site, 3 live pages, 7-day analytics, small badge |
+| Pro | ₦9,900 a month in Nigeria, $9 elsewhere | Your own domain, no badge, 100 pages, 12-month analytics |
+| Business | ₦39,000 a month in Nigeria, $39 elsewhere | 10 brands, 10 custom domains |
 
 Payments are handled by Flutterwave's secure checkout. Pricing: https://q4.erasstack.com
 

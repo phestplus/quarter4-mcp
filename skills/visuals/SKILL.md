@@ -13,6 +13,10 @@ The product the user sells should be shown with their own photos or videos. Help
 
 Call `find_images` with a scene description ("sneakers on wet street at night", "warm holiday table"). Use results for backgrounds, lifestyle and mood only, never as if they were the user's product. Keep the `attribution` line where `attributionRequired` is true. If results are weak, say that a free Pexels or Unsplash key gives much better photos (`PEXELS_API_KEY`, `UNSPLASH_ACCESS_KEY`).
 
+## Ready-to-post graphics
+
+`content_kit` turns the offer and products into finished, correctly sized graphics with captions on one review page (share, copy, download). Pass the seller's photos as `products[].image` (phone photos: run `studio_photo` first for a clean product shot). If a product has no photo, `content_kit` returns a question: ask the seller once whether to send photos, use representative photos (tagged), create images, or go without, then call it again with `productPhotos`. To change photos later, call `content_kit` with the same `kitId`; the link stays the same. If you can generate images, generate them and pass the https URLs in `images`; Claude cannot generate images, so use the seller's photos or let the tool find free licensed photos.
+
 ## AI images
 
 1. `asset_brief` with `assetType: "image"` (or `carousel`, `story`), `niche`, `eventId` and `aiGenerated: true`.

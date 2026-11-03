@@ -3,6 +3,7 @@ import { today } from './dates.js';
 import { classifyNiche, NICHES, phaseAngles } from './niches.js';
 import { normalizePlatforms, parseOffer } from './normalize.js';
 import { PLATFORMS } from './specs.js';
+import { hooksFor } from './hooks.js';
 
 // Rules that keep promotional content legal and platform-safe. Not legal advice.
 const COMPLIANCE = {
@@ -78,7 +79,6 @@ export function buildBrief(o) {
   const niche = NICHES[nicheId];
   const product = o.product || cls.matched[0] || 'the product';
   const offer = parseOffer(o.offer);
-  const fill = (t) => t.replace('{product}', product).replace('{discount}', offer?.type === 'percent' ? `${offer.value}%` : 'the sale price').replace('{date}', ev ? ev.name : 'this week');
 
   const brief = {
     platform: p.name,
@@ -92,7 +92,7 @@ export function buildBrief(o) {
       angles: o.phase ? phaseAngles(nicheId, o.phase, product) : [],
     },
     copy: {
-      hooks: niche.hooks.map(fill),
+      hooks: hooksFor({ nicheHooks: niche.hooks, phase: o.phase ?? (ev ? 'launch' : 'evergreen'), product, discount: offer?.type === 'percent' ? `${offer.value}%` : null, event: ev?.name ?? null, brand: o.brand ?? 'us', limit: 10 }),
       structure: ['Hook (first line / first 2 seconds)', 'Value or proof', 'Offer with real terms', 'One clear CTA'],
       captionLimit: p.caption,
     },

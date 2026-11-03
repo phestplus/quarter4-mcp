@@ -54,7 +54,7 @@ function safeUrl(u, fallback = '#') {
 
 const hex = (c) => (typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c) ? c : null);
 
-function readableOn(bgHex) {
+export function readableOn(bgHex) {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(bgHex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
   const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   return (L + 0.05) / 0.05 > 1.05 / (L + 0.05) ? '#111111' : '#ffffff';
@@ -68,7 +68,7 @@ function hash(s) {
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
-function discountOf(o) {
+export function discountOf(o) {
   if (o.discountPercent) return Math.round(o.discountPercent);
   const m = /(\d{1,2})\s*%/.exec(o.offer ?? '');
   if (m) return Number(m[1]);

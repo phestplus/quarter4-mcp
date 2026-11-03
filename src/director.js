@@ -67,6 +67,9 @@ export function renderDirector(x) {
   const off = discount ? `${discount}% off` : (c.offer ?? '');
   const heads = NICHE_HEADS[nicheId] ?? NICHE_HEADS.general;
   const headline = o.headline ? c.headline : heads[seed % heads.length].replace('{off}', off ? off.charAt(0).toUpperCase() + off.slice(1) : 'Now on').replace('{event}', eventName ?? 'this season').replace(/\.\s*\./, '.');
+  // Type-led hero (no photo, video or 3D): the offer statement is the focal point, so nothing else repeats it.
+  const typeLed = !hero && !o.modelUrl && !o.videoUrl;
+  const heroHeadline = typeLed && discount && !o.headline ? `${eventName ?? 'The sale'} is here.` : headline;
   const words = (s) => esc(s).split(/\s+/);
   const bg = (im) => (im ? `background-image:url('${esc(im.url).replace(/'/g, '%27')}')` : '');
   const credits = [...(hero ? [hero] : []), ...gallery].filter((im) => im.credit || im.attribution).map((im) => esc(im.credit ?? im.attribution));
@@ -102,7 +105,8 @@ export function renderDirector(x) {
       ? `<video class="pv ${cls}" src="${esc(o.videoUrl)}" muted playsinline preload="auto" data-scrub aria-label="${esc(c.product)}"></video>`
       : hero
         ? `<img class="pv ${cls}" src="${esc(hero.url)}" alt="${esc(hero.alt ?? c.product)}">`
-        : `<div class="pv pv-type ${cls}" aria-hidden="true">${esc(o.brand.slice(0, 1))}</div>`;
+        // No photo: the offer itself is the focal point. Products are never drawn or faked.
+        : `<div class="pv pv-stmt ${cls}" aria-hidden="true"><span>${esc(discount ? `${discount}%` : (c.product.split(' ').pop() || o.brand).toUpperCase())}</span>${discount ? '<em>off</em>' : ''}</div>`;
 
   const fill = `<section class="fillsec" data-scene style="--h:220vh"><div class="pin"><p class="fill" data-fill>${words(off && !c.subheadline.toLowerCase().includes(off.toLowerCase()) ? `${c.subheadline} ${off.charAt(0).toUpperCase()}${off.slice(1)} on ${c.product}.` : c.subheadline).map((w) => `<span>${w}</span>`).join(' ')}</p></div></section>`;
 
@@ -112,7 +116,7 @@ export function renderDirector(x) {
   const itemLink = (it) => (/wa\.me/i.test(cta) ? `${cta.split('?')[0]}?text=${encodeURIComponent(`Hi ${o.brand}, I want the ${it.name}${sizeHint}`)}` : it.url ?? cta);
   const pct = (it) => { const n = (v) => Number(String(v ?? '').replace(/[^0-9.]/g, '')); const a = n(it.price), b = n(it.originalPrice); return a && b > a ? Math.round((1 - a / b) * 100) : null; };
   const productsHtml = products.length ? `<section class="pg"><div class="pg-head"><p class="ey">${esc(eyebrow)}</p><h2>${esc(nicheId === 'footwear' ? 'Pick your pair' : nicheId === 'fashion' ? 'Pick your look' : `Shop ${c.product}`)}</h2></div><div class="pg-grid">${products.map((it, i) => `<article class="pc" style="--i:${i}">
-<a class="pc-img" href="${esc(itemLink(it))}" data-cta>${it.image ? `<img src="${esc(it.image)}" alt="${esc(it.name)}" loading="lazy">` : `<span class="pc-ph">${esc(it.name.slice(0, 1))}</span>`}${pct(it) ? `<em>-${pct(it)}%</em>` : ''}</a>
+${it.image ? `<a class="pc-img" href="${esc(itemLink(it))}" data-cta><img src="${esc(it.image)}" alt="${esc(it.name)}" loading="lazy">${pct(it) ? `<em>-${pct(it)}%</em>` : ''}</a>` : ''}
 <div class="pc-body"><h3>${esc(it.name)}</h3>${it.note ? `<p>${esc(it.note)}</p>` : ''}<p class="pc-pr">${it.price ? `<b>${esc(it.price)}</b>` : ''}${it.originalPrice ? `<s>${esc(it.originalPrice)}</s>` : ''}</p><a class="pc-cta" href="${esc(itemLink(it))}" data-cta>${/wa\.me/i.test(cta) ? 'Order on WhatsApp' : esc(c.ctaText)} →</a></div></article>`).join('')}</div></section>` : '';
 
   const features = c.features.map((f, i) => `<article class="ft" data-depth="${(0.04 * ((i % 3) - 1)).toFixed(2)}"><span class="ftn">${String(i + 1).padStart(2, '0')}</span><h3>${esc(f.title)}</h3><p>${esc(f.text)}</p></article>`).join('');
@@ -148,7 +152,7 @@ export function renderDirector(x) {
   let main;
   if (arch === 'cinematic') {
     main = `
-<section class="hero-c" data-scene style="--h:260vh"><div class="pin">
+<section class="hero-c" data-scene data-hero style="--h:260vh"><div class="pin">
   <div class="hc-bg" style="${bg(hero)}" data-fx="scale:1.35>1;y:0>-6vh" data-range="0,1"></div>
   <div class="hc-sweep" data-fx="x:-60vw>60vw;opacity:0.9>0" data-range="0,0.7"></div>
   <div class="hc-shade" data-fx="opacity:0.9>0.6" data-range="0,0.6"></div>
@@ -179,12 +183,12 @@ ${finalHtml}
 ${faqHtml}`;
   } else if (arch === 'stage') {
     main = `
-<section class="st" data-scene style="--h:300vh"><div class="pin">
+<section class="st${typeLed ? ' typeled' : ''}" data-scene data-hero style="--h:300vh"><div class="pin">
   <div class="st-word" aria-hidden="true" data-fx="x:30vw>-80vw" data-range="0,1">${esc(c.product.toUpperCase())} · ${esc(c.product.toUpperCase())} ·</div>
   <div class="st-spot" data-fx="scale:0.9>1.4;opacity:0.7>1" data-range="0,0.6"></div>
-  <div class="st-prod" data-fx="y:4vh>-2vh;rotate:-8>10;scale:0.92>1.12" data-range="0,0.7">${productVisual('st-pv')}<div class="st-shadow"></div></div>
-  ${['NEW', off ? off.toUpperCase() : 'LIMITED', eventName ? eventName.toUpperCase() : 'DROP'].map((s, i) => `<span class="stk stk${i}" data-fx="scale:0>1;rotate:${-30 + i * 20}>${-8 + i * 9}" data-range="${(0.1 + i * 0.08).toFixed(2)},${(0.3 + i * 0.08).toFixed(2)}" data-rest="end">${esc(s)}</span>`).join('')}
-  <h1 class="st-h" data-fx="y:0>-4vh;scale:1>0.9" data-range="0,0.6">${esc(headline)}</h1>
+  <div class="st-stage"><div class="st-prod" data-fx="${typeLed ? 'y:4vh>-2vh;scale:0.94>1.06' : 'y:4vh>-2vh;rotate:-8>10;scale:0.92>1.12'}" data-range="0,0.7">${productVisual('st-pv')}<div class="st-shadow"></div></div>
+  ${typeLed ? '' : ['NEW', off ? off.toUpperCase() : 'LIMITED', eventName ? eventName.toUpperCase() : 'DROP'].map((s, i) => `<span class="stk stk${i}" data-fx="scale:0>1;rotate:${-30 + i * 20}>${-8 + i * 9}" data-range="${(0.1 + i * 0.08).toFixed(2)},${(0.3 + i * 0.08).toFixed(2)}" data-rest="end">${esc(s)}</span>`).join('')}</div>
+  <h1 class="st-h" data-fx="y:0>-4vh;scale:1>0.9" data-range="0,0.6">${esc(heroHeadline)}</h1>
   <div class="st-deal" data-fx="opacity:0.0>1;y:8vh>0" data-range="0.15,0.5" data-rest="end">${priceHtml}${clockHtml}${btn(c.ctaText)}</div>
 </div></section>
 ${productsHtml}
@@ -339,7 +343,7 @@ body.n-side main,body.n-side .ft-legal{margin-left:56px}
 .pc-img{position:relative;display:grid;place-items:center;aspect-ratio:1;background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--ac) 22%,transparent),transparent 70%)}
 .pc-img img{width:82%;height:82%;object-fit:contain;filter:drop-shadow(0 24px 24px rgba(0,0,0,.4));transition:transform .5s var(--e)}
 .pc:hover .pc-img img{transform:rotate(-8deg) scale(1.08) translateY(-4%)}
-.pc-ph{font:400 120px/1 var(--d);color:var(--ac)}
+.typeled .st-word{display:none}.typeled .st-deal .pr em{display:none}
 .pc-img em{position:absolute;top:14px;left:14px;font-style:normal;font-weight:800;font-size:13px;padding:6px 10px;border-radius:99px;background:var(--ac);color:var(--at)}
 .pc-body{padding:20px 22px 24px;display:flex;flex-direction:column;gap:6px;flex:1}.pc-body h3{font-size:24px;line-height:1.1}.pc-body p{margin:0;color:var(--mu);font-size:15px}
 .pc-pr{display:flex;gap:10px;align-items:baseline}.pc-pr b{font:400 26px/1 var(--d);color:var(--tx)}.pc-pr s{font-size:15px}
@@ -370,11 +374,11 @@ body.n-side main,body.n-side .ft-legal{margin-left:56px}
 .st-prod{position:relative;width:min(64vmin,560px);aspect-ratio:1;display:grid;place-items:center}
 .pv{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 40px 50px rgba(0,0,0,.45))}
 model-viewer.pv{--poster-color:transparent;background:transparent}
-.pv-type{display:grid;place-items:center;font:400 40vmin/1 var(--d);color:var(--ac)}
+.pv-stmt{display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--d);font-size:clamp(88px,min(23vw,26vmin),300px);line-height:.82;color:var(--ac);text-align:center;white-space:nowrap}.pv-stmt em{font-style:normal;font-size:.34em;letter-spacing:.06em;text-transform:uppercase;color:var(--tx);margin-top:.1em}
 .st-shadow{position:absolute;bottom:4%;left:20%;right:20%;height:24px;border-radius:50%;background:rgba(0,0,0,.5);filter:blur(14px);z-index:-1}
 .stk{position:absolute;padding:10px 16px;border-radius:999px;font:800 14px/1 var(--b);letter-spacing:.12em;background:var(--ac);color:var(--at);box-shadow:0 14px 30px -10px rgba(0,0,0,.5)}
 .stk0{top:16%;left:14%}.stk1{top:22%;right:12%;background:var(--tx);color:var(--bg)}.stk2{bottom:30%;left:10%;background:var(--ac2);color:var(--at)}
-.st-h{position:absolute;top:9vh;left:0;right:0;text-align:center;font-size:clamp(40px,6vw,96px);line-height:.95;padding:0 5vw}
+.st-h{position:absolute;top:max(13vh,92px);left:0;right:0;text-align:center;font-size:clamp(40px,6vw,96px);line-height:.95;padding:0 5vw}
 .st-deal{position:absolute;bottom:7vh;left:0;right:0;display:flex;flex-direction:column;align-items:center;text-align:center}
 .st-deal .pr,.st-deal .ck{justify-content:center}
 @media(min-width:1000px){.st-deal{left:auto;right:6vw;bottom:9vh;max-width:380px;align-items:flex-end;text-align:right}.st-deal .pr,.st-deal .ck{justify-content:flex-end}}
@@ -425,6 +429,28 @@ model-viewer.pv{--poster-color:transparent;background:transparent}
 .sticky.show{transform:none}.sticky .b{padding:12px 18px;font-size:14px;width:auto;height:auto;border-radius:999px;box-shadow:none;flex-direction:row}.sticky span{font-weight:600;font-size:14px}
 body.n-pill .sticky{display:none}
 @media(min-width:900px){.sticky{display:none}}
+.st-stage{display:contents}
+/* phones and tablets: the opening section is laid out top to bottom, nothing overlaps */
+@media(max-width:899px){
+[data-hero]{height:auto!important}[data-hero]>.pin{position:relative;height:auto;min-height:0;overflow:hidden}
+.nv-center,.nv-split{position:absolute}.nv-split{mix-blend-mode:normal;color:var(--tx)}
+.st .pin{display:flex;flex-direction:column;align-items:center;gap:26px;padding:92px 18px 56px}
+.st-word,.st-shadow{display:none}
+.st-spot{top:150px;left:50%;translate:-50% 0;width:120vw;height:120vw;max-width:680px;max-height:680px}
+.st-h{order:-1;position:relative;top:auto;left:auto;right:auto;padding:0;font-size:clamp(38px,10.5vw,72px);line-height:1}
+.st-stage{display:block;position:relative;width:min(80vw,460px);aspect-ratio:1}
+.st-prod{width:100%;height:100%}
+.stk{padding:8px 13px;font-size:11px;letter-spacing:.1em;z-index:2}
+.stk0{top:0;left:-2%}.stk1{top:9%;right:-3%;left:auto}.stk2{bottom:2%;left:2%;top:auto}
+.st-deal{position:relative;bottom:auto;left:auto;right:auto;width:100%;max-width:460px}
+.hero-c .pin{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;gap:22px;padding:110px 18px 44px}
+.hc-sweep,.hc-scroll{display:none}
+.hc-h{position:relative;inset:auto;padding:0;font-size:clamp(46px,13vw,104px);justify-content:flex-start;text-align:left}
+.hc-deal{position:relative;left:auto;bottom:auto;opacity:1;max-width:none}
+.pr b{font-size:clamp(36px,10vw,52px)}.pr s{font-size:17px}
+.b-disc{width:100%;max-width:460px;height:auto;min-height:58px;border-radius:999px;flex-direction:row;gap:10px;padding:16px 24px;font-size:17px}
+.st-deal .b,.hc-deal .b-pill,.hc-deal .b-block{width:100%;max-width:460px;justify-content:center}
+}
 @media(prefers-reduced-motion:reduce){[data-scene]{height:auto!important}[data-scene]>.pin{position:relative;height:auto;min-height:100vh;overflow:visible}.ed-h span{animation:none}.hc-h{position:relative;min-height:60vh}.hc-deal,.st-h,.st-deal{position:relative;inset:auto;opacity:1!important;transform:none!important;margin:24px auto}.fill span{opacity:1}.shot{transition:none}.hc-scroll::after{animation:none}}
 `;
 }
@@ -433,6 +459,7 @@ function buildJs({ deadlineMs, hasPaletteImg }) {
   return `
 (function(){
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var compact=matchMedia('(max-width: 899px)');
 var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
 function clamp(v){return v<0?0:v>1?1:v}
 function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
@@ -441,14 +468,17 @@ function parse(el){var r=(el.getAttribute('data-range')||'0,1').split(',').map(N
 function apply(it,p){var t=ease(clamp((p-it.r[0])/((it.r[1]-it.r[0])||1)));var tr={x:0,y:0,s:1,r:0},op=null,bl=0,xu='px',yu='px';
 it.props.forEach(function(q){var v=q.a+(q.b-q.a)*t;if(q.k==='x'){tr.x=v;xu=q.u||'px'}else if(q.k==='y'){tr.y=v;yu=q.u||'px'}else if(q.k==='scale')tr.s=v;else if(q.k==='rotate')tr.r=v;else if(q.k==='opacity')op=v;else if(q.k==='blur')bl=v});
 it.el.style.transform='translate3d('+tr.x+xu+','+tr.y+yu+',0) scale('+tr.s+') rotate('+tr.r+'deg)';if(op!==null)it.el.style.opacity=op;it.el.style.filter=bl?'blur('+bl+'px)':''}
-var scenes=$$('[data-scene]').map(function(s){return{el:s,items:$$('[data-fx]',s).map(parse),track:s.querySelector('[data-track]'),fill:$$('[data-fill] span',s),video:s.querySelector('[data-scrub]'),orbit:s.querySelector('[data-orbit]'),p:0,sp:-1}});
+var scenes=$$('[data-scene]').map(function(s){return{el:s,hero:s.hasAttribute('data-hero'),flat:false,items:$$('[data-fx]',s).map(parse),track:s.querySelector('[data-track]'),fill:$$('[data-fill] span',s),video:s.querySelector('[data-scrub]'),orbit:s.querySelector('[data-orbit]'),p:0,sp:-1}});
 var loose=$$('[data-fx]').filter(function(el){return!el.closest('[data-scene]')}).map(parse);
 var depth=$$('[data-depth]');
 if(reduce){scenes.forEach(function(sc){sc.items.forEach(function(it){apply(it,it.rest==='end'?1:0)})});return startClock()}
 function progress(el){var r=el.getBoundingClientRect(),h=r.height-innerHeight;return h>0?clamp(-r.top/h):clamp((innerHeight-r.top)/(innerHeight+r.height))}
 var running=false;
 function frame(){var moving=false;
-scenes.forEach(function(sc){var target=progress(sc.el);sc.p+=(target-sc.p)*0.14;if(Math.abs(target-sc.p)>0.0004)moving=true;else sc.p=target;
+scenes.forEach(function(sc){
+if(sc.hero&&compact.matches){if(!sc.flat){sc.flat=true;sc.items.forEach(function(it){it.el.style.transform='';it.el.style.opacity='';it.el.style.filter=''})}return}
+if(sc.flat){sc.flat=false;sc.sp=-1}
+var target=progress(sc.el);sc.p+=(target-sc.p)*0.14;if(Math.abs(target-sc.p)>0.0004)moving=true;else sc.p=target;
 if(Math.abs(sc.p-sc.sp)<0.00005)return;sc.sp=sc.p;var p=sc.p;
 sc.items.forEach(function(it){apply(it,p)});
 if(sc.track){var w=sc.track.scrollWidth-innerWidth+40;sc.track.style.transform='translate3d('+(-Math.max(0,w)*ease(clamp((p-0.08)/0.84)))+'px,0,0)'}

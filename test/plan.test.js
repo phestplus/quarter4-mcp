@@ -63,3 +63,15 @@ test('markdown export includes key dates and table', () => {
   assert.match(md, /\*\*Black Friday\*\*: 2026-11-27/);
   assert.match(md, /\| Date \| Day \|/);
 });
+
+test('hooks do not repeat within a plan, and never invent a discount', () => {
+  const p = buildPlan({ brand: 'Kora Kicks', niche: 'sneakers', product: 'sneakers', platforms: ['instagram', 'tiktok', 'x'], regions: ['NG'], startDate: '2026-11-03', endDate: '2026-12-01', postsPerWeek: 5, offer: '30% off' });
+  const hooks = p.slots.map((s) => s.hook).filter(Boolean);
+  assert.ok(hooks.length >= 40, `expected a busy plan, got ${hooks.length} hooks`);
+  assert.equal(new Set(hooks).size, hooks.length, 'every hook is unique');
+  const launch = p.slots.filter((s) => s.phase === 'launch').map((s) => s.hook);
+  assert.ok(launch.every((h) => !/Something is coming|We cannot show you yet/.test(h)), 'no teasers on launch day');
+  const noOffer = buildPlan({ ...base, offer: undefined });
+  assert.ok(noOffer.slots.every((s) => !s.hook || !/\boff\b.*%|% off|{|}/.test(s.hook)), 'no discount claims or raw placeholders without an offer');
+  assert.ok(noOffer.slots.every((s) => !s.hook || !/[—–]/.test(s.hook)), 'no em or en dashes');
+});

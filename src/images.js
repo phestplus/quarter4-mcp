@@ -122,4 +122,34 @@ export async function findImages(query, o = {}) {
   };
 }
 
+// Words a photo's description must contain to count as showing this kind of product.
+export const SUBJECT_WORDS = {
+  footwear: ['sneaker', 'shoe', 'trainer', 'footwear', 'boot', 'sandal', 'slide', 'loafer', 'heel'],
+  fashion: ['dress', 'outfit', 'fashion', 'clothing', 'clothes', 'shirt', 'skirt', 'jacket', 'gown', 'wear', 'model', 'style'],
+  beauty: ['skincare', 'cosmetic', 'cream', 'serum', 'lotion', 'makeup', 'beauty', 'bottle', 'perfume', 'skin'],
+  jewelry: ['jewelry', 'jewellery', 'ring', 'necklace', 'bracelet', 'earring', 'gold', 'diamond', 'gem'],
+  electronics: ['phone', 'laptop', 'headphone', 'gadget', 'speaker', 'camera', 'tablet', 'watch', 'electronic'],
+  automotive: ['car', 'vehicle', 'suv', 'sedan', 'automobile', 'truck'],
+  home: ['interior', 'living room', 'sofa', 'furniture', 'lamp', 'decor', 'kitchen', 'bedroom', 'home'],
+  food: ['food', 'meal', 'dish', 'plate', 'cake', 'drink', 'restaurant', 'snack', 'bowl'],
+  fitness: ['fitness', 'gym', 'workout', 'exercise', 'training', 'yoga', 'run'],
+  kids: ['child', 'kid', 'toy', 'baby', 'children'],
+};
+
+/**
+ * Real photos that actually show the subject: every result must mention one of the subject words
+ * (from the niche and the seller's own product words) and carry no third-party brand.
+ * Returns [] rather than a loosely related photo.
+ */
+export async function matchingImages({ nicheId, product = '', attributes = '', mood = '', orientation, count = 3, search = null }) {
+  const own = String(product).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3).map((w) => w.replace(/(es|s)$/, ''));
+  const words = [...new Set([...(SUBJECT_WORDS[nicheId] ?? []), ...own])];
+  const query = [attributes, product || words[0], mood].filter(Boolean).join(' ').trim();
+  const r = search ? await search(query, { orientation, count: Math.max(count * 4, 15) }) : await findImages(query, { orientation, count: Math.max(count * 4, 12) });
+  // Judge by the photo's own description only (a page URL or file name is not evidence).
+  const hit = (im) => words.some((w) => new RegExp(`(^|[^a-z])${w}`, 'i').test(im.alt ?? ''));
+  const clean = r.images.filter((im) => !brandRisk(`${im.alt} ${im.page}`));
+  return { query, images: clean.filter(hit).slice(0, count), providersTried: r.providersTried ?? ['quarter4-cloud'], words };
+}
+
 export { brandRisk };

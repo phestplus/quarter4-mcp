@@ -1,11 +1,15 @@
 import { readFile, writeFile } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { extname, resolve } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { buildBrief, ASSET_TYPES } from './brief.js';
 import { EVENT_IDS, listEvents } from './calendar.js';
-import { cloud } from './cloud.js';
-import { findImages } from './images.js';
+import { createCloud } from './cloud.js';
+import { findImages, matchingImages } from './images.js';
+import { ASK_RULE, questionsFor } from './ask.js';
 import { upcomingHolidays, whatsOn } from './live.js';
 import { NICHES, classifyNiche } from './niches.js';
 import { MOOD_QUERIES } from './start.js';
@@ -15,9 +19,10 @@ import { CATEGORIES, REGIONS } from './events.js';
 import { toCSV, toICS, toMarkdown } from './export.js';
 import { buildLanding, describeLanding, LAYOUTS, THEMES } from './landing.js';
 import { buildPlan } from './plan.js';
+import { buildKit } from './kit.js';
 import { getSpecs, PLATFORM_IDS } from './specs.js';
 
-export const VERSION = '0.3.0';
+export const VERSION = '0.4.0';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD');
 // Loose inputs: real users write "ig, tik tok", "Lagos", "black friday". Normalised in the engine.
@@ -33,6 +38,9 @@ const wrap = (fn) => async (args) => { try { return await fn(args); } catch (e) 
 /** @param {{ allowFileWrites?: boolean }} opts */
 export function createServer({ allowFileWrites = false } = {}) {
   const server = new McpServer({ name: 'quarter4', version: VERSION });
+  // Local (stdio) servers can save the key that "connect" receives; the hosted server cannot.
+  const cloud = createCloud({ persist: allowFileWrites, client: 'AI app' });
+  server.server.oninitialized = () => { const c = server.server.getClientVersion?.(); if (c?.name) cloud.clientName?.(c.name); };
 
   async function maybeWrite(outputPath, content, allowed) {
     if (!outputPath) return null;
@@ -79,11 +87,24 @@ export function createServer({ allowFileWrites = false } = {}) {
       focusEvents: z.array(z.string()).optional().describe('Events to campaign around, ids or names ("black friday", "eid", "valentines")'),
       offer: z.string().optional().describe('Written any way: "30% off", "N5k off", "BOGO", "free delivery"'),
       sellsProducts: z.boolean().optional().describe('false for creators who only publish content; default true'),
+      featured: z.array(z.string()).max(5).optional().describe('Products to push, best seller first. When connected to Quarter4 Cloud this is filled from real WhatsApp order taps.'),
+      useStats: z.boolean().optional().describe('Use sales page stats to pick featured products (default true when connected)'),
       format: z.enum(['json', 'markdown']).optional().describe('Default json'),
     },
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    annotations: { readOnlyHint: true, openWorldHint: true },
   }, wrap(async (a) => {
-    const plan = buildPlan(a);
+    let signals;
+    if (!a.featured?.length && a.useStats !== false && cloud.hasKey()) {
+      const st = await cloud.stats(14).catch(() => null);
+      const items = {};
+      for (const p of st?.pages ?? []) for (const [k, n] of Object.entries(p.byItem ?? {})) items[k] = (items[k] ?? 0) + n;
+      const top = Object.entries(items).sort((x, y) => y[1] - x[1]).slice(0, 3);
+      if (top.length) {
+        a = { ...a, featured: top.map(([k]) => k) };
+        signals = { source: 'Quarter4 page stats, last 14 days', topProducts: top.map(([name, taps]) => ({ name, orderTaps: taps })), tip: `${top[0][0]} gets the most order taps, so selling posts feature it most often.` };
+      }
+    }
+    const plan = { ...buildPlan(a), ...(signals ? { salesSignals: signals } : {}) };
     return a.format === 'markdown' ? { content: [{ type: 'text', text: toMarkdown(plan) }] } : json(plan);
   }));
 
@@ -268,7 +289,7 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
   // ---- Quarter4 Cloud: publish, measure, own domain, billing ----
   server.registerTool('publish_page', {
     title: 'Publish a page online',
-    description: 'Put a sales page online and get a shareable link, e.g. https://q4-korakicks.erasstack.com/black-friday. Pass the HTML from landing_page, a local file path (local mode), or "page" with landing_page arguments to build and publish in one step. Free plan: 1 site, 3 live pages, small badge. Pro adds the user\'s own domain and removes the badge. Needs QUARTER4_API_KEY (get one free with cloud_account action "signup").',
+    description: 'Put a sales page online and get a shareable link, e.g. https://q4-korakicks.erasstack.com/black-friday. Pass the HTML from landing_page, a local file path (local mode), or "page" with landing_page arguments to build and publish in one step. Free plan: 1 site, 3 live pages, small badge. Pro adds the user\'s own domain and removes the badge. If not connected yet, call cloud_account with action "connect" first (free, one browser approval).',
     inputSchema: {
       brand: z.string().min(1).describe('Brand name; becomes the address q4-<brand>.erasstack.com'),
       path: z.string().optional().describe('Page path, e.g. "black-friday"; empty for the home page'),
@@ -306,20 +327,195 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
 
   server.registerTool('cloud_account', {
     title: 'Quarter4 account and plans',
-    description: 'Quarter4 Cloud account. action "signup" emails a free API key to the given email. "status" shows plan, limits and published sites. "upgrade" returns a secure Flutterwave checkout link for Pro (NGN 9,900 or USD 9 a month) or Business (NGN 39,000 or USD 39 a month). Never ask for card details in chat; always send the link.',
+    description: 'Quarter4 Cloud account. "connect" links this AI app to the user account: it returns a link and code the user approves in their browser (new users get a free account); call it again to finish. "status" shows plan, limits and sites. "pages" lists published pages. "dashboard" returns the web dashboard link (views, WhatsApp orders per product, plan). "upgrade" returns a secure Flutterwave card checkout link for Pro or Business, priced in Naira for Nigeria and US Dollars elsewhere. "signup" (fallback) emails a key instead. Never ask for passwords or card details in chat; always send the link.',
     inputSchema: {
-      action: z.enum(['signup', 'status', 'upgrade', 'pages']),
+      action: z.enum(['connect', 'status', 'pages', 'dashboard', 'upgrade', 'signup']),
       email: z.string().optional(),
       plan: z.enum(['pro', 'business']).optional(),
       currency: z.enum(['NGN', 'USD']).optional(),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   }, wrap(async (a) => {
+    if (a.action === 'connect') return json(await cloud.connect());
+    if (a.action === 'dashboard') return json({ url: cloud.dashboardUrl(), note: 'The user signs in with their email; no password.' });
     if (a.action === 'signup') { if (!a.email) throw new Error('Send the user\'s email.'); return json(await cloud.signup(a.email)); }
     if (a.action === 'status') return json(await cloud.me());
     if (a.action === 'pages') return json(await cloud.pages());
-    const r = await cloud.checkout(a.plan ?? 'pro', a.currency ?? 'NGN');
+    const r = await cloud.checkout(a.plan ?? 'pro', a.currency);
     return json({ ...r, note: 'Send this link to the user. Payment happens on Flutterwave\'s secure page; the plan activates as soon as the payment is verified.' });
+  }));
+
+  // Local photo studio: runs scripts/studio_photo.py on the user's machine (free, private, no upload).
+  const studioScript = fileURLToPath(new URL('../scripts/studio_photo.py', import.meta.url));
+  const runPython = (args) => new Promise((resolveP, reject) => {
+    const tryCmd = (cmds) => {
+      if (!cmds.length) return reject(new Error('Python 3 was not found. Install it from python.org, then: pip install pillow "rembg[cpu]"'));
+      const [cmd, ...pre] = cmds[0];
+      const ps = spawn(cmd, [...pre, ...args], { windowsHide: true });
+      let out = '', err = '';
+      ps.stdout.on('data', (d) => { out += d; });
+      ps.stderr.on('data', (d) => { err += d; });
+      ps.on('error', () => tryCmd(cmds.slice(1)));
+      ps.on('close', (code) => (code === 0 ? resolveP(out) : /No module named 'PIL'/.test(err) ? reject(new Error('Install Pillow first: pip install pillow "rembg[cpu]"')) : reject(new Error(err.split('\n').filter(Boolean).pop() || `studio_photo exited ${code}`))));
+    };
+    tryCmd(process.platform === 'win32' ? [['py', '-3'], ['python'], ['python3']] : [['python3'], ['python']]);
+  });
+
+  server.registerTool('studio_photo', {
+    title: 'Studio product photo',
+    description: 'Turn a seller\'s phone photo into a clean product shot on their own computer (free, nothing uploaded): fixes colour and sharpness, removes the background (when rembg is installed) and places the product on a studio backdrop in the brand colour or on a full scene photo, with a soft shadow. Use the result as products[].image in content_kit or landing_page. Local only.',
+    inputSchema: {
+      input: z.string().describe('Path to the photo (or an https URL to download)'),
+      outputPath: z.string().optional().describe('Where to save, .jpg or .png (default: next to the input, "-studio.jpg")'),
+      background: z.string().optional().describe('Backdrop colour, e.g. "#111111" (default warm light grey)'),
+      scene: z.string().optional().describe('Path to a photo to use as the full background instead of a colour'),
+      size: z.number().int().min(600).max(3000).optional(),
+      keepBackground: z.boolean().optional().describe('Only enhance; do not remove the background'),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+  }, wrap(async (a) => {
+    if (!allowFileWrites) throw new Error('studio_photo runs on your own computer. Use the local Quarter4 server (npx quarter4-mcp), or ask the assistant to clean up the photo with its own image tools.');
+    let input = a.input;
+    if (/^https:\/\//.test(input)) {
+      const r = await fetch(input, { signal: AbortSignal.timeout(20000) });
+      if (!r.ok || !/^image\//.test(r.headers.get('content-type') ?? '')) throw new Error('That link is not an image.');
+      input = resolve(`quarter4-photo-${Date.now()}.jpg`);
+      await writeFile(input, Buffer.from(await r.arrayBuffer()));
+    }
+    if (!existsSync(input)) throw new Error(`File not found: ${input}`);
+    const out = a.outputPath ?? input.replace(/(\.[a-z0-9]+)?$/i, '-studio.jpg');
+    const args = [studioScript, input, out, '--size', String(a.size ?? 1600)];
+    if (a.background) args.push('--bg', a.background);
+    if (a.scene) args.push('--scene', a.scene);
+    if (a.keepBackground) args.push('--keep-bg');
+    const line = (await runPython(args)).trim().split('\n').pop();
+    return json({ ...JSON.parse(line), next: 'Pass this file as products[].image to content_kit or landing_page.' });
+  }));
+
+  server.registerTool('brand_profile', {
+    title: 'Saved brand profile',
+    description: 'Save or read the seller\'s brand profile in Quarter4 Cloud (needs connect): voice, products with real prices, order link, colours and logo. Saved details fill in content_kit and sales pages automatically, so the seller does not repeat them. Logo and colours on graphics are a Pro feature. Only save prices the seller gave you.',
+    inputSchema: {
+      action: z.enum(['get', 'save']),
+      profile: z.object({
+        brand: z.string().optional(), niche: z.string().optional(), voice: z.string().max(300).optional().describe('How the brand talks, e.g. "playful, Lagos slang, short sentences"'),
+        ctaUrl: z.string().optional(), logoUrl: z.string().optional(), brandColor: z.string().optional(),
+        products: z.array(z.object({ name: z.string(), price: z.string().optional(), originalPrice: z.string().optional(), note: z.string().optional(), image: z.string().optional() })).max(20).optional(),
+      }).optional(),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => json(a.action === 'save' ? await cloud.saveBrand(a.profile ?? {}) : await cloud.brand())));
+
+  server.registerTool('content_kit', {
+    title: 'Ready-to-post content kit',
+    description: `Make finished social graphics with captions for a sale or launch: offer post (4:5), product spotlights (1:1), a carousel, Story/WhatsApp Status (9:16), a last-call story and an X/LinkedIn card (16:9). Returns a review page where the seller edits captions, then taps Share (phone share sheet: Instagram, TikTok, WhatsApp with the image attached), uses share links, copies captions or downloads PNGs. Nothing is posted automatically.
+Connected to Quarter4 Cloud: the kit is hosted at a link (Free: 7 days with a small mark; Pro: 90 days, no mark, own logo and colours). Not connected (local): an HTML file is written instead.
+Images: the seller's own photos are best (products[].image or images). If you can generate images yourself, generate them and pass their https URLs. Otherwise free licensed photos are found automatically (autoImages). Never invent prices or deadlines; leave them out if unknown.`,
+    inputSchema: {
+      brand: z.string().min(1),
+      product: z.string().optional().describe('What is on sale, e.g. "sneakers"'),
+      niche: z.string().optional(),
+      theme: z.string().optional().describe(`Event look: ${Object.keys(THEMES).join(', ')}`),
+      offer: z.string().optional().describe('e.g. "30% off"'),
+      discountPercent: z.number().min(1).max(95).optional(),
+      price: z.string().optional(), originalPrice: z.string().optional(),
+      deadline: z.string().optional().describe('ISO date-time the offer ends'), timeZone: z.string().optional(),
+      ctaUrl: z.string().optional().describe('Checkout, product page or https://wa.me/<number>'),
+      pageUrl: z.string().optional().describe('The live sales page link from publish_page, used in captions and share links'),
+      products: z.array(z.object({ name: z.string(), price: z.string().optional(), originalPrice: z.string().optional(), note: z.string().optional(), image: z.string().optional() })).max(6).optional(),
+      images: z.array(z.object({ url: z.string(), alt: z.string().optional() })).max(6).optional(),
+      posts: z.array(z.object({ id: z.string().optional(), format: z.enum(['post', 'square', 'story', 'wide']).optional(), title: z.string().optional(), headline: z.string().optional(), sub: z.string().optional(), caption: z.string().optional(), image: z.string().optional() })).max(12).optional()
+        .describe('Your own copy: replace a caption by id (offer, product-1, carousel, story, last-call, wide) or add extra posts with a headline'),
+      logoUrl: z.string().optional().describe('Pro: brand logo (https)'),
+      brandColor: z.string().optional().describe('Pro: brand colour, e.g. "#e11d48"'),
+      autoImages: z.boolean().optional().describe('Find free photos when none are given (default true)'),
+      productPhotos: z.enum(['own', 'representative', 'none']).optional().describe('What the seller chose for products without photos: "own" (they are sending photos: pass them as products[].image), "representative" (closest real photo, tagged "Representative image"), "none" (text-led product posts). If you can generate images and the seller wants that, generate them and pass the URLs as products[].image. Ask the seller before choosing.'),
+      kitId: z.string().regex(/^[a-f0-9]{12}$/).optional().describe('Update an existing kit at the same link (e.g. after the seller sends new photos)'),
+      outputPath: z.string().optional().describe('Local mode: where to write the kit .html'),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => {
+    const notes = [];
+    let plan = 'free';
+    if (cloud.hasKey()) {
+      plan = (await cloud.me().catch(() => null))?.plan ?? 'free';
+      // Saved brand profile fills anything not given in this request.
+      const saved = (await cloud.brand().catch(() => null))?.profile;
+      if (saved) {
+        const fill = Object.fromEntries(['product', 'niche', 'ctaUrl', 'logoUrl', 'brandColor', 'products'].filter((k) => a[k] === undefined && saved[k] !== undefined).map((k) => [k, saved[k]]));
+        if (Object.keys(fill).length) { a = { ...fill, ...a }; notes.push(`Filled from your saved brand profile: ${Object.keys(fill).join(', ')}.`); }
+      }
+    }
+    const paid = plan !== 'free';
+    if (!paid && (a.logoUrl || a.brandColor)) { notes.push('Your logo and brand colour on graphics are part of Pro. This kit uses the event look; upgrade with cloud_account action "upgrade".'); a = { ...a, logoUrl: undefined, brandColor: undefined }; }
+    // Mood photos must actually show this kind of product (and no other brand). Products themselves are
+    // only shown with the seller's photos; kit graphics wait for an upload otherwise.
+    // Photos are decided in the chat, before anything is made: if a product has no photo and the
+    // seller has not chosen what to do, ask (own photos, representative, generated, or none).
+    const missing = (a.products ?? []).filter((p) => !p.image);
+    if (missing.length && !a.productPhotos) {
+      const names = missing.slice(0, 4).map((p) => p.name).join(', ') + (missing.length > 4 ? ', ...' : '');
+      return json({
+        needsAnswer: true,
+        askUser: [{ field: 'productPhotos', question: `I need a photo for ${names}. Send your photos (phone photos are fine, I can clean them up), or should I use representative photos (tagged as such on the post), create images, or make these posts without photos?`, why: 'Buyers trust real photos; anything else is clearly labelled.' }],
+        howToAsk: 'Ask this in one short message. Then call content_kit again with the same details plus productPhotos ("own" with products[].image set, "representative", or "none"). If the seller wants created images and you can generate images, generate them and pass the URLs as products[].image with productPhotos "own". If they send phone photos and studio_photo is available, run it first for a clean product shot.',
+      });
+    }
+    if (a.productPhotos === 'representative' && missing.length) {
+      const nicheId = classifyNiche(`${a.niche ?? ''} ${a.product ?? ''}`).id;
+      const search = cloud.hasKey() && !process.env.PEXELS_API_KEY && !process.env.UNSPLASH_ACCESS_KEY ? (q, opt) => cloud.images(q, opt) : null;
+      const used = new Set();
+      const filled = await Promise.all(a.products.map(async (p) => {
+        if (p.image) return p;
+        const attributes = (p.name.match(/\b(white|black|red|blue|green|pink|brown|grey|gray|gold|silver|leather|suede|denim|silk|linen|low|high|slide|sandal|boot|runner|running)\b/gi) ?? []).join(' ');
+        const r = await Promise.race([matchingImages({ nicheId, product: a.product ?? p.name, attributes, orientation: 'squarish', count: 4, search }).catch(() => null), new Promise((res) => setTimeout(() => res(null), 9000))]);
+        const pick = r?.images.find((im) => !used.has(im.url));
+        if (!pick) return p;
+        used.add(pick.url);
+        return { ...p, image: pick.url, representative: true, credit: pick.attribution };
+      }));
+      const reps = filled.filter((p) => p.representative);
+      if (reps.length) notes.push(`${reps.length} product post(s) use a representative photo (tagged on the graphic) because no photo was given: ${reps.map((p) => p.name).join(', ')}. Ask for the seller's own photos to replace them; buyers trust real photos most.`);
+      a = { ...a, products: filled };
+    }
+    if (!a.images?.length && a.autoImages !== false) {
+      const nicheId = classifyNiche(`${a.niche ?? ''} ${a.product ?? ''}`).id;
+      const attributes = (a.products ?? []).map((p) => p.name).join(' ').match(/\b(white|black|red|blue|green|pink|brown|gold|silver|leather|denim|silk|linen)\b/i)?.[1] ?? '';
+      const search = cloud.hasKey() && !process.env.PEXELS_API_KEY && !process.env.UNSPLASH_ACCESS_KEY ? (q, opt) => cloud.images(q, opt) : null;
+      const found = await Promise.race([matchingImages({ nicheId, product: a.product ?? '', attributes, orientation: 'squarish', count: 3, search }).catch(() => null), new Promise((r) => setTimeout(() => r(null), 9000))]);
+      if (found?.images.length) {
+        a = { ...a, images: found.images.map((im) => ({ url: im.url, alt: im.alt })) };
+        notes.push(`Offer and story posts use ${found.images.length} licensed photos that match "${found.query}" (checked for the product type, no other brands). Credits: ${found.images.map((im) => im.attribution).filter(Boolean).join('; ')}.`);
+      } else notes.push(`No photo clearly matching "${a.product ?? 'the product'}" was found, so offer posts use bold type instead of an unrelated picture.`);
+    }
+    if (!a.price && !a.products?.length) notes.push('No prices given, so graphics show the offer without prices.');
+    const hosted = cloud.hasKey();
+    // Local photo files (e.g. from studio_photo): embedded in a local kit, uploaded into a hosted kit.
+    const localFiles = [];
+    if (allowFileWrites) {
+      a = { ...a, products: await Promise.all((a.products ?? []).map(async (p, i) => {
+        if (!p.image || /^(https?:|data:)/.test(p.image) || !existsSync(p.image)) return p;
+        const buf = await readFile(p.image);
+        const type = /\.png$/i.test(p.image) ? 'image/png' : /\.webp$/i.test(p.image) ? 'image/webp' : 'image/jpeg';
+        localFiles.push({ key: String(i), buf, type });
+        return { ...p, image: hosted ? undefined : `data:${type};base64,${buf.toString('base64')}`, representative: false };
+      })) };
+    }
+    const kit = buildKit({ ...a, watermark: !paid, proxy: hosted ? (url, i) => (/^data:/.test(url) ? url : `/__q4/img/__KIT__/${i}`) : undefined });
+    const { askUser, assumed } = questionsFor('kit', a);
+    const summary = { posts: kit.posts, notes, ...(askUser.length ? { askUser, howToAsk: ASK_RULE } : {}), assumed };
+    if (hosted) {
+      const body = { brand: a.brand, html: kit.html, images: kit.images.filter((u) => !/^data:/.test(u)), title: `${a.brand} content kit` };
+      const r = a.kitId ? await cloud.updateKit(a.kitId, body) : await cloud.kit(body);
+      for (const f of localFiles) {
+        const ok = await cloud.kitPhoto(r.id, f.key, f.buf, f.type).then(() => true, () => false);
+        if (!ok) notes.push(`Could not upload the photo for product ${Number(f.key) + 1}. Try again with a JPEG or PNG under 4 MB.`);
+      }
+      return json({ url: r.url, kitId: r.id, ...(a.kitId ? { updated: 'Same link, updated in place.' } : {}), expiresAt: r.expiresAt, watermark: r.watermark, ...summary, share: `Open ${r.url} on your phone and tap Share on each post, or download the images.`, ...(r.note ? { planNote: r.note } : {}) });
+    }
+    if (!allowFileWrites) throw new Error(`Connect first to get a kit link: ${cloud.dashboardUrl()} (or call cloud_account action "connect" when running locally).`);
+    const file = await maybeWrite(a.outputPath ?? `${a.brand.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-content-kit.html`, kit.html, ['.html', '.htm']);
+    return json({ file, ...summary, next: 'Open the file in a browser to review, download and share. Call cloud_account action "connect" to get a link you can open on your phone.' });
   }));
 
   // Prompts: reusable workflows for clients without skills (ChatGPT, Claude Desktop).

@@ -15,7 +15,7 @@ async function connect(opts) {
 test('lists all tools and prompts', async () => {
   const { client, close } = await connect();
   const tools = (await client.listTools()).tools.map((t) => t.name).sort();
-  assert.deepEqual(tools, ['asset_brief', 'cloud_account', 'connect_domain', 'content_plan', 'event_calendar', 'export_plan', 'find_images', 'landing_page', 'page_stats', 'platform_specs', 'publish_page', 'start_campaign', 'whats_on']);
+  assert.deepEqual(tools, ['asset_brief', 'brand_profile', 'cloud_account', 'connect_domain', 'content_kit', 'content_plan', 'event_calendar', 'export_plan', 'find_images', 'landing_page', 'page_stats', 'platform_specs', 'publish_page', 'start_campaign', 'studio_photo', 'whats_on']);
   const prompts = (await client.listPrompts()).prompts.map((p) => p.name).sort();
   assert.deepEqual(prompts, ['q4-campaign', 'q4-video-script']);
   await close();
@@ -75,4 +75,33 @@ test('start_campaign understands a messy request without live data', async () =>
   assert.ok(d.questions.every((q) => q.blocking === false));
   assert.equal(d.canProceed, true);
   await close();
+});
+
+test('studio_photo enhances a local photo (background removal when rembg is present)', { timeout: 60000 }, async () => {
+  const { mkdtempSync, writeFileSync, existsSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { execFileSync } = await import('node:child_process');
+  const dir = mkdtempSync(join(tmpdir(), 'q4studio-'));
+  const src = join(dir, 'shoe.png');
+  try {
+    execFileSync(process.platform === 'win32' ? 'python' : 'python3', ['-c', `from PIL import Image, ImageDraw\nim=Image.new('RGB',(800,600),(180,170,150))\nd=ImageDraw.Draw(im)\nd.ellipse((200,250,600,420),fill=(240,240,240))\nim.save(r'${src}')`]);
+  } catch { return; } // no Python + Pillow on this machine: nothing to test
+  const { Client } = await import('@modelcontextprotocol/sdk/client/index.js');
+  const { InMemoryTransport } = await import('@modelcontextprotocol/sdk/inMemory.js');
+  const server = createServer({ allowFileWrites: true });
+  const client = new Client({ name: 't', version: '0' });
+  const [a, b] = InMemoryTransport.createLinkedPair();
+  await Promise.all([server.connect(a), client.connect(b)]);
+  const r = await client.callTool({ name: 'studio_photo', arguments: { input: src, background: '#111111', size: 800 } });
+  assert.ok(!r.isError, r.content[0].text);
+  const out = JSON.parse(r.content[0].text);
+  assert.ok(existsSync(out.output));
+  assert.equal(typeof out.removedBackground, 'boolean');
+  const hosted = createServer({ allowFileWrites: false });
+  const c2 = new Client({ name: 't2', version: '0' });
+  const [a2, b2] = InMemoryTransport.createLinkedPair();
+  await Promise.all([hosted.connect(a2), c2.connect(b2)]);
+  assert.match((await c2.callTool({ name: 'studio_photo', arguments: { input: src } })).content[0].text, /runs on your own computer/);
+  await client.close(); await c2.close();
 });

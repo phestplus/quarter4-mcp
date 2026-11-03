@@ -22,6 +22,8 @@ Brand, what they sell, platform(s), the event and phase. Work from content_plan 
 4. Give the character count against the limit.
 5. Add alt text for images and the checklist items that apply.
 
+Want finished graphics, not just text? Call `content_kit` with the same details (and `pageUrl` from `publish_page` if there is a sales page). It returns a link where the seller edits captions, then shares or downloads each post. If the user is connected, details saved with `brand_profile` fill in automatically.
+
 ## Format per post
 
 ```

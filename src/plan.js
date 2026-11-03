@@ -3,6 +3,7 @@ import { addDays, diffDays, parse, today, weekday, weekdayName } from './dates.j
 import { classifyNiche, NICHES, phaseAngles, SHIPPING_EVENTS, shipsByPost } from './niches.js';
 import { findEventsInText, normalizePlatforms, normalizeRegions, parseOffer } from './normalize.js';
 import { PLATFORMS } from './specs.js';
+import { hookDeck } from './hooks.js';
 
 // Campaign phases relative to an event, as fractions of its lead time.
 // Each phase carries the objective and the call-to-action style for content in it.
@@ -110,8 +111,13 @@ export function buildPlan(o) {
   if (sellsProducts) focus = focus.filter((e) => e.salesAppropriate || wanted.includes(e.id));
   const observances = all.filter((e) => !e.salesAppropriate && e.date >= start && e.date <= end && e.relevance.score > 0);
 
-  const discount = offer?.type === 'percent' ? `${offer.value}%` : 'the sale price';
-  const fill = (t) => t.replace('{product}', product).replace('{discount}', discount).replace('{date}', 'this week');
+  // One deck per plan: no hook is used twice in the same calendar.
+  const deck = hookDeck({ nicheHooks: niche.hooks, product, discount: offer?.type === 'percent' ? `${offer.value}%` : null, brand: o.brand ?? 'us' });
+  // Best sellers (from sales stats or the seller) are featured in selling posts, top seller most often.
+  const featured = (o.featured ?? []).filter(Boolean).slice(0, 5);
+  const weights = featured.flatMap((name, i) => Array(Math.max(1, 3 - i)).fill(name));
+  let featureIdx = 0;
+  const feature = () => (weights.length ? weights[featureIdx++ % weights.length] : undefined);
   const slots = [];
   const weekCount = {};
   let pillarIdx = 0;
@@ -152,13 +158,14 @@ export function buildPlan(o) {
         const angle = angles.length ? angles[(slots.length + pi) % angles.length] : top.ev.angles[0];
         slot = { kind: 'campaign', event: top.ev.name, eventId: top.ev.id, eventDate: top.ev.date, phase: top.phase,
           objective: ph.objective, cta: sellsProducts ? ph.cta : 'Save / share / follow', angle,
-          hook: fill(niche.hooks[(slots.length + pi) % niche.hooks.length]),
+          hook: deck.next(top.phase, top.ev.name),
+          ...(featured.length && ['warm-up', 'early-access', 'launch', 'last-chance'].includes(top.phase) ? { feature: feature() } : {}),
           hashtags: top.ev.hashtags.slice(0, 3),
           ...(observance ? { caution: `Also ${observance.name}: keep the tone respectful and leave remembrance imagery out of sales content.` } : {}) };
       } else {
         const pillar = EVERGREEN_PILLARS[pillarIdx++ % EVERGREEN_PILLARS.length];
         slot = { kind: 'evergreen', phase: pillar.id, objective: pillar.objective, cta: pillar.cta,
-          angle: `${pillar.id.replace(/-/g, ' ')}: ${niche.label.toLowerCase()}`, hook: fill(niche.hooks[pillarIdx % niche.hooks.length]) };
+          angle: `${pillar.id.replace(/-/g, ' ')}: ${niche.label.toLowerCase()}`, hook: deck.next('evergreen') };
       }
       const f = p.formats[format];
       const isMotion = /reel|video|short|story|status/.test(format);
@@ -176,6 +183,7 @@ export function buildPlan(o) {
     niche: { id: nicheId, label: niche.label, kind: niche.kind },
     product, offer,
     interpreted: { platforms, regions, niche: niche.label, notes },
+    ...(featured.length ? { featured } : {}),
     window: { start, end },
     cadence: Object.fromEntries(platforms.map((p) => [p, `${Math.min(perWeek, PLATFORMS[p].cadencePerWeek ?? 7)}/week + key sale days`])),
     platforms,

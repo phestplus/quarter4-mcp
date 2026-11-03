@@ -257,7 +257,7 @@ export const NICHES = {
       'last-chance': ['Offer ends tonight'],
       'thank-you': ['Thank you to customers', 'Customer stories (with permission)'],
     },
-    hooks: ['Wait before you buy {product} anywhere else.', 'Our best price of the year starts {date}.', 'The 3 questions everyone asks us.'],
+    hooks: ['Wait before you buy {product} anywhere else.', 'Our sale prices start {date}.', 'The 3 questions everyone asks us.'],
     shots: ['Product close-up', 'Founder to camera', 'Packing orders', 'Customer using the product'],
     proof: ['reviews with permission', 'repeat customers'],
     compliance: [],

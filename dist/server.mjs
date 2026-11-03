@@ -3488,9 +3488,9 @@ var require_utils = __commonJS({
       let output2 = "";
       for (let i = 0; i < input2.length; i++) {
         if (input2[i] === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decodeUnreserved && isUnreserved(decoded)) {
               output2 += decoded;
@@ -3510,9 +3510,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decoded !== "." && isUnreserved(decoded)) {
               output2 += decoded;
@@ -3552,9 +3552,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -3590,9 +3590,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -3637,9 +3637,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            const normalizedHex = hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            const normalizedHex = hex5.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (isUnreserved(decoded)) {
               output2 += decoded;
@@ -3677,9 +3677,9 @@ var require_utils = __commonJS({
       let output2 = "";
       for (let i = 0; i < input2.length; i++) {
         if (input2[i] === "%" && i + 2 < input2.length) {
-          const hex4 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex4)) {
-            output2 += "%" + hex4.toUpperCase();
+          const hex5 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex5)) {
+            output2 += "%" + hex5.toUpperCase();
             i += 2;
             continue;
           }
@@ -8670,8 +8670,8 @@ function base64urlToUint8Array(base64url3) {
 function uint8ArrayToBase64url(bytes) {
   return uint8ArrayToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
-function hexToUint8Array(hex4) {
-  const cleanHex = hex4.replace(/^0x/, "");
+function hexToUint8Array(hex5) {
+  const cleanHex = hex5.replace(/^0x/, "");
   if (cleanHex.length % 2 !== 0) {
     throw new Error("Invalid hex string length");
   }
@@ -10729,11 +10729,11 @@ function capSize(inst, size) {
   const caps = sizeCaps(inst._zod.def.checks);
   if (!caps.length)
     return;
-  const cap2 = Math.min(...caps.map((c) => c[0]));
+  const cap3 = Math.min(...caps.map((c) => c[0]));
   const parse4 = inst._zod.parse;
   inst._zod.parse = (payload, ctx) => {
     const n = size(payload.value);
-    if (n > cap2 && !ctx?.skipChecks && ctx?.direction !== "backward") {
+    if (n > cap3 && !ctx?.skipChecks && ctx?.direction !== "backward") {
       for (const [max, ch] of sizeCaps(inst._zod.def.checks)) {
         if (n > max && ch._zod.def.when(payload)) {
           const start = payload.issues.length;
@@ -30842,6 +30842,9 @@ var StreamableHTTPServerTransport = class {
 
 // src/server.js
 import { readFile, writeFile } from "node:fs/promises";
+import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { extname, resolve } from "node:path";
 
 // node_modules/zod/v3/helpers/util.js
@@ -40067,7 +40070,7 @@ var NICHES = {
       "last-chance": ["Offer ends tonight"],
       "thank-you": ["Thank you to customers", "Customer stories (with permission)"]
     },
-    hooks: ["Wait before you buy {product} anywhere else.", "Our best price of the year starts {date}.", "The 3 questions everyone asks us."],
+    hooks: ["Wait before you buy {product} anywhere else.", "Our sale prices start {date}.", "The 3 questions everyone asks us."],
     shots: ["Product close-up", "Founder to camera", "Packing orders", "Customer using the product"],
     proof: ["reviews with permission", "repeat customers"],
     compliance: [],
@@ -40524,6 +40527,161 @@ function getSpecs(platformIds) {
   return { lastReviewed: SPECS_LAST_REVIEWED, note: "Platforms change limits often. Re-check official help pages for paid ads specs.", platforms: out };
 }
 
+// src/hooks.js
+var BY_PHASE = {
+  tease: [
+    "Something is coming for {event}. Guess what it is.",
+    "We cannot show you yet. Here is a clue.",
+    "Save this post. You will want it on {event}.",
+    "Turn on notifications. {event} starts here.",
+    "The {product} drop we have been planning all year.",
+    "If you have been waiting to buy {product}, wait a few more days.",
+    "One question before {event}: which {product} do you want first?",
+    "Zoom in. That is all we can show for now.",
+    "Our biggest {event} yet. Details soon.",
+    "Comment the {product} you want on sale and we will read every one.",
+    "Do not buy {product} until you see what we have planned.",
+    "A small preview for the people who always ask first.",
+    "Mark the date. You will thank yourself later.",
+    "We have been working on this for months.",
+    "Hint: it is the one you keep asking about.",
+    "Your {event} wishlist is about to get easier.",
+    "Tell a friend who has been waiting for this.",
+    "The countdown starts now.",
+    "Guess the price. Wrong answers only.",
+    "Not live yet. Here is how to be first.",
+    "You are going to want to see this.",
+    "Something special is coming to {brand}."
+  ],
+  "warm-up": [
+    "Ranking our best {product} before {event}.",
+    "3 things to check before you buy {product} this {event}.",
+    "Make your {event} list now. Here is where to start.",
+    "Which one would you pick? Vote in the comments.",
+    "What {discount} off actually looks like on our best sellers.",
+    "The {product} our customers reorder most.",
+    "Mistakes people make buying {product} on sale.",
+    "How to choose {product} without regretting it.",
+    "Everything you need to know before {event}.",
+    "Real price now, sale price on {event}. Mark your calendar.",
+    "Our honest guide to {product}: what is worth it and what is not.",
+    "Save this before {event}: how to shop smart.",
+    "The questions to ask before you pay for {product}.",
+    "Here is what is included in our {event} offer.",
+    "From our studio to your door: how an order works.",
+    "Gift idea for someone who has everything: {product}.",
+    "Budget, mid, treat yourself: {product} at every level.",
+    "What we would buy if we were you.",
+    "Three reasons people choose {brand}.",
+    "Plan your {event} order in 60 seconds.",
+    "Pick one: which would you take home?",
+    "Week to go. Here is your shortlist."
+  ],
+  "early-access": [
+    "You are on the list, so you shop first.",
+    "Early access is open. The public gets it tomorrow.",
+    "First pick goes to the people who signed up.",
+    "This link is only for our list. Please do not share it yet.",
+    "You asked for first access. Here it is."
+  ],
+  launch: [
+    "It is live. {discount} off {product}.",
+    "{event} is here. Everything you saved is on sale.",
+    "The wait is over: {product} at {discount} off.",
+    "Your {event} shopping starts and ends here.",
+    "Stop scrolling. This is the deal you were waiting for.",
+    "Prices dropped. Tap before you forget.",
+    "{discount} off and free advice on what to pick.",
+    "Same {product}, better price, while the sale runs.",
+    "If it was in your cart, now is the time.",
+    "Our {event} prices are live. Link in bio.",
+    "Pay less for the {product} you already wanted.",
+    "The {event} price on {product} is here."
+  ],
+  "last-chance": [
+    "Last call for {discount} off.",
+    "Final hours of {event} prices.",
+    "Soon this goes back to full price.",
+    "Still thinking? Here is why people bought.",
+    "The sale ends soon. Check the countdown.",
+    "Last chance to get {product} at this price.",
+    "Before it ends: our most picked {product}.",
+    "If you missed it, this is your reminder."
+  ],
+  "thank-you": [
+    "Thank you for an incredible {event}.",
+    "You made this our best {event} yet.",
+    "Your orders are on the way. Here is what happens next.",
+    "Show us how you are wearing it. We share our favourites.",
+    "How to care for your new {product}.",
+    "We read every message. Here is what you told us."
+  ],
+  evergreen: [
+    "Things nobody tells you about {product}.",
+    "How we make our {product}, start to finish.",
+    "Answering your most asked question about {product}.",
+    "A day at {brand}.",
+    "What our customers say after a month.",
+    "Behind the scenes of one order.",
+    "The small detail that makes a big difference.",
+    "Myth or fact: the {product} edition.",
+    "Before and after, no filters.",
+    "Save this for the next time you shop for {product}.",
+    "Three ways to use one {product}.",
+    "Why we do it this way, even when it costs more.",
+    "Our team picks their favourite {product}.",
+    "You asked, we answered: sizes, prices, delivery."
+  ]
+};
+var NEAR = { tease: ["warm-up"], "warm-up": ["tease"], "early-access": ["launch"], "last-chance": ["launch"], launch: ["last-chance"], "thank-you": [] };
+var phaseOf = (p) => BY_PHASE[p] ? p : p === "observance" ? null : "evergreen";
+function hookDeck({ nicheHooks = [], product, discount = null, brand = "us", seed = 0 }) {
+  const used = /* @__PURE__ */ new Set();
+  let repeats = 0;
+  const usable = (t, event) => (!t.includes("{discount}") || discount) && (!t.includes("{event}") || event);
+  const fill = (t, event) => t.replaceAll("{product}", product).replaceAll("{discount}", discount ?? "").replaceAll("{event}", event ?? "").replaceAll("{brand}", brand).replaceAll("{date}", event ?? "this week");
+  const pool = (phase) => {
+    const own2 = ["tease", "warm-up", "evergreen"].includes(phase) ? nicheHooks.map((t, i) => ({ t, k: `n${i}` })) : [];
+    const gen = (BY_PHASE[phase] ?? []).map((t, i) => ({ t, k: `${phase}${i}` }));
+    const mixed = [];
+    for (let i = 0; i < Math.max(own2.length, gen.length); i++) {
+      if (gen[i]) mixed.push(gen[i]);
+      if (own2[i] && i % 2 === 0) mixed.push(own2[i]);
+    }
+    return mixed.concat(own2.filter((_, i) => i % 2 === 1));
+  };
+  return {
+    next(phase, event = null) {
+      const ph0 = phaseOf(phase) ?? "evergreen";
+      const order = [.../* @__PURE__ */ new Set([ph0, ...NEAR[ph0] ?? [], "evergreen"])];
+      for (const ph of order) {
+        const list2 = pool(ph);
+        for (let i = 0; i < list2.length; i++) {
+          const h = list2[(i + seed) % list2.length];
+          if (!used.has(h.k) && usable(h.t, event)) {
+            used.add(h.k);
+            return fill(h.t, event);
+          }
+        }
+      }
+      const any2 = pool(ph0).filter((h) => usable(h.t, event));
+      return any2.length ? fill(any2[(repeats++ + seed) % any2.length].t, event) : null;
+    },
+    size: () => used.size
+  };
+}
+function hooksFor({ nicheHooks = [], phase = "evergreen", product, discount = null, event = null, brand = "us", limit = 10 }) {
+  const deck = hookDeck({ nicheHooks, product, discount, brand });
+  const out = [];
+  for (let i = 0; i < limit; i++) {
+    const h = deck.next(phase, event);
+    if (!h || out.includes(h)) break;
+    out.push(h);
+  }
+  return out;
+}
+var HOOK_COUNT = Object.values(BY_PHASE).reduce((a, l) => a + l.length, 0);
+
 // src/brief.js
 var COMPLIANCE = {
   always: [
@@ -40576,7 +40734,6 @@ function buildBrief(o) {
   const niche = NICHES[nicheId];
   const product = o.product || cls.matched[0] || "the product";
   const offer = parseOffer(o.offer);
-  const fill = (t) => t.replace("{product}", product).replace("{discount}", offer?.type === "percent" ? `${offer.value}%` : "the sale price").replace("{date}", ev ? ev.name : "this week");
   const brief = {
     platform: p.name,
     format: formatId,
@@ -40592,7 +40749,7 @@ function buildBrief(o) {
       angles: o.phase ? phaseAngles(nicheId, o.phase, product) : []
     },
     copy: {
-      hooks: niche.hooks.map(fill),
+      hooks: hooksFor({ nicheHooks: niche.hooks, phase: o.phase ?? (ev ? "launch" : "evergreen"), product, discount: offer?.type === "percent" ? `${offer.value}%` : null, event: ev?.name ?? null, brand: o.brand ?? "us", limit: 10 }),
       structure: ["Hook (first line / first 2 seconds)", "Value or proof", "Offer with real terms", "One clear CTA"],
       captionLimit: p.caption
     },
@@ -40637,33 +40794,134 @@ function pickFormat(p, assetType) {
 }
 
 // src/cloud.js
+import { mkdirSync, readFileSync, writeFileSync, chmodSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 var base = () => (process.env.QUARTER4_API_URL || "https://q4.erasstack.com").replace(/\/+$/, "");
-var NO_KEY = `No QUARTER4_API_KEY is set. Call cloud_account with action "signup" and the user's email to get a free key by email, then add it to the MCP server env as QUARTER4_API_KEY and restart the client.`;
-async function api(path, { method = "GET", body, auth = true } = {}) {
-  const key = process.env.QUARTER4_API_KEY;
-  if (auth && !key) throw new Error(NO_KEY);
-  const res = await fetch(`${base()}${path}`, {
-    method,
-    headers: { "content-type": "application/json", "user-agent": "quarter4-mcp", ...auth ? { authorization: `Bearer ${key}` } : {} },
-    body: body ? JSON.stringify(body) : void 0,
-    signal: AbortSignal.timeout(2e4)
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? `Quarter4 Cloud returned ${res.status}`);
-  return data;
+var credFile = () => join(process.env.QUARTER4_HOME || join(homedir(), ".quarter4"), "credentials.json");
+var NO_KEY = 'Not connected to Quarter4 Cloud yet. Call cloud_account with action "connect": it returns a link and a code for the user to approve in their browser (about 30 seconds, free). Then call the same tool again.';
+function readSaved() {
+  try {
+    const c = JSON.parse(readFileSync(credFile(), "utf8"));
+    return c.base === base() && typeof c.apiKey === "string" ? c : null;
+  } catch {
+    return null;
+  }
 }
-var cloud = {
-  signup: (email3) => api("/v1/signup", { method: "POST", body: { email: email3 }, auth: false }),
-  me: () => api("/v1/me"),
-  publish: (b) => api("/v1/pages", { method: "POST", body: b }),
-  pages: () => api("/v1/pages"),
-  remove: (id) => api(`/v1/pages/${encodeURIComponent(id)}`, { method: "DELETE" }),
-  stats: (days) => api(`/v1/stats?days=${Number(days) || 30}`),
-  connectDomain: (hostname3, site) => api("/v1/domains", { method: "POST", body: { hostname: hostname3, site } }),
-  domainStatus: (hostname3) => api(`/v1/domains/${encodeURIComponent(hostname3)}`),
-  checkout: (plan, currency) => api("/v1/billing/checkout", { method: "POST", body: { plan, currency } }),
-  pricingUrl: () => base()
-};
+function save(apiKey, email3) {
+  const file2 = credFile();
+  mkdirSync(join(file2, ".."), { recursive: true, mode: 448 });
+  writeFileSync(file2, JSON.stringify({ base: base(), apiKey, email: email3, savedAt: (/* @__PURE__ */ new Date()).toISOString() }, null, 2), { mode: 384 });
+  try {
+    chmodSync(file2, 384);
+  } catch {
+  }
+  return file2;
+}
+function createCloud({ persist = false, client: initialClient = "AI app" } = {}) {
+  let client = initialClient;
+  let memKey = null;
+  let pending = null;
+  let lastResult = null;
+  const keyOf = () => key();
+  const key = () => process.env.QUARTER4_API_KEY || memKey || (persist ? readSaved()?.apiKey : null) || null;
+  async function api(path, { method = "GET", body, auth = true } = {}) {
+    const k = key();
+    if (auth && !k) throw new Error(NO_KEY);
+    const res = await fetch(`${base()}${path}`, {
+      method,
+      headers: { "content-type": "application/json", "user-agent": "quarter4-mcp", ...auth ? { authorization: `Bearer ${k}` } : {} },
+      body: body ? JSON.stringify(body) : void 0,
+      signal: AbortSignal.timeout(2e4)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok && res.status !== 202 && res.status !== 410) throw new Error(data.error ?? `Quarter4 Cloud returned ${res.status}`);
+    return { ...data, httpStatus: res.status };
+  }
+  const strip2 = ({ httpStatus, ...d }) => d;
+  const call = async (...a) => strip2(await api(...a));
+  async function pollOnce() {
+    if (!pending) return null;
+    const r = await api("/v1/connect/poll", { method: "POST", body: { deviceToken: pending.deviceToken }, auth: false });
+    if (r.status === "approved") {
+      memKey = r.apiKey;
+      const file2 = persist ? save(r.apiKey, r.email) : null;
+      pending = null;
+      lastResult = { connected: true, email: r.email, plan: r.plan, dashboard: r.dashboard, savedTo: file2 ?? void 0 };
+      return lastResult;
+    }
+    if (r.status === "expired" || Date.now() > pending.expiresAt) {
+      pending = null;
+      return { connected: false, expired: true };
+    }
+    return null;
+  }
+  function watch() {
+    const tick = async () => {
+      if (!pending) return;
+      try {
+        if (await pollOnce()) return;
+      } catch {
+      }
+      if (pending) setTimeout(tick, pending.interval * 1e3).unref?.();
+    };
+    setTimeout(tick, (pending?.interval ?? 3) * 1e3).unref?.();
+  }
+  return {
+    hasKey: () => !!key(),
+    /** Shown on the approval page, e.g. "claude-code" or "codex". */
+    clientName: (n) => {
+      client = String(n).slice(0, 40);
+    },
+    /** Start (or check) the browser approval that links this AI app to a Quarter4 account. */
+    async connect() {
+      if (key() && !pending) {
+        const me = await call("/v1/me").catch(() => null);
+        if (me) return { connected: true, email: me.email, plan: me.plan, dashboard: `${base()}/dashboard`, ...lastResult?.savedTo ? { savedTo: lastResult.savedTo } : {} };
+      }
+      if (!persist) {
+        throw new Error(`This hosted Quarter4 server cannot store a key between requests. Sign in at ${base()}/dashboard, create an API key, and add it to this connector's settings as QUARTER4_API_KEY, or run Quarter4 locally (npx quarter4-mcp) where "connect" works in one step.`);
+      }
+      if (pending) {
+        const done = await pollOnce();
+        if (done?.connected) return done;
+        if (!done?.expired && pending) return { connected: false, waiting: true, url: pending.url, code: pending.code, message: `Still waiting. Ask the user to open ${pending.url}, check the code ${pending.code} matches, confirm their email and press Approve.` };
+      }
+      const r = await call("/v1/connect/start", { method: "POST", body: { client }, auth: false });
+      pending = { deviceToken: r.deviceToken, code: r.code, url: r.url, interval: r.interval ?? 3, expiresAt: Date.now() + (r.expiresIn ?? 600) * 1e3 };
+      watch();
+      return {
+        connected: false,
+        url: r.url,
+        code: r.code,
+        expiresInMinutes: Math.round((r.expiresIn ?? 600) / 60),
+        message: `Show the user this link and code: open ${r.url} and check the code ${r.code} matches. They confirm their email (new users get a free account) and press Approve. Then call cloud_account with action "connect" again to finish. Never ask for a password or card in chat.`
+      };
+    },
+    signup: (email3) => call("/v1/signup", { method: "POST", body: { email: email3 }, auth: false }),
+    me: () => call("/v1/me"),
+    publish: (b) => call("/v1/pages", { method: "POST", body: b }),
+    kit: (b) => call("/v1/kits", { method: "POST", body: b }),
+    updateKit: (id, b) => call(`/v1/kits/${id}`, { method: "PUT", body: b }),
+    async kitPhoto(id, key2, buf, type) {
+      const res = await fetch(`${base()}/v1/kits/${id}/photos/${key2}`, { method: "PUT", headers: { authorization: `Bearer ${keyOf()}`, "content-type": type, "user-agent": "quarter4-mcp" }, body: buf, signal: AbortSignal.timeout(3e4) });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? `upload ${res.status}`);
+      return true;
+    },
+    brand: () => call("/v1/brand"),
+    images: (q, o = {}) => call(`/v1/images?q=${encodeURIComponent(q)}&count=${o.count ?? 15}${o.orientation ? `&orientation=${o.orientation === "squarish" ? "square" : o.orientation}` : ""}`),
+    saveBrand: (profile) => call("/v1/brand", { method: "PUT", body: { profile } }),
+    pages: () => call("/v1/pages"),
+    remove: (id) => call(`/v1/pages/${encodeURIComponent(id)}`, { method: "DELETE" }),
+    stats: (days) => call(`/v1/stats?days=${Number(days) || 30}`),
+    connectDomain: (hostname3, site) => call("/v1/domains", { method: "POST", body: { hostname: hostname3, site } }),
+    domainStatus: (hostname3) => call(`/v1/domains/${encodeURIComponent(hostname3)}`),
+    // currency omitted: the server picks Naira in Nigeria, US Dollars elsewhere.
+    checkout: (plan, currency) => call("/v1/billing/checkout", { method: "POST", body: { plan, ...currency ? { currency } : {} } }),
+    dashboardUrl: () => `${base()}/dashboard`,
+    pricingUrl: () => base()
+  };
+}
 
 // src/images.js
 var UA = "quarter4-mcp (https://github.com/phestplus/quarter4-mcp)";
@@ -40808,6 +41066,50 @@ async function findImages(query, o = {}) {
     ].filter(Boolean).join(" ")
   };
 }
+var SUBJECT_WORDS = {
+  footwear: ["sneaker", "shoe", "trainer", "footwear", "boot", "sandal", "slide", "loafer", "heel"],
+  fashion: ["dress", "outfit", "fashion", "clothing", "clothes", "shirt", "skirt", "jacket", "gown", "wear", "model", "style"],
+  beauty: ["skincare", "cosmetic", "cream", "serum", "lotion", "makeup", "beauty", "bottle", "perfume", "skin"],
+  jewelry: ["jewelry", "jewellery", "ring", "necklace", "bracelet", "earring", "gold", "diamond", "gem"],
+  electronics: ["phone", "laptop", "headphone", "gadget", "speaker", "camera", "tablet", "watch", "electronic"],
+  automotive: ["car", "vehicle", "suv", "sedan", "automobile", "truck"],
+  home: ["interior", "living room", "sofa", "furniture", "lamp", "decor", "kitchen", "bedroom", "home"],
+  food: ["food", "meal", "dish", "plate", "cake", "drink", "restaurant", "snack", "bowl"],
+  fitness: ["fitness", "gym", "workout", "exercise", "training", "yoga", "run"],
+  kids: ["child", "kid", "toy", "baby", "children"]
+};
+async function matchingImages({ nicheId, product = "", attributes = "", mood = "", orientation, count = 3, search = null }) {
+  const own2 = String(product).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3).map((w) => w.replace(/(es|s)$/, ""));
+  const words = [.../* @__PURE__ */ new Set([...SUBJECT_WORDS[nicheId] ?? [], ...own2])];
+  const query = [attributes, product || words[0], mood].filter(Boolean).join(" ").trim();
+  const r = search ? await search(query, { orientation, count: Math.max(count * 4, 15) }) : await findImages(query, { orientation, count: Math.max(count * 4, 12) });
+  const hit = (im) => words.some((w) => new RegExp(`(^|[^a-z])${w}`, "i").test(im.alt ?? ""));
+  const clean2 = r.images.filter((im) => !brandRisk(`${im.alt} ${im.page}`));
+  return { query, images: clean2.filter(hit).slice(0, count), providersTried: r.providersTried ?? ["quarter4-cloud"], words };
+}
+
+// src/ask.js
+var RANK = { photos: 1, price: 2, link: 3, deadline: 4, currency: 5 };
+function questionsFor(task, o) {
+  const q = [];
+  const assumed = [];
+  const products = (o.products ?? []).filter((p) => p?.name);
+  const noPhoto = products.filter((p) => !p.image || p.representative);
+  const stand = noPhoto.length && noPhoto.every((p) => p.representative);
+  if (noPhoto.length) {
+    q.push({ field: "photos", question: `Send a photo of ${noPhoto.length === 1 ? noPhoto[0].name : `each product (${noPhoto.slice(0, 4).map((p) => p.name).join(", ")}${noPhoto.length > 4 ? ", ..." : ""})`}. A clear phone photo on a plain background is perfect.`, why: stand ? "The kit is ready now with representative photos (tagged as such). Your own photos look more trustworthy and sell better." : "Without a photo these posts cannot be shared." });
+  } else if (!products.length && !o.images?.length && task === "kit") {
+    assumed.push("No product photos given, so offer posts use matching licensed photos or bold type. Add product photos to feature specific items.");
+  }
+  const hasPrice = o.price || o.discountPercent || /\d/.test(o.offer ?? "") || products.some((p) => p.price);
+  if (!hasPrice) q.push({ field: "price", question: 'What is the offer and the real prices? (e.g. "30% off, now \u20A663,000, was \u20A690,000"). Say "no discount" if there is none.', why: "Prices and discounts are never made up." });
+  if (!o.ctaUrl && !o.pageUrl) q.push({ field: "link", question: "Where should buyers order? Your WhatsApp number or a checkout link.", why: "Every post and button needs a real place to buy." });
+  if (!o.deadline && (o.discountPercent || /off|%|sale/i.test(o.offer ?? ""))) assumed.push('No end date given, so there is no countdown and no "ends" line. Tell me the end date to add one.');
+  if (o.price && !/[₦$€£¥₹]|ngn|usd|ghs|kes|zar|eur|gbp|cedi|naira|rand|shilling/i.test(String(o.price))) q.push({ field: "currency", question: "Which currency are these prices in?", why: "Prices must show the right currency." });
+  assumed.push("Sizes, layouts, colours and hashtags were chosen for you; ask for changes any time.");
+  return { askUser: q.sort((a, b) => RANK[a.field] - RANK[b.field]).slice(0, 3), assumed };
+}
+var ASK_RULE = 'If askUser is not empty, ask the user these questions in one short message before sharing or publishing (keep their wording simple), then call the tool again with the answers. Do not ask about anything in "assumed".';
 
 // src/live.js
 var UA2 = "quarter4-mcp (https://github.com/phestplus/quarter4-mcp)";
@@ -40977,9 +41279,9 @@ function startCampaign(o) {
   const recommended = upcoming.filter((e) => e.relevance.score >= 1.5 && !events.includes(e) && inMonth(e)).sort((a, b) => b.relevance.score - a.relevance.score).slice(0, Math.max(0, 4 - events.length));
   events = [...events, ...recommended].sort((a, b) => a.date < b.date ? -1 : 1);
   const main = events.find((e) => mentioned.includes(e.id)) ?? [...events].filter((e) => e.impact === "high").sort((a, b) => b.relevance.score - a.relevance.score)[0] ?? events[0];
-  const deadlineText = o.deadline ?? /\b(?:ends?|ending|until|till|through|thru|by|expires?)\s+(?:on\s+)?([a-z]{3,9}\.?\s+\d{1,2}(?:st|nd|rd|th)?|\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?[a-z]{3,9}|\d{1,2}[/.]\d{1,2}(?:[/.]\d{2,4})?)/i.exec(text)?.[1]?.replace(/\bof\s+/i, "").replace(".", "");
-  const deadline = deadlineText ? parseLooseDate(deadlineText, { year, regions, resolveEvent: (id) => upcoming.find((e) => e.id === id)?.endDate }) : main ? main.endDate : null;
-  if (!deadlineText && main) assumptions.push(`Offer assumed to end on ${main.name} (${main.endDate}). Tell me if it runs longer.`);
+  const deadlineText2 = o.deadline ?? /\b(?:ends?|ending|until|till|through|thru|by|expires?)\s+(?:on\s+)?([a-z]{3,9}\.?\s+\d{1,2}(?:st|nd|rd|th)?|\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?[a-z]{3,9}|\d{1,2}[/.]\d{1,2}(?:[/.]\d{2,4})?)/i.exec(text)?.[1]?.replace(/\bof\s+/i, "").replace(".", "");
+  const deadline = deadlineText2 ? parseLooseDate(deadlineText2, { year, regions, resolveEvent: (id) => upcoming.find((e) => e.id === id)?.endDate }) : main ? main.endDate : null;
+  if (!deadlineText2 && main) assumptions.push(`Offer assumed to end on ${main.name} (${main.endDate}). Tell me if it runs longer.`);
   const lead = main ? Math.round((Date.parse(main.date) - Date.parse(now)) / 864e5) : null;
   const phaseNow = !main ? null : lead <= 0 ? "launch" : lead <= 2 ? "early-access" : lead <= Math.ceil(main.leadDays / 2) ? "warm-up" : lead <= main.leadDays ? "tease" : "not yet";
   const urgency = main ? lead <= 0 ? `${main.name} is live today.` : lead <= main.leadDays ? `${main.name} is in ${lead} days. You are in the ${phaseNow} phase: post now.` : `${main.name} is in ${lead} days. Start teasing on ${main.promoStart}.` : null;
@@ -41126,7 +41428,7 @@ function archetypeFor(nicheId) {
 }
 function renderDirector(x) {
   let { c } = x;
-  const { esc: esc3, o, t, discount, deadlineMs, deadlineLabel, cta, terms, year, title, jsonLd, hash: hash3, nicheId, eventName } = x;
+  const { esc: esc4, o, t, discount, deadlineMs, deadlineLabel, cta, terms, year, title, jsonLd, hash: hash3, nicheId, eventName } = x;
   const arch = ["cinematic", "split", "stage", "editorial"].includes(o.archetype) ? o.archetype : archetypeFor(nicheId);
   const seed = hash3(`${o.brand}|${c.product}|${o.variant ?? 0}`);
   const pick2 = (arr, salt) => arr[(seed >> salt) % arr.length];
@@ -41138,17 +41440,19 @@ function renderDirector(x) {
   const off = discount ? `${discount}% off` : c.offer ?? "";
   const heads = NICHE_HEADS[nicheId] ?? NICHE_HEADS.general;
   const headline = o.headline ? c.headline : heads[seed % heads.length].replace("{off}", off ? off.charAt(0).toUpperCase() + off.slice(1) : "Now on").replace("{event}", eventName ?? "this season").replace(/\.\s*\./, ".");
-  const words = (s) => esc3(s).split(/\s+/);
-  const bg = (im) => im ? `background-image:url('${esc3(im.url).replace(/'/g, "%27")}')` : "";
-  const credits = [...hero ? [hero] : [], ...gallery].filter((im) => im.credit || im.attribution).map((im) => esc3(im.credit ?? im.attribution));
+  const typeLed = !hero && !o.modelUrl && !o.videoUrl;
+  const heroHeadline = typeLed && discount && !o.headline ? `${eventName ?? "The sale"} is here.` : headline;
+  const words = (s) => esc4(s).split(/\s+/);
+  const bg = (im) => im ? `background-image:url('${esc4(im.url).replace(/'/g, "%27")}')` : "";
+  const credits = [...hero ? [hero] : [], ...gallery].filter((im) => im.credit || im.attribution).map((im) => esc4(im.credit ?? im.attribution));
   c = { ...c, ctaText: o.ctaText ? c.ctaText : NICHE_CTA[nicheId] ?? c.ctaText };
   const eyebrow = eventName ?? `${o.brand} \xB7 ${c.product}`;
-  const btn = (label, cls = "") => `<a class="b b-${button} ${cls}" href="${esc3(cta)}" data-cta><span>${esc3(label)}</span><i aria-hidden="true">\u2192</i></a>`;
+  const btn = (label, cls = "") => `<a class="b b-${button} ${cls}" href="${esc4(cta)}" data-cta><span>${esc4(label)}</span><i aria-hidden="true">\u2192</i></a>`;
   const clockHtml = !deadlineMs ? "" : clock === "inline" ? `<p class="ck ck-inline" data-cd>Ends in <b data-u="d">00</b>d <b data-u="h">00</b>h <b data-u="m">00</b>m <b data-u="s">00</b>s</p>` : clock === "bar" ? `<div class="ck ck-bar" data-cd><div class="bt"><span>Time left</span><b><b data-u="d">00</b>d <b data-u="h">00</b>h <b data-u="m">00</b>m <b data-u="s">00</b>s</b></div><div class="bw"><i data-bar></i></div></div>` : clock === "giant" ? `<div class="ck ck-giant" data-cd><b data-u="d">00</b><div><span>days left</span><small><b data-u="h">00</b>:<b data-u="m">00</b>:<b data-u="s">00</b></small></div></div>` : `<div class="ck ck-${clock}" data-cd>${["d", "h", "m", "s"].map((u, i) => `<div><b data-u="${u}">00</b><span>${["Days", "Hrs", "Min", "Sec"][i]}</span></div>`).join("")}</div>`;
-  const priceHtml = o.price ? `<p class="pr"><b>${esc3(o.price)}</b>${o.originalPrice ? `<s><span class="sr">Was </span>${esc3(o.originalPrice)}</s>` : ""}${off ? `<em>${esc3(off)}</em>` : ""}</p>` : off ? `<p class="pr"><em>${esc3(off)}</em></p>` : "";
-  const navHtml = nav === "center" ? `<nav class="nv nv-center"><a href="#" class="lg">${esc3(o.brand)}</a></nav>` : nav === "pill" ? `<nav class="nv nv-pill"><a href="#" class="lg">${esc3(o.brand)}</a><a href="${esc3(cta)}" data-cta class="nv-cta">${esc3(c.ctaText)}</a></nav>` : nav === "side" ? `<nav class="nv nv-side"><a href="#" class="lg">${esc3(o.brand)}</a><span>${esc3(eventName ? `${eventName} ${year}` : c.product)}</span></nav>` : `<nav class="nv nv-split"><a href="#" class="lg">${esc3(o.brand)}</a><a href="${esc3(cta)}" data-cta class="nv-cta">${esc3(c.ctaText)} \u2192</a></nav>`;
+  const priceHtml = o.price ? `<p class="pr"><b>${esc4(o.price)}</b>${o.originalPrice ? `<s><span class="sr">Was </span>${esc4(o.originalPrice)}</s>` : ""}${off ? `<em>${esc4(off)}</em>` : ""}</p>` : off ? `<p class="pr"><em>${esc4(off)}</em></p>` : "";
+  const navHtml = nav === "center" ? `<nav class="nv nv-center"><a href="#" class="lg">${esc4(o.brand)}</a></nav>` : nav === "pill" ? `<nav class="nv nv-pill"><a href="#" class="lg">${esc4(o.brand)}</a><a href="${esc4(cta)}" data-cta class="nv-cta">${esc4(c.ctaText)}</a></nav>` : nav === "side" ? `<nav class="nv nv-side"><a href="#" class="lg">${esc4(o.brand)}</a><span>${esc4(eventName ? `${eventName} ${year}` : c.product)}</span></nav>` : `<nav class="nv nv-split"><a href="#" class="lg">${esc4(o.brand)}</a><a href="${esc4(cta)}" data-cta class="nv-cta">${esc4(c.ctaText)} \u2192</a></nav>`;
   const fallback = o.productImage ? { url: o.productImage, alt: o.imageAlt } : images[0] ?? null;
-  const productVisual = (cls = "") => o.modelUrl ? `<model-viewer class="pv ${cls}" src="${esc3(o.modelUrl)}" alt="${esc3(o.imageAlt ?? c.product)}" camera-controls disable-zoom interaction-prompt="none" shadow-intensity="1.2" exposure="1.05" environment-image="neutral" data-orbit${fallback ? ` data-fallback="${esc3(fallback.url)}"` : ""}>${fallback ? `<img slot="poster" src="${esc3(fallback.url)}" alt="${esc3(fallback.alt ?? c.product)}" style="width:100%;height:100%;object-fit:contain">` : ""}</model-viewer>` : o.videoUrl ? `<video class="pv ${cls}" src="${esc3(o.videoUrl)}" muted playsinline preload="auto" data-scrub aria-label="${esc3(c.product)}"></video>` : hero ? `<img class="pv ${cls}" src="${esc3(hero.url)}" alt="${esc3(hero.alt ?? c.product)}">` : `<div class="pv pv-type ${cls}" aria-hidden="true">${esc3(o.brand.slice(0, 1))}</div>`;
+  const productVisual = (cls = "") => o.modelUrl ? `<model-viewer class="pv ${cls}" src="${esc4(o.modelUrl)}" alt="${esc4(o.imageAlt ?? c.product)}" camera-controls disable-zoom interaction-prompt="none" shadow-intensity="1.2" exposure="1.05" environment-image="neutral" data-orbit${fallback ? ` data-fallback="${esc4(fallback.url)}"` : ""}>${fallback ? `<img slot="poster" src="${esc4(fallback.url)}" alt="${esc4(fallback.alt ?? c.product)}" style="width:100%;height:100%;object-fit:contain">` : ""}</model-viewer>` : o.videoUrl ? `<video class="pv ${cls}" src="${esc4(o.videoUrl)}" muted playsinline preload="auto" data-scrub aria-label="${esc4(c.product)}"></video>` : hero ? `<img class="pv ${cls}" src="${esc4(hero.url)}" alt="${esc4(hero.alt ?? c.product)}">` : `<div class="pv pv-stmt ${cls}" aria-hidden="true"><span>${esc4(discount ? `${discount}%` : (c.product.split(" ").pop() || o.brand).toUpperCase())}</span>${discount ? "<em>off</em>" : ""}</div>`;
   const fill = `<section class="fillsec" data-scene style="--h:220vh"><div class="pin"><p class="fill" data-fill>${words(off && !c.subheadline.toLowerCase().includes(off.toLowerCase()) ? `${c.subheadline} ${off.charAt(0).toUpperCase()}${off.slice(1)} on ${c.product}.` : c.subheadline).map((w) => `<span>${w}</span>`).join(" ")}</p></div></section>`;
   const products = (o.products ?? []).filter((it) => it && it.name).slice(0, 12);
   const sizeHint = ["footwear", "fashion"].includes(nicheId) ? ", size __" : "";
@@ -41158,28 +41462,28 @@ function renderDirector(x) {
     const a = n(it.price), b = n(it.originalPrice);
     return a && b > a ? Math.round((1 - a / b) * 100) : null;
   };
-  const productsHtml = products.length ? `<section class="pg"><div class="pg-head"><p class="ey">${esc3(eyebrow)}</p><h2>${esc3(nicheId === "footwear" ? "Pick your pair" : nicheId === "fashion" ? "Pick your look" : `Shop ${c.product}`)}</h2></div><div class="pg-grid">${products.map((it, i) => `<article class="pc" style="--i:${i}">
-<a class="pc-img" href="${esc3(itemLink(it))}" data-cta>${it.image ? `<img src="${esc3(it.image)}" alt="${esc3(it.name)}" loading="lazy">` : `<span class="pc-ph">${esc3(it.name.slice(0, 1))}</span>`}${pct(it) ? `<em>-${pct(it)}%</em>` : ""}</a>
-<div class="pc-body"><h3>${esc3(it.name)}</h3>${it.note ? `<p>${esc3(it.note)}</p>` : ""}<p class="pc-pr">${it.price ? `<b>${esc3(it.price)}</b>` : ""}${it.originalPrice ? `<s>${esc3(it.originalPrice)}</s>` : ""}</p><a class="pc-cta" href="${esc3(itemLink(it))}" data-cta>${/wa\.me/i.test(cta) ? "Order on WhatsApp" : esc3(c.ctaText)} \u2192</a></div></article>`).join("")}</div></section>` : "";
-  const features = c.features.map((f, i) => `<article class="ft" data-depth="${(0.04 * (i % 3 - 1)).toFixed(2)}"><span class="ftn">${String(i + 1).padStart(2, "0")}</span><h3>${esc3(f.title)}</h3><p>${esc3(f.text)}</p></article>`).join("");
-  const galleryHtml = gallery.length >= 2 ? `<section class="hz" data-scene style="--h:${120 + gallery.length * 60}vh"><div class="pin"><h2 class="hz-h">${esc3(c.product)}</h2><div class="track" data-track>${gallery.map((im, i) => `<figure class="card" style="${bg(im)}"><figcaption>${esc3(c.features[i % c.features.length]?.title ?? im.alt ?? "")}</figcaption></figure>`).join("")}</div></div></section>` : "";
+  const productsHtml = products.length ? `<section class="pg"><div class="pg-head"><p class="ey">${esc4(eyebrow)}</p><h2>${esc4(nicheId === "footwear" ? "Pick your pair" : nicheId === "fashion" ? "Pick your look" : `Shop ${c.product}`)}</h2></div><div class="pg-grid">${products.map((it, i) => `<article class="pc" style="--i:${i}">
+${it.image ? `<a class="pc-img" href="${esc4(itemLink(it))}" data-cta><img src="${esc4(it.image)}" alt="${esc4(it.name)}" loading="lazy">${pct(it) ? `<em>-${pct(it)}%</em>` : ""}</a>` : ""}
+<div class="pc-body"><h3>${esc4(it.name)}</h3>${it.note ? `<p>${esc4(it.note)}</p>` : ""}<p class="pc-pr">${it.price ? `<b>${esc4(it.price)}</b>` : ""}${it.originalPrice ? `<s>${esc4(it.originalPrice)}</s>` : ""}</p><a class="pc-cta" href="${esc4(itemLink(it))}" data-cta>${/wa\.me/i.test(cta) ? "Order on WhatsApp" : esc4(c.ctaText)} \u2192</a></div></article>`).join("")}</div></section>` : "";
+  const features = c.features.map((f, i) => `<article class="ft" data-depth="${(0.04 * (i % 3 - 1)).toFixed(2)}"><span class="ftn">${String(i + 1).padStart(2, "0")}</span><h3>${esc4(f.title)}</h3><p>${esc4(f.text)}</p></article>`).join("");
+  const galleryHtml = gallery.length >= 2 ? `<section class="hz" data-scene style="--h:${120 + gallery.length * 60}vh"><div class="pin"><h2 class="hz-h">${esc4(c.product)}</h2><div class="track" data-track>${gallery.map((im, i) => `<figure class="card" style="${bg(im)}"><figcaption>${esc4(c.features[i % c.features.length]?.title ?? im.alt ?? "")}</figcaption></figure>`).join("")}</div></div></section>` : "";
   const viaWhatsApp = /wa\.me|whatsapp/i.test(cta);
   const orderAnswer = viaWhatsApp ? "Tap the button and chat with us on WhatsApp. Send the item and your size or option, and we confirm price and delivery in the chat." : /instagram\.com|ig\.me/i.test(cta) ? "Tap the button to message us on Instagram and we will take your order there." : cta !== "#" ? "Tap the button to go straight to checkout." : null;
   const faqs = [...c.faq.filter((q) => !/how do i (order|buy)/i.test(q.q)), ...orderAnswer ? [{ q: viaWhatsApp ? "How do I order on WhatsApp?" : "How do I order?", a: orderAnswer }] : []];
   const finStyle = pick2(["poster", "ticket", "marquee"], 13);
   const bigOff = off ? `${off.charAt(0).toUpperCase()}${off.slice(1)}` : headline;
-  const finalHtml = finStyle === "ticket" ? `<section class="fin fin-ticket"><div class="tk"><div class="tk-l"><p class="ey">${esc3(eyebrow)}</p><h2>${esc3(bigOff)}</h2><p class="lead">${esc3(c.product)}${deadlineLabel ? ` \xB7 until ${esc3(deadlineLabel)}` : ""}</p></div><div class="tk-r">${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>` : finStyle === "marquee" ? `<section class="fin fin-mq" data-scene style="--h:170vh"><div class="pin"><div class="mq-line" data-fx="x:10vw>-120vw" data-range="0,1">${esc3(`${bigOff} \xB7 ${c.product} \xB7 ${bigOff} \xB7 ${c.product} \xB7`)}</div><div class="fin-in">${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>` : `<section class="fin" data-scene style="--h:160vh"><div class="pin">${hero ? `<div class="fin-bg" style="${bg(hero)}" data-fx="scale:1.3>1;opacity:0.2>0.55" data-range="0,1"></div>` : ""}<div class="fin-in"><p class="ey">${esc3(eyebrow)}</p><h2 data-fx="scale:0.8>1;opacity:0>1" data-range="0,0.6" data-rest="end">${esc3(bigOff)}</h2>${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>`;
+  const finalHtml = finStyle === "ticket" ? `<section class="fin fin-ticket"><div class="tk"><div class="tk-l"><p class="ey">${esc4(eyebrow)}</p><h2>${esc4(bigOff)}</h2><p class="lead">${esc4(c.product)}${deadlineLabel ? ` \xB7 until ${esc4(deadlineLabel)}` : ""}</p></div><div class="tk-r">${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>` : finStyle === "marquee" ? `<section class="fin fin-mq" data-scene style="--h:170vh"><div class="pin"><div class="mq-line" data-fx="x:10vw>-120vw" data-range="0,1">${esc4(`${bigOff} \xB7 ${c.product} \xB7 ${bigOff} \xB7 ${c.product} \xB7`)}</div><div class="fin-in">${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>` : `<section class="fin" data-scene style="--h:160vh"><div class="pin">${hero ? `<div class="fin-bg" style="${bg(hero)}" data-fx="scale:1.3>1;opacity:0.2>0.55" data-range="0,1"></div>` : ""}<div class="fin-in"><p class="ey">${esc4(eyebrow)}</p><h2 data-fx="scale:0.8>1;opacity:0>1" data-range="0,0.6" data-rest="end">${esc4(bigOff)}</h2>${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>`;
   const faqStyle = viaWhatsApp ? "chat" : pick2(["columns", "cards", "accordion"], 16);
-  const faqHtml = !faqs.length ? "" : faqStyle === "chat" ? `<section class="faq-chat" aria-label="Questions"><div class="chat"><div class="chat-top"><span class="av">${esc3(o.brand.slice(0, 1))}</span><div><b>${esc3(o.brand)}</b><small>usually replies fast</small></div></div>${faqs.map((q) => `<p class="bub me">${esc3(q.q)}</p><p class="bub them">${esc3(q.a)}</p>`).join("")}</div></section>` : faqStyle === "columns" ? `<section class="faq-cols"><h2>Good to know</h2><dl>${faqs.map((q) => `<div><dt>${esc3(q.q)}</dt><dd>${esc3(q.a)}</dd></div>`).join("")}</dl></section>` : faqStyle === "cards" ? `<section class="faq-cards"><h2>Questions</h2><div class="qc-row">${faqs.map((q, i) => `<article class="qc"><span>Q${i + 1}</span><h3>${esc3(q.q)}</h3><p>${esc3(q.a)}</p></article>`).join("")}</div></section>` : `<section class="faq">${faqs.map((q) => `<details><summary>${esc3(q.q)}</summary><p>${esc3(q.a)}</p></details>`).join("")}</section>`;
+  const faqHtml = !faqs.length ? "" : faqStyle === "chat" ? `<section class="faq-chat" aria-label="Questions"><div class="chat"><div class="chat-top"><span class="av">${esc4(o.brand.slice(0, 1))}</span><div><b>${esc4(o.brand)}</b><small>usually replies fast</small></div></div>${faqs.map((q) => `<p class="bub me">${esc4(q.q)}</p><p class="bub them">${esc4(q.a)}</p>`).join("")}</div></section>` : faqStyle === "columns" ? `<section class="faq-cols"><h2>Good to know</h2><dl>${faqs.map((q) => `<div><dt>${esc4(q.q)}</dt><dd>${esc4(q.a)}</dd></div>`).join("")}</dl></section>` : faqStyle === "cards" ? `<section class="faq-cards"><h2>Questions</h2><div class="qc-row">${faqs.map((q, i) => `<article class="qc"><span>Q${i + 1}</span><h3>${esc4(q.q)}</h3><p>${esc4(q.a)}</p></article>`).join("")}</div></section>` : `<section class="faq">${faqs.map((q) => `<details><summary>${esc4(q.q)}</summary><p>${esc4(q.a)}</p></details>`).join("")}</section>`;
   let main;
   if (arch === "cinematic") {
     main = `
-<section class="hero-c" data-scene style="--h:260vh"><div class="pin">
+<section class="hero-c" data-scene data-hero style="--h:260vh"><div class="pin">
   <div class="hc-bg" style="${bg(hero)}" data-fx="scale:1.35>1;y:0>-6vh" data-range="0,1"></div>
   <div class="hc-sweep" data-fx="x:-60vw>60vw;opacity:0.9>0" data-range="0,0.7"></div>
   <div class="hc-shade" data-fx="opacity:0.9>0.6" data-range="0,0.6"></div>
-  <h1 class="hc-h" aria-label="${esc3(headline)}">${words(headline).map((w, i) => `<span data-fx="scale:1>${(2.6 + i % 3 * 0.6).toFixed(1)};opacity:1>0;y:0>${i % 2 ? -18 : 14}vh;blur:0>10" data-range="0.05,0.55">${w}</span>`).join(" ")}</h1>
-  <div class="hc-deal" data-fx="opacity:0>1;y:12vh>0" data-range="0.45,0.85" data-rest="end"><p class="ey">${esc3(eyebrow)} \xB7 ${esc3(o.brand)}</p>${priceHtml}${clockHtml}${btn(c.ctaText)}</div>
+  <h1 class="hc-h" aria-label="${esc4(headline)}">${words(headline).map((w, i) => `<span data-fx="scale:1>${(2.6 + i % 3 * 0.6).toFixed(1)};opacity:1>0;y:0>${i % 2 ? -18 : 14}vh;blur:0>10" data-range="0.05,0.55">${w}</span>`).join(" ")}</h1>
+  <div class="hc-deal" data-fx="opacity:0>1;y:12vh>0" data-range="0.45,0.85" data-rest="end"><p class="ey">${esc4(eyebrow)} \xB7 ${esc4(o.brand)}</p>${priceHtml}${clockHtml}${btn(c.ctaText)}</div>
   <div class="hc-scroll" data-fx="opacity:1>0" data-range="0,0.1">Scroll</div>
 </div></section>
 ${productsHtml}
@@ -41196,8 +41500,8 @@ ${faqHtml}`;
     const shots = [hero, ...gallery].filter(Boolean);
     main = `
 <section class="sp">
-  <div class="sp-l">${chapters.map((ch, i) => `<div class="chap" data-chap="${i}"><p class="ey">${i === 0 ? esc3(eventName ?? t.eyebrow) : String(i).padStart(2, "0")}</p>${i === 0 ? `<h1>${esc3(ch.h)}</h1>` : `<h2>${esc3(ch.h)}</h2>`}<p class="lead">${esc3(ch.p)}</p>${ch.extra}</div>`).join("")}</div>
-  <div class="sp-r"><div class="sp-frame">${shots.length ? shots.map((im, i) => `<div class="shot" data-shot="${i}" style="${bg(im)}" role="img" aria-label="${esc3(im.alt ?? c.product)}"></div>`).join("") : productVisual("sp-pv")}<div class="sp-tag">${esc3(off || c.product)}</div></div></div>
+  <div class="sp-l">${chapters.map((ch, i) => `<div class="chap" data-chap="${i}"><p class="ey">${i === 0 ? esc4(eventName ?? t.eyebrow) : String(i).padStart(2, "0")}</p>${i === 0 ? `<h1>${esc4(ch.h)}</h1>` : `<h2>${esc4(ch.h)}</h2>`}<p class="lead">${esc4(ch.p)}</p>${ch.extra}</div>`).join("")}</div>
+  <div class="sp-r"><div class="sp-frame">${shots.length ? shots.map((im, i) => `<div class="shot" data-shot="${i}" style="${bg(im)}" role="img" aria-label="${esc4(im.alt ?? c.product)}"></div>`).join("") : productVisual("sp-pv")}<div class="sp-tag">${esc4(off || c.product)}</div></div></div>
 </section>
 ${productsHtml}
 ${fill}
@@ -41205,27 +41509,27 @@ ${finalHtml}
 ${faqHtml}`;
   } else if (arch === "stage") {
     main = `
-<section class="st" data-scene style="--h:300vh"><div class="pin">
-  <div class="st-word" aria-hidden="true" data-fx="x:30vw>-80vw" data-range="0,1">${esc3(c.product.toUpperCase())} \xB7 ${esc3(c.product.toUpperCase())} \xB7</div>
+<section class="st${typeLed ? " typeled" : ""}" data-scene data-hero style="--h:300vh"><div class="pin">
+  <div class="st-word" aria-hidden="true" data-fx="x:30vw>-80vw" data-range="0,1">${esc4(c.product.toUpperCase())} \xB7 ${esc4(c.product.toUpperCase())} \xB7</div>
   <div class="st-spot" data-fx="scale:0.9>1.4;opacity:0.7>1" data-range="0,0.6"></div>
-  <div class="st-prod" data-fx="y:4vh>-2vh;rotate:-8>10;scale:0.92>1.12" data-range="0,0.7">${productVisual("st-pv")}<div class="st-shadow"></div></div>
-  ${["NEW", off ? off.toUpperCase() : "LIMITED", eventName ? eventName.toUpperCase() : "DROP"].map((s, i) => `<span class="stk stk${i}" data-fx="scale:0>1;rotate:${-30 + i * 20}>${-8 + i * 9}" data-range="${(0.1 + i * 0.08).toFixed(2)},${(0.3 + i * 0.08).toFixed(2)}" data-rest="end">${esc3(s)}</span>`).join("")}
-  <h1 class="st-h" data-fx="y:0>-4vh;scale:1>0.9" data-range="0,0.6">${esc3(headline)}</h1>
+  <div class="st-stage"><div class="st-prod" data-fx="${typeLed ? "y:4vh>-2vh;scale:0.94>1.06" : "y:4vh>-2vh;rotate:-8>10;scale:0.92>1.12"}" data-range="0,0.7">${productVisual("st-pv")}<div class="st-shadow"></div></div>
+  ${typeLed ? "" : ["NEW", off ? off.toUpperCase() : "LIMITED", eventName ? eventName.toUpperCase() : "DROP"].map((s, i) => `<span class="stk stk${i}" data-fx="scale:0>1;rotate:${-30 + i * 20}>${-8 + i * 9}" data-range="${(0.1 + i * 0.08).toFixed(2)},${(0.3 + i * 0.08).toFixed(2)}" data-rest="end">${esc4(s)}</span>`).join("")}</div>
+  <h1 class="st-h" data-fx="y:0>-4vh;scale:1>0.9" data-range="0,0.6">${esc4(heroHeadline)}</h1>
   <div class="st-deal" data-fx="opacity:0.0>1;y:8vh>0" data-range="0.15,0.5" data-rest="end">${priceHtml}${clockHtml}${btn(c.ctaText)}</div>
 </div></section>
 ${productsHtml}
 ${galleryHtml}
-${products.length ? "" : `<section class="rows">${c.features.map((f, i) => `<div class="row" data-depth="${(0.03 * (i % 2 ? 1 : -1)).toFixed(2)}"><span>${String(i + 1).padStart(2, "0")}</span><h3>${esc3(f.title)}</h3><p>${esc3(f.text)}</p></div>`).join("")}</section>`}
+${products.length ? "" : `<section class="rows">${c.features.map((f, i) => `<div class="row" data-depth="${(0.03 * (i % 2 ? 1 : -1)).toFixed(2)}"><span>${String(i + 1).padStart(2, "0")}</span><h3>${esc4(f.title)}</h3><p>${esc4(f.text)}</p></div>`).join("")}</section>`}
 ${fill}
 ${finalHtml}
 ${faqHtml}`;
   } else {
     main = `
 <section class="ed">
-  <p class="ey">${esc3(eyebrow)} \xB7 ${esc3(o.brand)}</p>
+  <p class="ey">${esc4(eyebrow)} \xB7 ${esc4(o.brand)}</p>
   <h1 class="ed-h">${words(headline).map((w, i) => `<span style="--i:${i}">${w}</span>`).join(" ")}</h1>
-  <div class="ed-row"><p class="lead">${esc3(c.subheadline)}</p><div>${priceHtml}${clockHtml}${btn(c.ctaText)}</div></div>
-  ${hero ? `<div class="ed-img" data-depth="-0.08" style="${bg(hero)}" role="img" aria-label="${esc3(hero.alt ?? c.product)}"></div>` : ""}
+  <div class="ed-row"><p class="lead">${esc4(c.subheadline)}</p><div>${priceHtml}${clockHtml}${btn(c.ctaText)}</div></div>
+  ${hero ? `<div class="ed-img" data-depth="-0.08" style="${bg(hero)}" role="img" aria-label="${esc4(hero.alt ?? c.product)}"></div>` : ""}
 </section>
 ${productsHtml}
 ${fill}
@@ -41248,17 +41552,17 @@ ${faqHtml}`;
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>${esc3(seoTitle)}</title>
-<meta name="description" content="${esc3(c.subheadline)}">
+<title>${esc4(seoTitle)}</title>
+<meta name="description" content="${esc4(c.subheadline)}">
 <meta name="theme-color" content="${t.bg}">
-<meta property="og:title" content="${esc3(seoTitle)}">
+<meta property="og:title" content="${esc4(seoTitle)}">
 <meta name="robots" content="index,follow,max-image-preview:large">
-<meta property="og:description" content="${esc3(c.subheadline)}">
+<meta property="og:description" content="${esc4(c.subheadline)}">
 <meta property="og:type" content="website">
-${hero ? `<meta property="og:image" content="${esc3(hero.url)}">
+${hero ? `<meta property="og:image" content="${esc4(hero.url)}">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preload" as="image" href="${esc3(hero.url)}">` : '<meta name="twitter:card" content="summary">'}
-${o.pageUrl ? `<link rel="canonical" href="${esc3(o.pageUrl)}">` : ""}
+<link rel="preload" as="image" href="${esc4(hero.url)}">` : '<meta name="twitter:card" content="summary">'}
+${o.pageUrl ? `<link rel="canonical" href="${esc4(o.pageUrl)}">` : ""}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?${fontsHref}&display=swap" rel="stylesheet">
@@ -41272,9 +41576,9 @@ ${navHtml}
 <main>
 ${main}
 </main>
-<footer class="ft-legal">${terms ? `<p id="terms"><b>Offer terms.</b> ${esc3(terms)}</p>` : ""}${credits.length ? `<p class="credits">Photos: ${credits.join(" \xB7 ")}</p>` : ""}<p>\xA9 ${(/* @__PURE__ */ new Date()).getFullYear()} ${esc3(o.brand)}</p></footer>
-<div class="sticky" data-sticky><span>${esc3(off || o.brand)}</span>${btn(c.ctaText)}</div>
-${paletteSrc ? `<img src="${esc3(paletteSrc)}" alt="" crossorigin="anonymous" data-palette hidden>` : ""}
+<footer class="ft-legal">${terms ? `<p id="terms"><b>Offer terms.</b> ${esc4(terms)}</p>` : ""}${credits.length ? `<p class="credits">Photos: ${credits.join(" \xB7 ")}</p>` : ""}<p>\xA9 ${(/* @__PURE__ */ new Date()).getFullYear()} ${esc4(o.brand)}</p></footer>
+<div class="sticky" data-sticky><span>${esc4(off || o.brand)}</span>${btn(c.ctaText)}</div>
+${paletteSrc ? `<img src="${esc4(paletteSrc)}" alt="" crossorigin="anonymous" data-palette hidden>` : ""}
 <script>${js}</script>
 </body>
 </html>
@@ -41363,7 +41667,7 @@ body.n-side main,body.n-side .ft-legal{margin-left:56px}
 .pc-img{position:relative;display:grid;place-items:center;aspect-ratio:1;background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--ac) 22%,transparent),transparent 70%)}
 .pc-img img{width:82%;height:82%;object-fit:contain;filter:drop-shadow(0 24px 24px rgba(0,0,0,.4));transition:transform .5s var(--e)}
 .pc:hover .pc-img img{transform:rotate(-8deg) scale(1.08) translateY(-4%)}
-.pc-ph{font:400 120px/1 var(--d);color:var(--ac)}
+.typeled .st-word{display:none}.typeled .st-deal .pr em{display:none}
 .pc-img em{position:absolute;top:14px;left:14px;font-style:normal;font-weight:800;font-size:13px;padding:6px 10px;border-radius:99px;background:var(--ac);color:var(--at)}
 .pc-body{padding:20px 22px 24px;display:flex;flex-direction:column;gap:6px;flex:1}.pc-body h3{font-size:24px;line-height:1.1}.pc-body p{margin:0;color:var(--mu);font-size:15px}
 .pc-pr{display:flex;gap:10px;align-items:baseline}.pc-pr b{font:400 26px/1 var(--d);color:var(--tx)}.pc-pr s{font-size:15px}
@@ -41394,11 +41698,11 @@ body.n-side main,body.n-side .ft-legal{margin-left:56px}
 .st-prod{position:relative;width:min(64vmin,560px);aspect-ratio:1;display:grid;place-items:center}
 .pv{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 40px 50px rgba(0,0,0,.45))}
 model-viewer.pv{--poster-color:transparent;background:transparent}
-.pv-type{display:grid;place-items:center;font:400 40vmin/1 var(--d);color:var(--ac)}
+.pv-stmt{display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--d);font-size:clamp(88px,min(23vw,26vmin),300px);line-height:.82;color:var(--ac);text-align:center;white-space:nowrap}.pv-stmt em{font-style:normal;font-size:.34em;letter-spacing:.06em;text-transform:uppercase;color:var(--tx);margin-top:.1em}
 .st-shadow{position:absolute;bottom:4%;left:20%;right:20%;height:24px;border-radius:50%;background:rgba(0,0,0,.5);filter:blur(14px);z-index:-1}
 .stk{position:absolute;padding:10px 16px;border-radius:999px;font:800 14px/1 var(--b);letter-spacing:.12em;background:var(--ac);color:var(--at);box-shadow:0 14px 30px -10px rgba(0,0,0,.5)}
 .stk0{top:16%;left:14%}.stk1{top:22%;right:12%;background:var(--tx);color:var(--bg)}.stk2{bottom:30%;left:10%;background:var(--ac2);color:var(--at)}
-.st-h{position:absolute;top:9vh;left:0;right:0;text-align:center;font-size:clamp(40px,6vw,96px);line-height:.95;padding:0 5vw}
+.st-h{position:absolute;top:max(13vh,92px);left:0;right:0;text-align:center;font-size:clamp(40px,6vw,96px);line-height:.95;padding:0 5vw}
 .st-deal{position:absolute;bottom:7vh;left:0;right:0;display:flex;flex-direction:column;align-items:center;text-align:center}
 .st-deal .pr,.st-deal .ck{justify-content:center}
 @media(min-width:1000px){.st-deal{left:auto;right:6vw;bottom:9vh;max-width:380px;align-items:flex-end;text-align:right}.st-deal .pr,.st-deal .ck{justify-content:flex-end}}
@@ -41449,6 +41753,28 @@ model-viewer.pv{--poster-color:transparent;background:transparent}
 .sticky.show{transform:none}.sticky .b{padding:12px 18px;font-size:14px;width:auto;height:auto;border-radius:999px;box-shadow:none;flex-direction:row}.sticky span{font-weight:600;font-size:14px}
 body.n-pill .sticky{display:none}
 @media(min-width:900px){.sticky{display:none}}
+.st-stage{display:contents}
+/* phones and tablets: the opening section is laid out top to bottom, nothing overlaps */
+@media(max-width:899px){
+[data-hero]{height:auto!important}[data-hero]>.pin{position:relative;height:auto;min-height:0;overflow:hidden}
+.nv-center,.nv-split{position:absolute}.nv-split{mix-blend-mode:normal;color:var(--tx)}
+.st .pin{display:flex;flex-direction:column;align-items:center;gap:26px;padding:92px 18px 56px}
+.st-word,.st-shadow{display:none}
+.st-spot{top:150px;left:50%;translate:-50% 0;width:120vw;height:120vw;max-width:680px;max-height:680px}
+.st-h{order:-1;position:relative;top:auto;left:auto;right:auto;padding:0;font-size:clamp(38px,10.5vw,72px);line-height:1}
+.st-stage{display:block;position:relative;width:min(80vw,460px);aspect-ratio:1}
+.st-prod{width:100%;height:100%}
+.stk{padding:8px 13px;font-size:11px;letter-spacing:.1em;z-index:2}
+.stk0{top:0;left:-2%}.stk1{top:9%;right:-3%;left:auto}.stk2{bottom:2%;left:2%;top:auto}
+.st-deal{position:relative;bottom:auto;left:auto;right:auto;width:100%;max-width:460px}
+.hero-c .pin{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;gap:22px;padding:110px 18px 44px}
+.hc-sweep,.hc-scroll{display:none}
+.hc-h{position:relative;inset:auto;padding:0;font-size:clamp(46px,13vw,104px);justify-content:flex-start;text-align:left}
+.hc-deal{position:relative;left:auto;bottom:auto;opacity:1;max-width:none}
+.pr b{font-size:clamp(36px,10vw,52px)}.pr s{font-size:17px}
+.b-disc{width:100%;max-width:460px;height:auto;min-height:58px;border-radius:999px;flex-direction:row;gap:10px;padding:16px 24px;font-size:17px}
+.st-deal .b,.hc-deal .b-pill,.hc-deal .b-block{width:100%;max-width:460px;justify-content:center}
+}
 @media(prefers-reduced-motion:reduce){[data-scene]{height:auto!important}[data-scene]>.pin{position:relative;height:auto;min-height:100vh;overflow:visible}.ed-h span{animation:none}.hc-h{position:relative;min-height:60vh}.hc-deal,.st-h,.st-deal{position:relative;inset:auto;opacity:1!important;transform:none!important;margin:24px auto}.fill span{opacity:1}.shot{transition:none}.hc-scroll::after{animation:none}}
 `;
 }
@@ -41456,6 +41782,7 @@ function buildJs({ deadlineMs, hasPaletteImg }) {
   return `
 (function(){
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var compact=matchMedia('(max-width: 899px)');
 var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
 function clamp(v){return v<0?0:v>1?1:v}
 function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
@@ -41464,14 +41791,17 @@ function parse(el){var r=(el.getAttribute('data-range')||'0,1').split(',').map(N
 function apply(it,p){var t=ease(clamp((p-it.r[0])/((it.r[1]-it.r[0])||1)));var tr={x:0,y:0,s:1,r:0},op=null,bl=0,xu='px',yu='px';
 it.props.forEach(function(q){var v=q.a+(q.b-q.a)*t;if(q.k==='x'){tr.x=v;xu=q.u||'px'}else if(q.k==='y'){tr.y=v;yu=q.u||'px'}else if(q.k==='scale')tr.s=v;else if(q.k==='rotate')tr.r=v;else if(q.k==='opacity')op=v;else if(q.k==='blur')bl=v});
 it.el.style.transform='translate3d('+tr.x+xu+','+tr.y+yu+',0) scale('+tr.s+') rotate('+tr.r+'deg)';if(op!==null)it.el.style.opacity=op;it.el.style.filter=bl?'blur('+bl+'px)':''}
-var scenes=$$('[data-scene]').map(function(s){return{el:s,items:$$('[data-fx]',s).map(parse),track:s.querySelector('[data-track]'),fill:$$('[data-fill] span',s),video:s.querySelector('[data-scrub]'),orbit:s.querySelector('[data-orbit]'),p:0,sp:-1}});
+var scenes=$$('[data-scene]').map(function(s){return{el:s,hero:s.hasAttribute('data-hero'),flat:false,items:$$('[data-fx]',s).map(parse),track:s.querySelector('[data-track]'),fill:$$('[data-fill] span',s),video:s.querySelector('[data-scrub]'),orbit:s.querySelector('[data-orbit]'),p:0,sp:-1}});
 var loose=$$('[data-fx]').filter(function(el){return!el.closest('[data-scene]')}).map(parse);
 var depth=$$('[data-depth]');
 if(reduce){scenes.forEach(function(sc){sc.items.forEach(function(it){apply(it,it.rest==='end'?1:0)})});return startClock()}
 function progress(el){var r=el.getBoundingClientRect(),h=r.height-innerHeight;return h>0?clamp(-r.top/h):clamp((innerHeight-r.top)/(innerHeight+r.height))}
 var running=false;
 function frame(){var moving=false;
-scenes.forEach(function(sc){var target=progress(sc.el);sc.p+=(target-sc.p)*0.14;if(Math.abs(target-sc.p)>0.0004)moving=true;else sc.p=target;
+scenes.forEach(function(sc){
+if(sc.hero&&compact.matches){if(!sc.flat){sc.flat=true;sc.items.forEach(function(it){it.el.style.transform='';it.el.style.opacity='';it.el.style.filter=''})}return}
+if(sc.flat){sc.flat=false;sc.sp=-1}
+var target=progress(sc.el);sc.p+=(target-sc.p)*0.14;if(Math.abs(target-sc.p)>0.0004)moving=true;else sc.p=target;
 if(Math.abs(sc.p-sc.sp)<0.00005)return;sc.sp=sc.p;var p=sc.p;
 sc.items.forEach(function(it){apply(it,p)});
 if(sc.track){var w=sc.track.scrollWidth-innerWidth+40;sc.track.style.transform='translate3d('+(-Math.max(0,w)*ease(clamp((p-0.08)/0.84)))+'px,0,0)'}
@@ -41517,8 +41847,8 @@ function money(price, original) {
   const sym = (v) => (String(v ?? "").match(/^[^\d]*/) ?? [""])[0];
   const now = num(price), was = num(original);
   if (!now || !was || was <= now || sym(price) !== sym(original)) return null;
-  const save = was - now;
-  return `${sym(price)}${Number.isInteger(save) ? save : save.toFixed(2)}`;
+  const save2 = was - now;
+  return `${sym(price)}${Number.isInteger(save2) ? save2 : save2.toFixed(2)}`;
 }
 var SWING_JS = `
 function swing(el,o){o=o||{};var a=o.a0||0,v=0,last=performance.now(),k=o.k||.010,damp=o.damp||.03;
@@ -41528,48 +41858,48 @@ addEventListener('scroll',function(){v+=(o.scroll||.0004)*(Math.random()-.5)*8},
 setInterval(function(){v+=(Math.random()-.5)*(o.idle||.006)},2600)}`;
 var SCENES = {
   // ---------------------------------------------------------------- Black Friday
-  "black-friday": ({ esc: esc3, c, o, t, discount, deadlineMs, deadlineLabel, btn, year, terms }) => {
-    const save = money(o.price, o.originalPrice);
-    const rows = c.features.slice(0, 4).map((f) => `<div class="r"><span>${esc3(f.title)}</span><i></i><span>\u2713</span></div>`).join("");
-    const priceRows = o.price ? `${o.originalPrice ? `<div class="r"><span>Regular price</span><i></i><span>${esc3(o.originalPrice)}</span></div>` : ""}${save ? `<div class="r hi"><span>Black Friday</span><i></i><span>-${esc3(save)}</span></div>` : ""}<div class="r total"><span>Total</span><i></i><span>${esc3(o.price)}</span></div>` : `<div class="r total"><span>Discount</span><i></i><span>${discount ? `${discount}% off` : esc3(c.offer ?? "Applied")}</span></div>`;
+  "black-friday": ({ esc: esc4, c, o, t, discount, deadlineMs, deadlineLabel, btn, year, terms }) => {
+    const save2 = money(o.price, o.originalPrice);
+    const rows = c.features.slice(0, 4).map((f) => `<div class="r"><span>${esc4(f.title)}</span><i></i><span>\u2713</span></div>`).join("");
+    const priceRows = o.price ? `${o.originalPrice ? `<div class="r"><span>Regular price</span><i></i><span>${esc4(o.originalPrice)}</span></div>` : ""}${save2 ? `<div class="r hi"><span>Black Friday</span><i></i><span>-${esc4(save2)}</span></div>` : ""}<div class="r total"><span>Total</span><i></i><span>${esc4(o.price)}</span></div>` : `<div class="r total"><span>Discount</span><i></i><span>${discount ? `${discount}% off` : esc4(c.offer ?? "Applied")}</span></div>`;
     return {
       fonts: ["Anton", "IBM Plex Mono", "Inter"],
       particles: "none",
       body: `
 <header class="bf">
   <div class="wrap bf-grid">
-    <h1 class="bf-type" aria-label="${esc3(c.headline)}"><span class="l1">Black</span><span class="l2">Friday</span><span class="l3">${year}</span></h1>
+    <h1 class="bf-type" aria-label="${esc4(c.headline)}"><span class="l1">Black</span><span class="l2">Friday</span><span class="l3">${year}</span></h1>
     <div class="hang" aria-hidden="true"><svg class="string" viewBox="0 0 10 120"><path d="M5 0 V120"/></svg>
-      <div class="tag" data-swing><span class="hole"></span><span class="t-brand">${esc3(o.brand)}</span><span class="t-big">${discount ? `-${discount}<small>%</small>` : esc3(c.offer ?? "SALE")}</span><span class="t-sm">${deadlineLabel ? `Ends ${esc3(deadlineLabel.split(",")[0])}` : "Limited time"}</span></div>
+      <div class="tag" data-swing><span class="hole"></span><span class="t-brand">${esc4(o.brand)}</span><span class="t-big">${discount ? `-${discount}<small>%</small>` : esc4(c.offer ?? "SALE")}</span><span class="t-sm">${deadlineLabel ? `Ends ${esc4(deadlineLabel.split(",")[0])}` : "Limited time"}</span></div>
     </div>
   </div>
   <div class="wrap bf-deal">
     <div>
-      <p class="kick">${esc3(c.headline)}</p>
-      <p class="lede">${esc3(c.subheadline)}</p>
+      <p class="kick">${esc4(c.headline)}</p>
+      <p class="lede">${esc4(c.subheadline)}</p>
     </div>
     <div class="deal">
-      ${o.price ? `<div class="prices"><span class="now">${esc3(o.price)}<svg class="circle" viewBox="0 0 200 90" preserveAspectRatio="none" aria-hidden="true"><path d="M20 50 C 15 15, 175 5, 185 40 S 60 95, 25 60"/></svg></span>${o.originalPrice ? `<span class="was"><span class="sr">Was </span>${esc3(o.originalPrice)}<svg class="strike" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 14 C 30 6, 60 16, 98 4"/></svg></span>` : ""}</div>` : ""}
+      ${o.price ? `<div class="prices"><span class="now">${esc4(o.price)}<svg class="circle" viewBox="0 0 200 90" preserveAspectRatio="none" aria-hidden="true"><path d="M20 50 C 15 15, 175 5, 185 40 S 60 95, 25 60"/></svg></span>${o.originalPrice ? `<span class="was"><span class="sr">Was </span>${esc4(o.originalPrice)}<svg class="strike" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 14 C 30 6, 60 16, 98 4"/></svg></span>` : ""}</div>` : ""}
       ${deadlineMs ? `<p class="mono-cd" data-cd>Ends in <b data-u="d">00</b>d <b data-u="h">00</b>h <b data-u="m">00</b>m <b data-u="s">00</b>s</p>` : ""}
       ${btn(c.ctaText, "bf-btn")}
     </div>
   </div>
-  <div class="bf-tape" aria-hidden="true"><div class="track">${Array(8).fill(`<span>${esc3((c.offer ?? "Black Friday").toUpperCase())}</span><span>\u2715</span><span>BLACK FRIDAY ${year}</span><span>\u2715</span>`).join("")}</div></div>
+  <div class="bf-tape" aria-hidden="true"><div class="track">${Array(8).fill(`<span>${esc4((c.offer ?? "Black Friday").toUpperCase())}</span><span>\u2715</span><span>BLACK FRIDAY ${year}</span><span>\u2715</span>`).join("")}</div></div>
 </header>
 <section class="bf-receipt wrap">
   <div class="rc-copy">
     <h2>Your receipt,<br>before you even check out.</h2>
-    <p>${esc3(save ? `That is ${save} back in your pocket.` : c.subheadline)}</p>
-    ${c.faq.map((x) => `<details><summary>${esc3(x.q)}</summary><p>${esc3(x.a)}</p></details>`).join("")}
+    <p>${esc4(save2 ? `That is ${save2} back in your pocket.` : c.subheadline)}</p>
+    ${c.faq.map((x) => `<details><summary>${esc4(x.q)}</summary><p>${esc4(x.a)}</p></details>`).join("")}
   </div>
   <div class="receipt" data-print>
-    <div class="rc-head"><b>${esc3(o.brand.toUpperCase())}</b><span>BLACK FRIDAY ${year}</span><span>${esc3(c.product.toUpperCase())}</span></div>
+    <div class="rc-head"><b>${esc4(o.brand.toUpperCase())}</b><span>BLACK FRIDAY ${year}</span><span>${esc4(c.product.toUpperCase())}</span></div>
     <div class="cut"></div>
     ${rows}
     <div class="cut"></div>
     ${priceRows}
     <div class="cut"></div>
-    ${deadlineLabel ? `<div class="r"><span>Valid until</span><i></i><span>${esc3(deadlineLabel)}</span></div>` : ""}
+    ${deadlineLabel ? `<div class="r"><span>Valid until</span><i></i><span>${esc4(deadlineLabel)}</span></div>` : ""}
     ${barcode(o.brand.length * 7919 + year)}
     <p class="thanks">*** THANK YOU ***</p>
   </div>
@@ -41637,7 +41967,7 @@ var rc=document.querySelector('[data-print]');if(rc){if(reduce||!('IntersectionO
     };
   },
   // ---------------------------------------------------------------- Christmas
-  christmas: ({ esc: esc3, c, o, discount, deadlineMs, deadlineLabel, btn }) => {
+  christmas: ({ esc: esc4, c, o, discount, deadlineMs, deadlineLabel, btn }) => {
     const palette = [["#b91c1c", "#7f1d1d"], ["#e8b04b", "#a16207"], ["#f5f5f4", "#a8a29e"], ["#166534", "#052e16"], ["#be123c", "#4c0519"]];
     const orn = [
       { x: 6, len: 120, r: 46, p: 0 },
@@ -41652,7 +41982,7 @@ var rc=document.querySelector('[data-print]');if(rc){if(reduce||!('IntersectionO
 <rect x="-10" y="-62" width="20" height="14" rx="3" fill="#d4a94a"/><circle cx="0" cy="-66" r="6" fill="none" stroke="#d4a94a" stroke-width="2"/>
 <circle r="50" fill="url(#g${id})"/><ellipse cx="-18" cy="-22" rx="12" ry="7" fill="#fff" opacity=".45" transform="rotate(-35 -18 -22)"/>${inner}</svg>`;
     const hanging = orn.map((b, i) => `<div class="orn" style="left:${b.x}%;--len:${b.len}px" data-orn><span class="str"></span>${bauble(i, b.r, palette[b.p])}</div>`).join("");
-    const hero = `<div class="orn hero-orn" data-orn><span class="str"></span>${bauble("h", 120, ["#c81e1e", "#5c0a0a"], `<text y="6" text-anchor="middle" font-family="Fraunces,serif" font-size="${discount ? 34 : 18}" font-style="italic" fill="#f8e7c0">${discount ? `${discount}%` : esc3((c.offer ?? "Gift").slice(0, 10))}</text><text y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" letter-spacing="3" fill="#f8e7c0">${discount ? "OFF" : ""}</text>`)}</div>`;
+    const hero = `<div class="orn hero-orn" data-orn><span class="str"></span>${bauble("h", 120, ["#c81e1e", "#5c0a0a"], `<text y="6" text-anchor="middle" font-family="Fraunces,serif" font-size="${discount ? 34 : 18}" font-style="italic" fill="#f8e7c0">${discount ? `${discount}%` : esc4((c.offer ?? "Gift").slice(0, 10))}</text><text y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" letter-spacing="3" fill="#f8e7c0">${discount ? "OFF" : ""}</text>`)}</div>`;
     return {
       fonts: ["Fraunces", "Inter", "Caveat"],
       particles: "snow",
@@ -41661,24 +41991,24 @@ var rc=document.querySelector('[data-print]');if(rc){if(reduce||!('IntersectionO
   <div class="ceiling" aria-hidden="true">${hanging}</div>
   <div class="wrap xm-in">
     ${hero}
-    <p class="xm-eyebrow" data-reveal>${esc3(o.brand)} \xB7 Holiday ${(/* @__PURE__ */ new Date()).getFullYear()}</p>
-    <h1 class="kin">${c.headline.split(/\s+/).map((w, i) => `<span class="w" style="--i:${i}"><span>${esc3(w)}</span></span>`).join(" ")}</h1>
-    <p class="sub" data-reveal>${esc3(c.subheadline)}</p>
-    ${o.price ? `<p class="xm-price" data-reveal><span>${esc3(o.price)}</span>${o.originalPrice ? `<s><span class="sr">Was </span>${esc3(o.originalPrice)}</s>` : ""}</p>` : ""}
+    <p class="xm-eyebrow" data-reveal>${esc4(o.brand)} \xB7 Holiday ${(/* @__PURE__ */ new Date()).getFullYear()}</p>
+    <h1 class="kin">${c.headline.split(/\s+/).map((w, i) => `<span class="w" style="--i:${i}"><span>${esc4(w)}</span></span>`).join(" ")}</h1>
+    <p class="sub" data-reveal>${esc4(c.subheadline)}</p>
+    ${o.price ? `<p class="xm-price" data-reveal><span>${esc4(o.price)}</span>${o.originalPrice ? `<s><span class="sr">Was </span>${esc4(o.originalPrice)}</s>` : ""}</p>` : ""}
     ${deadlineMs ? `<div class="xm-cd" data-cd data-reveal>${["Days", "Hours", "Minutes", "Seconds"].map((u) => `<div><b data-u="${u[0].toLowerCase()}">00</b><span>${u}</span></div>`).join("<i></i>")}</div>` : ""}
     <div data-reveal>${btn(c.ctaText, "foil")}</div>
-    ${deadlineLabel ? `<p class="fine" data-reveal>Order before <time data-deadline-label>${esc3(deadlineLabel)}</time>.</p>` : ""}
+    ${deadlineLabel ? `<p class="fine" data-reveal>Order before <time data-deadline-label>${esc4(deadlineLabel)}</time>.</p>` : ""}
   </div>
 </header>
 <section class="xm-gift wrap">
   <div class="gtag" data-reveal>
     <span class="ghole" aria-hidden="true"></span>
-    <p class="hand">To: someone special<br>From: ${esc3(o.brand)}</p>
-    <ul>${c.features.map((f) => `<li><b>${esc3(f.title)}</b><span>${esc3(f.text)}</span></li>`).join("")}</ul>
+    <p class="hand">To: someone special<br>From: ${esc4(o.brand)}</p>
+    <ul>${c.features.map((f) => `<li><b>${esc4(f.title)}</b><span>${esc4(f.text)}</span></li>`).join("")}</ul>
   </div>
   <div class="xm-faq">
     <h2 data-reveal>Good to know</h2>
-    ${c.faq.map((x) => `<details data-reveal><summary>${esc3(x.q)}</summary><p>${esc3(x.a)}</p></details>`).join("")}
+    ${c.faq.map((x) => `<details data-reveal><summary>${esc4(x.q)}</summary><p>${esc4(x.a)}</p></details>`).join("")}
     <div data-reveal style="margin-top:36px">${btn(c.ctaText, "foil")}</div>
     <p class="ended" data-ended hidden>This offer has ended. Merry Christmas from all of us.</p>
   </div>
@@ -41719,15 +42049,15 @@ if(fx)Array.prototype.forEach.call(document.querySelectorAll('[data-orn]'),funct
     };
   },
   // ---------------------------------------------------------------- Cyber Monday
-  "cyber-monday": ({ esc: esc3, c, o, discount, deadlineMs, deadlineLabel, btn }) => {
+  "cyber-monday": ({ esc: esc4, c, o, discount, deadlineMs, deadlineLabel, btn }) => {
     const big = discount ? `${discount}% OFF` : (c.offer ?? "CYBER DEAL").toUpperCase();
     const lines = [
-      `<span class="pr">$</span> ./cyber-monday --brand "${esc3(o.brand)}"`,
+      `<span class="pr">$</span> ./cyber-monday --brand "${esc4(o.brand)}"`,
       `<span class="ok">&gt;</span> loading deals.......... <span class="ok">done</span>`,
-      `<span class="ok">&gt;</span> product: <span class="hl">${esc3(c.product)}</span>`,
-      discount ? `<span class="ok">&gt;</span> discount: <span class="hl">${discount}%</span>` : `<span class="ok">&gt;</span> offer: <span class="hl">${esc3(c.offer ?? "online only")}</span>`,
-      o.price ? `<span class="ok">&gt;</span> price: <span class="hl">${esc3(o.price)}</span>${o.originalPrice ? ` <span class="dim">(was ${esc3(o.originalPrice)})</span>` : ""}` : null,
-      deadlineLabel ? `<span class="ok">&gt;</span> valid_until: <span class="hl">${esc3(deadlineLabel)}</span>` : null,
+      `<span class="ok">&gt;</span> product: <span class="hl">${esc4(c.product)}</span>`,
+      discount ? `<span class="ok">&gt;</span> discount: <span class="hl">${discount}%</span>` : `<span class="ok">&gt;</span> offer: <span class="hl">${esc4(c.offer ?? "online only")}</span>`,
+      o.price ? `<span class="ok">&gt;</span> price: <span class="hl">${esc4(o.price)}</span>${o.originalPrice ? ` <span class="dim">(was ${esc4(o.originalPrice)})</span>` : ""}` : null,
+      deadlineLabel ? `<span class="ok">&gt;</span> valid_until: <span class="hl">${esc4(deadlineLabel)}</span>` : null,
       `<span class="pr">$</span> <span class="cursor"></span>`
     ].filter(Boolean);
     return {
@@ -41740,16 +42070,16 @@ if(fx)Array.prototype.forEach.call(document.querySelectorAll('[data-orn]'),funct
       <div class="bar3"><i></i><i></i><i></i><span>cyber_monday.sh</span></div>
       <pre class="screen">${lines.map((l, i) => `<span class="ln" style="--n:${i}">${l}</span>`).join("")}</pre>
     </div>
-    <h1 class="glitch" data-text="${esc3(big)}">${esc3(big)}</h1>
-    <p class="cy-sub" data-reveal>${esc3(c.headline)} ${esc3(c.subheadline)}</p>
+    <h1 class="glitch" data-text="${esc4(big)}">${esc4(big)}</h1>
+    <p class="cy-sub" data-reveal>${esc4(c.headline)} ${esc4(c.subheadline)}</p>
     ${deadlineMs ? `<div class="flaps" data-cd data-reveal>${["d", "h", "m", "s"].map((u) => `<div><b data-u="${u}">00</b><span>${u}</span></div>`).join("<em>:</em>")}</div>` : ""}
     <div data-reveal>${btn(`${c.ctaText}`, "cy-btn")}</div>
   </div>
 </header>
 <section class="wrap cy-log">
-  <h2 data-reveal>&gt; why_${esc3(o.brand.toLowerCase().replace(/[^a-z0-9]+/g, "_"))}</h2>
-  <ul>${c.features.map((f, i) => `<li data-reveal style="--d:${i}"><span class="okb">[ OK ]</span><b>${esc3(f.title)}</b><span class="dim">${esc3(f.text)}</span></li>`).join("")}</ul>
-  ${c.faq.length ? `<h2 data-reveal style="margin-top:72px">&gt; faq</h2>${c.faq.map((x) => `<details data-reveal><summary>? ${esc3(x.q)}</summary><p>&gt; ${esc3(x.a)}</p></details>`).join("")}` : ""}
+  <h2 data-reveal>&gt; why_${esc4(o.brand.toLowerCase().replace(/[^a-z0-9]+/g, "_"))}</h2>
+  <ul>${c.features.map((f, i) => `<li data-reveal style="--d:${i}"><span class="okb">[ OK ]</span><b>${esc4(f.title)}</b><span class="dim">${esc4(f.text)}</span></li>`).join("")}</ul>
+  ${c.faq.length ? `<h2 data-reveal style="margin-top:72px">&gt; faq</h2>${c.faq.map((x) => `<details data-reveal><summary>? ${esc4(x.q)}</summary><p>&gt; ${esc4(x.a)}</p></details>`).join("")}` : ""}
   <div class="cy-final" data-reveal>${btn(c.ctaText, "cy-btn lg")}<p class="ended" data-ended hidden>&gt; offer expired. thanks for shopping.</p></div>
 </section>`,
       css: `
@@ -41796,25 +42126,25 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:50;bac
     };
   },
   // ---------------------------------------------------------------- New Year
-  "new-year": ({ esc: esc3, c, o, discount, deadlineMs, deadlineLabel, btn, year }) => ({
+  "new-year": ({ esc: esc4, c, o, discount, deadlineMs, deadlineLabel, btn, year }) => ({
     fonts: ["Playfair Display", "Inter"],
     particles: "fireworks",
     body: `
 <header class="ny">
   <div class="yr" aria-hidden="true">${year + 1}</div>
   <div class="wrap ny-in">
-    <p class="ny-eyebrow" data-reveal>${esc3(o.brand)} presents</p>
-    <h1 class="kin">${c.headline.split(/\s+/).map((w, i) => `<span class="w" style="--i:${i}"><span>${esc3(w)}</span></span>`).join(" ")}</h1>
+    <p class="ny-eyebrow" data-reveal>${esc4(o.brand)} presents</p>
+    <h1 class="kin">${c.headline.split(/\s+/).map((w, i) => `<span class="w" style="--i:${i}"><span>${esc4(w)}</span></span>`).join(" ")}</h1>
     ${deadlineMs ? `<div class="clock" data-cd data-reveal aria-label="Time left">${["d", "h", "m", "s"].map((u, i) => `<div class="fl"><b data-u="${u}">00</b><span>${["Days", "Hours", "Min", "Sec"][i]}</span></div>`).join("")}</div>` : ""}
-    <p class="sub" data-reveal>${esc3(c.subheadline)}</p>
+    <p class="sub" data-reveal>${esc4(c.subheadline)}</p>
     <div data-reveal>${btn(c.ctaText, "gold")}</div>
-    ${deadlineLabel ? `<p class="fine" data-reveal>Ends <time data-deadline-label>${esc3(deadlineLabel)}</time></p>` : ""}
+    ${deadlineLabel ? `<p class="fine" data-reveal>Ends <time data-deadline-label>${esc4(deadlineLabel)}</time></p>` : ""}
   </div>
 </header>
 <section class="wrap ny-res">
   <h2 data-reveal>Your ${year + 1} resolutions,<br><em>sorted.</em></h2>
-  <ol>${c.features.map((f, i) => `<li data-reveal style="--d:${i}"><span class="no">No. ${i + 1}</span><div><b>${esc3(f.title)}</b><p>${esc3(f.text)}</p></div></li>`).join("")}</ol>
-  ${c.faq.map((x) => `<details data-reveal><summary>${esc3(x.q)}</summary><p>${esc3(x.a)}</p></details>`).join("")}
+  <ol>${c.features.map((f, i) => `<li data-reveal style="--d:${i}"><span class="no">No. ${i + 1}</span><div><b>${esc4(f.title)}</b><p>${esc4(f.text)}</p></div></li>`).join("")}</ol>
+  ${c.faq.map((x) => `<details data-reveal><summary>${esc4(x.q)}</summary><p>${esc4(x.a)}</p></details>`).join("")}
   <div class="ny-final" data-reveal>${btn(c.ctaText, "gold lg")}<p class="ended" data-ended hidden>This offer has ended. Happy New Year!</p></div>
 </section>`,
     css: `
@@ -42374,8 +42704,11 @@ function buildPlan(o) {
   }
   if (sellsProducts) focus = focus.filter((e) => e.salesAppropriate || wanted.includes(e.id));
   const observances = all.filter((e) => !e.salesAppropriate && e.date >= start && e.date <= end && e.relevance.score > 0);
-  const discount = offer?.type === "percent" ? `${offer.value}%` : "the sale price";
-  const fill = (t) => t.replace("{product}", product).replace("{discount}", discount).replace("{date}", "this week");
+  const deck = hookDeck({ nicheHooks: niche.hooks, product, discount: offer?.type === "percent" ? `${offer.value}%` : null, brand: o.brand ?? "us" });
+  const featured = (o.featured ?? []).filter(Boolean).slice(0, 5);
+  const weights = featured.flatMap((name, i) => Array(Math.max(1, 3 - i)).fill(name));
+  let featureIdx = 0;
+  const feature = () => weights.length ? weights[featureIdx++ % weights.length] : void 0;
   const slots = [];
   const weekCount = {};
   let pillarIdx = 0;
@@ -42387,13 +42720,13 @@ function buildPlan(o) {
     const week = Math.floor(diffDays(start, d) / 7);
     platforms.forEach((platformId, pi) => {
       const p = PLATFORMS[platformId];
-      const cap2 = Math.min(perWeek, p.cadencePerWeek ?? 7);
-      const regular = DAY_SETS[cap2].includes(weekday(d));
+      const cap3 = Math.min(perWeek, p.cadencePerWeek ?? 7);
+      const regular = DAY_SETS[cap3].includes(weekday(d));
       const keySend = mustPost || top?.phase === "early-access" && (platformId === "email" || platformId === "whatsapp");
       const key = `${platformId}:${week}`;
       if (!regular && !keySend && !observance) return;
       const inbox = platformId === "email" || platformId === "whatsapp";
-      if ((weekCount[key] ?? 0) >= (keySend ? inbox ? cap2 + 1 : Infinity : cap2)) return;
+      if ((weekCount[key] ?? 0) >= (keySend ? inbox ? cap3 + 1 : Infinity : cap3)) return;
       weekCount[key] = (weekCount[key] ?? 0) + 1;
       const formatIds = Object.keys(p.formats).filter((f2) => !["thumbnail", "event-cover", "catalog"].includes(f2));
       const format = formatIds[(slots.length + pi) % formatIds.length];
@@ -42421,7 +42754,8 @@ function buildPlan(o) {
           objective: ph.objective,
           cta: sellsProducts ? ph.cta : "Save / share / follow",
           angle,
-          hook: fill(niche.hooks[(slots.length + pi) % niche.hooks.length]),
+          hook: deck.next(top.phase, top.ev.name),
+          ...featured.length && ["warm-up", "early-access", "launch", "last-chance"].includes(top.phase) ? { feature: feature() } : {},
           hashtags: top.ev.hashtags.slice(0, 3),
           ...observance ? { caution: `Also ${observance.name}: keep the tone respectful and leave remembrance imagery out of sales content.` } : {}
         };
@@ -42433,7 +42767,7 @@ function buildPlan(o) {
           objective: pillar.objective,
           cta: pillar.cta,
           angle: `${pillar.id.replace(/-/g, " ")}: ${niche.label.toLowerCase()}`,
-          hook: fill(niche.hooks[pillarIdx % niche.hooks.length])
+          hook: deck.next("evergreen")
         };
       }
       const f = p.formats[format];
@@ -42458,6 +42792,7 @@ function buildPlan(o) {
     product,
     offer,
     interpreted: { platforms, regions, niche: niche.label, notes },
+    ...featured.length ? { featured } : {},
     window: { start, end },
     cadence: Object.fromEntries(platforms.map((p) => [p, `${Math.min(perWeek, PLATFORMS[p].cadencePerWeek ?? 7)}/week + key sale days`])),
     platforms,
@@ -42479,8 +42814,281 @@ function buildPlan(o) {
   };
 }
 
+// src/captions.js
+var X_LIMIT = 280;
+var LINK_LEN = 23;
+var xLength = (s) => s.replace(/https?:\/\/\S+/g, "x".repeat(LINK_LEN)).length;
+var sentence = (s) => s && !/[.!?]$/.test(s.trim()) ? `${s.trim()}.` : s?.trim();
+function captionsFor(c) {
+  const item = c.items?.[0];
+  const priceOf = (p) => p?.price ? `${p.price}${p.originalPrice ? ` (was ${p.originalPrice})` : ""}` : null;
+  const offerLine = c.offTxt ? `${cap2(c.offTxt)}${c.kind === "product" && item ? "" : ` ${c.product}`}${c.event ? ` this ${c.event}` : ""}.` : c.event ? `${c.event} at ${c.brand}.` : null;
+  const num = (v) => Number(String(v ?? "").replace(/[^0-9.]/g, "")) || null;
+  const priced = (c.items ?? []).filter((p) => num(p.price));
+  const lowest = priced.length > 1 ? priced.reduce((a, b) => num(b.price) < num(a.price) ? b : a) : null;
+  const generic = item && item.name === c.product;
+  const middle = c.kind === "product" && item ? [`${item.name}: ${priceOf(item) ?? "message us for the price"}.`, item.note ? sentence(item.note) : null].filter(Boolean) : c.kind === "list" ? c.items.slice(0, 5).map((p) => `${p.name}${p.price ? `: ${priceOf(p)}` : ""}`) : c.kind === "last-call" ? [] : lowest ? [`Prices from ${lowest.price}.`] : item?.price ? [`${generic ? "Now" : `${item.name} now`} ${priceOf(item)}.`] : [];
+  const endsLine = c.ends ? `Offer ${c.ends.charAt(0).toLowerCase()}${c.ends.slice(1)}.` : null;
+  const igAction = c.isWhatsApp ? "Tap the link in our bio to order on WhatsApp." : "Shop through the link in our bio.";
+  const tags = (c.tags ?? []).slice(0, 5).join(" ");
+  const body = c.kind === "product" ? [...middle, offerLine] : [offerLine, ...middle];
+  const instagram = [c.hook, "", ...body, endsLine, "", igAction, "", tags].filter((l, i, a) => l !== null && !(l === "" && a[i - 1] === "")).join("\n").trim();
+  const waOffer = c.offTxt ? `${c.offTxt} ${c.product}` : null;
+  const waGreeting = c.kind === "last-call" ? `Quick reminder from ${c.brand}: ${waOffer ?? "the sale"} ${c.ends ? c.ends.replace(/^Ends/, "ends") : "ends soon"}.` : `Hi! ${c.event ? `It's ${c.event} at ${c.brand}` : `New at ${c.brand}`}${waOffer && c.kind !== "product" ? `: ${waOffer}` : ""}.`;
+  const whatsapp = [waGreeting, ...middle, c.kind === "last-call" ? null : endsLine, c.link ? `Order here: ${c.link}` : "Reply to this message to order."].filter(Boolean).join("\n");
+  let x = [c.hook, c.offTxt && !c.hook.toLowerCase().includes(c.offTxt.toLowerCase()) ? cap2(c.offTxt) + "." : null, endsLine, c.link].filter(Boolean).join(" ");
+  if (c.tags?.[0] && xLength(`${x} ${c.tags[0]}`) <= X_LIMIT) x += ` ${c.tags[0]}`;
+  while (xLength(x) > X_LIMIT) x = x.replace(/\s*\S+(?=\s+https?:\/\/|$)/, "");
+  const linkedin = [c.hook, "", [offerLine, ...middle, endsLine].filter(Boolean).join(" "), c.link ? `
+Details: ${c.link}` : null].filter((l) => l !== null).join("\n").trim();
+  return { instagram, whatsapp, x, linkedin };
+}
+var cap2 = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+// src/kit.js
+var esc3 = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+var hex4 = (c) => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c) ? c : null;
+var KIT_FORMATS = {
+  post: { w: 1080, h: 1350, label: "Instagram / Facebook post (4:5)", platforms: ["instagram", "facebook"] },
+  square: { w: 1080, h: 1080, label: "Square post (1:1)", platforms: ["instagram", "facebook", "linkedin"] },
+  story: { w: 1080, h: 1920, label: "Story, Status, Reels cover (9:16)", platforms: ["instagram", "whatsapp", "tiktok"] },
+  wide: { w: 1600, h: 900, label: "X / LinkedIn (16:9)", platforms: ["x", "linkedin"] }
+};
+function deadlineText(deadline, timeZone) {
+  if (!deadline) return null;
+  const d = new Date(deadline);
+  if (Number.isNaN(d.getTime())) return null;
+  return `Ends ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: timeZone || "UTC" })}`;
+}
+function buildKit(o) {
+  if (!o.brand) throw new Error('Send "brand".');
+  const nicheId = NICHES[o.nicheId] ? o.nicheId : classifyNiche(`${o.niche ?? ""} ${o.product ?? ""}`).id;
+  const niche = NICHES[nicheId];
+  const product = o.product || "our products";
+  const t = { ...THEMES[o.theme] ?? THEMES.default };
+  const brandColor = hex4(o.brandColor);
+  if (brandColor) {
+    t.accent = brandColor;
+    t.accentText = readableOn(brandColor);
+  }
+  const off = discountOf(o);
+  const offTxt = off ? `${off}% off` : null;
+  const ends = deadlineText(o.deadline, o.timeZone);
+  const event = THEMES[o.theme] ? t.eyebrow : null;
+  const link = o.pageUrl || o.ctaUrl || "";
+  const deck = hookDeck({ nicheHooks: niche.hooks, product, discount: off ? `${off}%` : null, brand: o.brand, seed: o.brand.length });
+  const products = (o.products ?? []).filter((p) => p?.name).slice(0, 6);
+  const photos = (o.images ?? []).filter((im) => im?.url);
+  const imgs = [];
+  const img = (url2) => {
+    if (!url2) return null;
+    if (!imgs.includes(url2)) imgs.push(url2);
+    return o.proxy ? o.proxy(url2, imgs.indexOf(url2)) : url2;
+  };
+  const tags = [`#${o.brand.replace(/[^a-z0-9]/gi, "")}`, ...event ? [`#${event.replace(/[^a-z0-9]/gi, "")}`] : [], `#${product.replace(/[^a-z0-9]/gi, "")}`].filter((x) => x.length > 2);
+  const isWhatsApp = /wa\.me|whatsapp/i.test(link);
+  const caps = (hook, kind, items, apps) => {
+    const all = captionsFor({ hook, brand: o.brand, product, event, offTxt, ends, link, isWhatsApp, items, tags, kind });
+    return Object.fromEntries(apps.map((k) => [k, all[k]]));
+  };
+  const posts = [];
+  const pIdx = (p) => products.indexOf(p);
+  const photo = (url2, alt, cls, key, representative = false) => `<div class="ph ${cls}${representative ? " rep" : ""}" data-p="${key}"><img src="${esc3(img(url2))}" alt="${esc3(alt ?? product)}" crossorigin="anonymous" onerror="this.parentNode.classList.add('need');this.remove()"><span class="need-l">Add a photo</span>${representative ? '<span class="rep-l">Representative image</span>' : ""}</div>`;
+  const need = (p, cls) => `<div class="np ${cls}" aria-hidden="true"><span>${esc3(p.name)}</span></div>`;
+  const bigWord = off ? `${off}%` : (product.split(" ").pop() || o.brand).toUpperCase();
+  const typo = (cls, frameW) => `<div class="ty ${cls}" aria-hidden="true" style="font-size:${Math.min(560, Math.floor(frameW / (bigWord.length * 0.52)))}px"><span>${esc3(bigWord)}</span>${off ? "<em>off</em>" : ""}</div>`;
+  const typeLed = !photos.length;
+  let moodN = 0;
+  const visual = (p, cls = "", frameW = 936) => p ? p.image ? photo(p.image, p.name, cls, pIdx(p), p.representative) : need(p, cls) : photos.length ? photo(photos[moodN % photos.length].url, photos[moodN++ % photos.length].alt, cls, `m${moodN}`) : typo(cls, frameW);
+  const priceRow = o.price ? `<p class="g-pr"><b>${esc3(o.price)}</b>${o.originalPrice ? `<s>${esc3(o.originalPrice)}</s>` : ""}</p>` : "";
+  const offerHead = (fallback) => typeLed && off ? "" : `<h2 class="g-h">${esc3(offTxt ? offTxt.toUpperCase() : fallback)}</h2>`;
+  const head = (h) => `<div class="g-top"><span class="g-brand">${o.logoUrl ? `<img src="${esc3(img(o.logoUrl))}" alt="">` : esc3(o.brand)}</span>${event ? `<span class="g-ev">${esc3(event)}</span>` : ""}</div>${h}`;
+  const wm = '<div class="q4wm">Made with Quarter4</div>';
+  const h1 = deck.next("launch", event);
+  posts.push({
+    id: "offer",
+    format: "post",
+    title: "Offer announcement",
+    hook: h1,
+    html: head(`<div class="g-mid">${visual(null, "big", 936)}</div><div class="g-bot">${offerHead(h1)}${priceRow}<p class="g-cta">${esc3(ends ?? "Shop now")}</p></div>`),
+    caption: caps(h1, "offer", o.price ? [{ name: product, price: o.price, originalPrice: o.originalPrice }] : products, ["instagram", "whatsapp", "x"])
+  });
+  products.slice(0, 3).forEach((p, i) => {
+    const h = deck.next("launch", event);
+    posts.push({
+      id: `product-${i + 1}`,
+      format: "square",
+      title: `Spotlight: ${p.name}`,
+      hook: h,
+      html: head(`<div class="g-mid">${visual(p)}</div><div class="g-bot"><h2 class="g-h sm">${esc3(p.name)}</h2><p class="g-pr"><b>${esc3(p.price ?? "")}</b>${p.originalPrice ? `<s>${esc3(p.originalPrice)}</s>` : ""}</p></div>`),
+      caption: caps(h, "product", [p], ["instagram", "whatsapp", "x"])
+    });
+  });
+  if (products.length >= 2) {
+    const h = deck.next("warm-up", event);
+    const slides = [
+      head(`<div class="g-mid"><h2 class="g-h xl">${esc3(h)}</h2></div><div class="g-bot"><p class="g-cta">Swipe \u2192</p></div>`),
+      ...products.slice(0, 4).map((p, i) => head(`<div class="g-mid">${visual(p)}</div><div class="g-bot"><p class="g-n">${String(i + 1).padStart(2, "0")}</p><h2 class="g-h sm">${esc3(p.name)}</h2><p class="g-pr"><b>${esc3(p.price ?? "")}</b>${p.originalPrice ? `<s>${esc3(p.originalPrice)}</s>` : ""}</p></div>`)),
+      head(`<div class="g-mid"><h2 class="g-h xl">${esc3(offTxt ? `${offTxt}. ${ends ?? ""}` : "Which one is yours?")}</h2></div><div class="g-bot"><p class="g-cta">${esc3(link ? "Link in bio" : "Send us a message")}</p></div>`)
+    ];
+    posts.push({ id: "carousel", format: "post", title: "Carousel", hook: h, slides, caption: caps(h, "list", products, ["instagram", "whatsapp"]) });
+  }
+  const hs = deck.next("launch", event);
+  posts.push({
+    id: "story",
+    format: "story",
+    title: "Story / WhatsApp Status",
+    hook: hs,
+    html: head(`<div class="g-mid">${visual(null, "big", 936)}</div><div class="g-bot">${offerHead(hs)}${priceRow}<p class="g-pill">${esc3(link && /wa\.me/.test(link) ? "Tap to order on WhatsApp" : "Tap the link to shop")}</p></div>`),
+    caption: caps(hs, "offer", products.length ? products : [{ name: product, price: o.price }], ["whatsapp", "instagram"])
+  });
+  if (ends) {
+    const hl = deck.next("last-chance", event);
+    posts.push({
+      id: "last-call",
+      format: "story",
+      title: "Last call",
+      hook: hl,
+      html: head(`<div class="g-mid"><h2 class="g-h xl">${esc3(hl)}</h2></div><div class="g-bot"><p class="g-pill">${esc3(ends)}</p></div>`),
+      caption: caps(hl, "last-call", products, ["whatsapp", "instagram"])
+    });
+  }
+  const hw = deck.next("launch", event);
+  posts.push({
+    id: "wide",
+    format: "wide",
+    title: "X / LinkedIn card",
+    hook: hw,
+    html: head(`<div class="g-row"><div class="g-col"><h2 class="g-h">${esc3(offTxt ? `${offTxt} ${product}` : hw)}</h2>${priceRow}<p class="g-cta">${esc3(ends ?? "Shop now")}</p></div>${visual(null, "side", 620)}</div>`),
+    caption: caps(hw, "offer", products, ["x", "linkedin"])
+  });
+  for (const ov of o.posts ?? []) {
+    const target = posts.find((p) => p.id === ov.id);
+    if (target) {
+      if (ov.caption) target.caption = typeof ov.caption === "string" ? Object.fromEntries(Object.keys(target.caption).map((k) => [k, ov.caption])) : ov.caption;
+      continue;
+    }
+    if (!ov.headline) continue;
+    const fmt = KIT_FORMATS[ov.format] ? ov.format : "post";
+    posts.push({
+      id: `custom-${posts.length}`,
+      format: fmt,
+      title: ov.title ?? "Post",
+      hook: ov.headline,
+      html: head(`<div class="g-mid">${ov.image ? photo(ov.image, ov.headline, "big") : `<h2 class="g-h xl">${esc3(ov.headline)}</h2>`}</div><div class="g-bot">${ov.image ? `<h2 class="g-h sm">${esc3(ov.headline)}</h2>` : ""}${ov.sub ? `<p class="g-cta">${esc3(ov.sub)}</p>` : ""}</div>`),
+      caption: ov.caption ? { instagram: ov.caption, whatsapp: ov.caption } : caps(ov.headline, "offer", products, ["instagram", "whatsapp"])
+    });
+  }
+  const html = page({ o, t, posts, wm, link, product });
+  return { html, posts: posts.map(({ id, format, title, hook, caption: c, slides }) => ({ id, format, size: `${KIT_FORMATS[format].w}x${KIT_FORMATS[format].h}`, title, hook, slides: slides?.length ?? 1, caption: c })), images: imgs };
+}
+function graphic(fmt, inner, wm, key) {
+  const f = KIT_FORMATS[fmt];
+  return `<div class="fit" style="--w:${f.w};--h:${f.h}"><div class="g g-${fmt}" data-g="${key}" style="width:${f.w}px;height:${f.h}px">${inner}${wm}</div></div>`;
+}
+function page({ o, t, posts, wm, link, product }) {
+  const fonts = [.../* @__PURE__ */ new Set([t.display, t.body, "Inter"])].map((f) => `family=${f.replace(/ /g, "+")}:wght@400;600;700;800`).join("&");
+  const cards = posts.map((p, i) => {
+    const frames = (p.slides ?? [p.html]).map((h, j) => graphic(p.format, h, wm, `${i}-${j}`)).join("");
+    const caps = Object.entries(p.caption);
+    return `<article class="card" data-post="${i}">
+<header><div><h2>${esc3(p.title)}</h2><p class="k">${esc3(KIT_FORMATS[p.format].label)} \xB7 ${KIT_FORMATS[p.format].w}\xD7${KIT_FORMATS[p.format].h}${p.slides ? ` \xB7 ${p.slides.length} slides` : ""}</p></div><span class="st" data-st>Ready</span></header>
+<div class="frames${p.slides ? " many" : ""}">${frames}</div>
+<div class="cap"><div class="tabs" role="tablist">${caps.map(([k], j) => `<button type="button" role="tab" aria-selected="${j === 0}" data-tab="${k}">${esc3({ instagram: "Instagram", whatsapp: "WhatsApp", x: "X", linkedin: "LinkedIn", facebook: "Facebook" }[k] ?? k)}</button>`).join("")}</div>
+${caps.map(([k, v], j) => `<textarea data-cap="${k}" rows="7" aria-label="Caption for ${esc3(k)}"${j ? " hidden" : ""}>${esc3(v)}</textarea>`).join("")}</div>
+<div class="acts"><button type="button" class="pri" data-share>Share</button><button type="button" data-dl>Download${p.slides ? ` ${p.slides.length} slides` : ""}</button><button type="button" data-copy>Copy caption</button></div>
+<div class="links"><span>Or post to</span><a data-l="wa" target="_blank" rel="noopener">WhatsApp</a><a data-l="x" target="_blank" rel="noopener">X</a><a data-l="fb" target="_blank" rel="noopener">Facebook</a><a data-l="li" target="_blank" rel="noopener">LinkedIn</a><a data-l="tg" target="_blank" rel="noopener">Telegram</a></div>
+<p class="msg" data-msg aria-live="polite"></p>
+</article>`;
+  }).join("");
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc3(o.brand)} content kit</title><meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?${fonts}&display=swap" rel="stylesheet" crossorigin="anonymous">
+<style>
+:root{--bg:${t.bg};--sf:${t.surface};--tx:${t.text};--mu:${t.muted};--ac:${t.accent};--ac2:${t.accent2};--at:${t.accentText};--d:'${t.display}',Impact,sans-serif;--b:'${t.body}',system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#f4f3ef;color:#16150f;font:400 16px/1.55 Inter,system-ui,sans-serif}
+.bar{position:sticky;top:0;z-index:10;background:rgba(244,243,239,.88);backdrop-filter:blur(12px);border-bottom:1px solid #e6e2d8}
+.bar-in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:16px}.bar-b{font-weight:800;font-size:16px}.bar-c{color:#6f6a5f;font-size:14px;flex:1}
+.bar-dl{min-height:40px;padding:0 18px;border-radius:999px;border:0;background:#16150f;color:#fff;font:700 14px Inter,sans-serif;cursor:pointer}
+.top{max-width:1180px;margin:0 auto;padding:40px 16px 8px}.eyebrow{margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6f6a5f}
+.top h1{font:800 clamp(30px,4.4vw,48px)/1.05 Inter,sans-serif;letter-spacing:-.025em;margin:0 0 12px}.top p{margin:0;color:#4d4940;max-width:62ch;font-size:17px}.top a{color:#16150f}
+.grid{max-width:1180px;margin:0 auto;padding:24px 16px 80px;display:grid;gap:20px}@media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}@media(min-width:1100px){.grid{grid-template-columns:1fr 1fr 1fr}}
+.card{background:#fff;border:1px solid #e6e2d8;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0;box-shadow:0 1px 2px rgba(20,19,15,.04)}
+.card header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.card header h2{font:700 18px/1.25 Inter,sans-serif;margin:0 0 4px}.k{margin:0;color:#6f6a5f;font-size:13px}
+.st{flex:none;font:700 12px/1 Inter,sans-serif;padding:7px 10px;border-radius:999px;background:#e7f5ec;color:#17603a}.rep-card .st{background:#fff2c2;color:#7a5600}
+.frames{display:grid;gap:8px}.frames.many{grid-auto-flow:column;grid-auto-columns:82%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}.frames.many .fit{scroll-snap-align:start}
+.fit{position:relative;width:100%;aspect-ratio:var(--w)/var(--h);overflow:hidden;border-radius:12px;background:#ddd}
+.fit .g{position:absolute;top:0;left:0;transform-origin:0 0}
+.cap textarea{width:100%;border:1px solid #e6e2d8;border-radius:14px;padding:12px 14px;font:inherit;font-size:15px;line-height:1.55;resize:vertical;background:#fbfaf7;color:#16150f}
+.tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}.tabs button{border:1px solid #e6e2d8;background:#fff;border-radius:999px;padding:5px 12px;font:600 13px Inter,sans-serif;cursor:pointer}.tabs button[aria-selected=true]{background:#16150f;color:#fff;border-color:#16150f}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.acts button{min-height:48px;border-radius:14px;border:1px solid #d9d4c7;background:#fff;font:700 15px Inter,sans-serif;cursor:pointer;color:#16150f}.acts .pri{grid-column:1/-1;background:#16150f;border-color:#16150f;color:#fff;min-height:52px}
+.links{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:14px}.links span{color:#6f6a5f}.links a{color:#16150f;font-weight:600;text-decoration:none;border-bottom:1px solid #cfc9bb;cursor:pointer}
+.msg{margin:0;min-height:1.4em;font-size:14px;color:#5f5a4f}
+.up{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:14px;border:1px dashed #b9b3a4;font:700 15px Inter,sans-serif;cursor:pointer;color:#16150f}.up:focus-within{outline:3px solid #ffd426;outline-offset:2px}
+button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid #ffd426;outline-offset:2px}
+/* graphics */
+.g{background:radial-gradient(90% 60% at 50% 40%,color-mix(in srgb,var(--ac) 22%,transparent),transparent 70%),var(--bg);color:var(--tx);font-family:var(--b);display:flex;flex-direction:column;gap:40px;padding:72px;overflow:hidden}
+.g-wide{padding:64px 80px}
+.g-top{display:flex;justify-content:space-between;align-items:center;gap:20px;font:700 34px/1 var(--b)}.g-brand img{height:64px;width:auto;display:block}
+.g-ev{font:700 24px/1 var(--b);letter-spacing:.14em;text-transform:uppercase;padding:14px 22px;border-radius:999px;background:var(--ac);color:var(--at)}
+.g-mid{flex:1;display:grid;place-items:center;min-height:0}
+.g-bot{display:flex;flex-direction:column;gap:16px}
+.g-h{font:400 120px/.92 var(--d);margin:0;text-transform:uppercase;letter-spacing:-.01em}.g-h.sm{font-size:84px}.g-h.xl{font-size:110px;text-align:center;text-transform:none}
+.g-story .g-h{font-size:150px}.g-story .g-h.xl{font-size:120px}
+.g-pr{display:flex;align-items:baseline;gap:24px;margin:0}.g-pr b{font:400 96px/1 var(--d);color:var(--ac)}.g-pr s{font-size:44px;color:var(--mu)}
+.g-cta{margin:0;font:600 38px/1.2 var(--b);color:var(--mu)}.g-n{margin:0;font:700 30px var(--b);color:var(--ac)}
+.g-pill{align-self:flex-start;margin:6px 0 0;padding:26px 44px;border-radius:999px;background:var(--ac);color:var(--at);font:800 40px/1 var(--b)}
+.ph{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;display:grid;place-items:center;background:color-mix(in srgb,var(--tx) 6%,transparent)}.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rep-l{position:absolute;left:24px;bottom:24px;padding:10px 16px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:600 22px/1 var(--b);letter-spacing:.02em}
+.np{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 24px;font:400 150px/.95 var(--d);text-transform:uppercase;color:var(--tx);letter-spacing:-.01em}.np span{max-width:100%;overflow-wrap:anywhere}
+.g:has(.np) .g-bot .g-h{display:none}
+.need-l{display:none}.ph.need{border:4px dashed color-mix(in srgb,var(--tx) 35%,transparent);background:color-mix(in srgb,var(--tx) 4%,transparent)}.ph.need .need-l{display:block;text-align:center;font:500 40px/1.3 var(--b);color:var(--mu)}.ph.need .need-l b{color:var(--tx);font-weight:700}
+.ty{width:auto;max-width:100%;height:auto;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--d);line-height:.82;letter-spacing:-.02em;color:var(--ac);text-align:center}.ty span{display:block}.ty em{display:block;font-style:normal;font-size:.34em;letter-spacing:.06em;text-transform:uppercase;color:var(--tx);margin-top:.12em}
+.g-row{flex:1;display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;padding-top:30px}.g-col{display:flex;flex-direction:column;gap:18px}.g-wide .g-h{font-size:110px}
+.g-row .ph,.g-row .ty{height:100%;max-height:640px;width:100%}
+.q4wm{display:none;position:absolute;right:28px;bottom:24px;font:600 22px/1 var(--b);color:var(--tx);opacity:.6}
+${o.watermark ? ".q4wm{display:block}" : ""}
+</style></head><body>
+<div class="bar"><div class="bar-in"><b class="bar-b">${esc3(o.brand)}</b><span class="bar-c" data-count>${posts.length} posts</span><button type="button" class="bar-dl" data-dlall>Download all</button></div></div>
+<div class="top"><p class="eyebrow">Content kit${THEMES[o.theme] ? ` \xB7 ${esc3(t.eyebrow)}` : ""}</p><h1>${posts.length} posts, ready to share</h1><p>Each post has a caption written for the app. Edit anything, then tap <b>Share</b> on your phone to post to Instagram, TikTok or WhatsApp with the image attached, or download it.${link ? ` Every post links to <a href="${esc3(link)}">${esc3(link.replace(/^https?:\/\//, ""))}</a>.` : ""}</p></div>
+<main class="grid">${cards}</main>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+<script>
+(function(){
+var link=${JSON.stringify(link)};
+function fit(){document.querySelectorAll('.fit').forEach(function(f){var g=f.firstElementChild;g.style.transform='scale('+(f.clientWidth/parseFloat(getComputedStyle(f).getPropertyValue('--w')))+')'})}
+/* Statement type: measured in the browser and shrunk until it sits inside the frame margins. */
+function fitType(){document.querySelectorAll('.ty').forEach(function(t){var fs=parseFloat(t.style.fontSize)||400;var box=t.parentNode;var maxW=box.clientWidth*0.92,maxH=box.clientHeight*0.92;var i=0;while((t.scrollWidth>maxW||t.scrollHeight>maxH)&&fs>60&&i++<80){fs-=8;t.style.fontSize=fs+'px'}})}
+function fitAll(){fitType();fit()}
+addEventListener('resize',fit);if(document.fonts)document.fonts.ready.then(fitAll);fitAll();
+function msg(card,s){card.querySelector('[data-msg]').textContent=s}
+function cap(card){var t=card.querySelector('textarea:not([hidden])');return t?t.value:''}
+function msg(card,s){card.querySelector('[data-msg]').textContent=s}
+function png(g){var w=parseFloat(g.style.width),h=parseFloat(g.style.height);return htmlToImage.toBlob(g,{width:w,height:h,pixelRatio:1,cacheBust:true,style:{transform:'none'}})}
+function name(card,j){return (${JSON.stringify(o.brand.replace(/[^a-z0-9]+/gi, "-").toLowerCase())}+'-'+card.querySelector('h2').textContent.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+(j?'-'+(j+1):'')+'.png')}
+function files(card){return Promise.all(Array.prototype.map.call(card.querySelectorAll('.g'),function(g,j){return png(g).then(function(b){return new File([b],name(card,j),{type:'image/png'})})}))}
+function save(f){var a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}
+function refresh(){document.querySelectorAll('.card').forEach(function(c){var st=c.querySelector('[data-st]');var r=c.querySelector('.ph.rep');c.classList.toggle('rep-card',!!r);if(st)st.textContent=r?'Ready \xB7 representative photo':'Ready'});var cnt=document.querySelector('[data-count]');if(cnt)cnt.textContent=document.querySelectorAll('.card').length+' posts ready'}
+document.addEventListener('click',function(e){if(!e.target.closest('[data-dlall]'))return;var cards=[].slice.call(document.querySelectorAll('.card'));var b=e.target.closest('[data-dlall]');b.textContent='Preparing...';cards.reduce(function(pr,c){return pr.then(function(){return files(c).then(function(fs){fs.forEach(save)})})},Promise.resolve()).then(function(){b.textContent='Download all'},function(){b.textContent='Try again'})});
+var KIT=window.Q4_KIT||null;
+function setPhoto(key,url,scope){(/^m/.test(key)?scope:document).querySelectorAll('.ph[data-p="'+key+'"]').forEach(function(ph){ph.classList.remove('need');ph.classList.remove('rep');var tag=ph.querySelector('.rep-l');if(tag)tag.remove();var im=ph.querySelector('img')||document.createElement('img');im.removeAttribute('crossorigin');im.src=url;im.alt='';if(!im.parentNode)ph.insertBefore(im,ph.firstChild)});refresh()}
+document.querySelectorAll('.card').forEach(function(card){
+  card.querySelectorAll('[data-tab]').forEach(function(b){b.addEventListener('click',function(){card.querySelectorAll('[data-tab]').forEach(function(x){x.setAttribute('aria-selected',String(x===b))});card.querySelectorAll('[data-cap]').forEach(function(t){t.hidden=t.getAttribute('data-cap')!==b.getAttribute('data-tab')});links()})});
+  function links(){var c=encodeURIComponent(cap(card)),u=encodeURIComponent(link);var m={wa:'https://wa.me/?text='+c,x:'https://twitter.com/intent/tweet?text='+c,fb:link?'https://www.facebook.com/sharer/sharer.php?u='+u:'',li:link?'https://www.linkedin.com/sharing/share-offsite/?url='+u:'',tg:'https://t.me/share/url?url='+u+'&text='+c};card.querySelectorAll('[data-l]').forEach(function(a){var h=m[a.getAttribute('data-l')];if(h){a.href=h;a.hidden=false}else a.hidden=true})}
+  links();card.querySelectorAll('textarea').forEach(function(t){t.addEventListener('input',links)});
+  card.querySelector('[data-copy]').addEventListener('click',function(){navigator.clipboard.writeText(cap(card)).then(function(){msg(card,'Caption copied.')},function(){msg(card,'Select the caption and copy it.')})});
+  card.querySelector('[data-dl]').addEventListener('click',function(){msg(card,'Preparing image...');files(card).then(function(fs){fs.forEach(save);msg(card,fs.length>1?fs.length+' images downloaded.':'Image downloaded.')},function(){msg(card,'Could not create the image. Try again or take a screenshot.')})});
+  card.querySelector('[data-share]').addEventListener('click',function(){msg(card,'Preparing...');files(card).then(function(fs){var data={files:fs,text:cap(card)};if(navigator.canShare&&navigator.canShare(data)){return navigator.share(data).then(function(){msg(card,'Shared.')},function(){msg(card,'')})}navigator.clipboard&&navigator.clipboard.writeText(cap(card)).catch(function(){});fs.forEach(save);msg(card,'Your browser cannot share images directly. Images downloaded and caption copied: open the app and post.')},function(){msg(card,'Could not create the image. Try again.')})});
+});
+if(KIT&&KIT.photos)Object.keys(KIT.photos).forEach(function(k){setPhoto(k,KIT.photos[k],document)});
+refresh();
+})();
+</script></body></html>`;
+}
+
 // src/server.js
-var VERSION = "0.3.0";
+var VERSION = "0.4.0";
 var date5 = external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD");
 var list = external_exports.union([external_exports.array(external_exports.string()), external_exports.string()]);
 var platformList = list.describe(`Platforms, any spelling: ${PLATFORM_IDS.join(", ")} (also "ig", "tik tok", "newsletter", "status")`);
@@ -42497,6 +43105,11 @@ var wrap = (fn) => async (args2) => {
 };
 function createServer2({ allowFileWrites = false } = {}) {
   const server = new McpServer({ name: "quarter4", version: VERSION });
+  const cloud = createCloud({ persist: allowFileWrites, client: "AI app" });
+  server.server.oninitialized = () => {
+    const c = server.server.getClientVersion?.();
+    if (c?.name) cloud.clientName?.(c.name);
+  };
   async function maybeWrite(outputPath, content, allowed) {
     if (!outputPath) return null;
     if (!allowFileWrites) throw new Error("outputPath is only supported when the server runs locally (stdio). Copy the returned content instead.");
@@ -42540,11 +43153,24 @@ function createServer2({ allowFileWrites = false } = {}) {
       focusEvents: external_exports.array(external_exports.string()).optional().describe('Events to campaign around, ids or names ("black friday", "eid", "valentines")'),
       offer: external_exports.string().optional().describe('Written any way: "30% off", "N5k off", "BOGO", "free delivery"'),
       sellsProducts: external_exports.boolean().optional().describe("false for creators who only publish content; default true"),
+      featured: external_exports.array(external_exports.string()).max(5).optional().describe("Products to push, best seller first. When connected to Quarter4 Cloud this is filled from real WhatsApp order taps."),
+      useStats: external_exports.boolean().optional().describe("Use sales page stats to pick featured products (default true when connected)"),
       format: external_exports.enum(["json", "markdown"]).optional().describe("Default json")
     },
-    annotations: { readOnlyHint: true, openWorldHint: false }
+    annotations: { readOnlyHint: true, openWorldHint: true }
   }, wrap(async (a) => {
-    const plan = buildPlan(a);
+    let signals;
+    if (!a.featured?.length && a.useStats !== false && cloud.hasKey()) {
+      const st = await cloud.stats(14).catch(() => null);
+      const items = {};
+      for (const p of st?.pages ?? []) for (const [k, n] of Object.entries(p.byItem ?? {})) items[k] = (items[k] ?? 0) + n;
+      const top = Object.entries(items).sort((x, y) => y[1] - x[1]).slice(0, 3);
+      if (top.length) {
+        a = { ...a, featured: top.map(([k]) => k) };
+        signals = { source: "Quarter4 page stats, last 14 days", topProducts: top.map(([name, taps]) => ({ name, orderTaps: taps })), tip: `${top[0][0]} gets the most order taps, so selling posts feature it most often.` };
+      }
+    }
+    const plan = { ...buildPlan(a), ...signals ? { salesSignals: signals } : {} };
     return a.format === "markdown" ? { content: [{ type: "text", text: toMarkdown(plan) }] } : json3(plan);
   }));
   server.registerTool("platform_specs", {
@@ -42722,7 +43348,7 @@ ${html}` }] };
   }, wrap(async (a) => json3(await findImages(a.query, a))));
   server.registerTool("publish_page", {
     title: "Publish a page online",
-    description: `Put a sales page online and get a shareable link, e.g. https://q4-korakicks.erasstack.com/black-friday. Pass the HTML from landing_page, a local file path (local mode), or "page" with landing_page arguments to build and publish in one step. Free plan: 1 site, 3 live pages, small badge. Pro adds the user's own domain and removes the badge. Needs QUARTER4_API_KEY (get one free with cloud_account action "signup").`,
+    description: `Put a sales page online and get a shareable link, e.g. https://q4-korakicks.erasstack.com/black-friday. Pass the HTML from landing_page, a local file path (local mode), or "page" with landing_page arguments to build and publish in one step. Free plan: 1 site, 3 live pages, small badge. Pro adds the user's own domain and removes the badge. If not connected yet, call cloud_account with action "connect" first (free, one browser approval).`,
     inputSchema: {
       brand: external_exports.string().min(1).describe("Brand name; becomes the address q4-<brand>.erasstack.com"),
       path: external_exports.string().optional().describe('Page path, e.g. "black-friday"; empty for the home page'),
@@ -42757,23 +43383,202 @@ ${html}` }] };
   }, wrap(async (a) => json3(a.check ? await cloud.domainStatus(a.hostname) : await cloud.connectDomain(a.hostname, a.site))));
   server.registerTool("cloud_account", {
     title: "Quarter4 account and plans",
-    description: 'Quarter4 Cloud account. action "signup" emails a free API key to the given email. "status" shows plan, limits and published sites. "upgrade" returns a secure Flutterwave checkout link for Pro (NGN 9,900 or USD 9 a month) or Business (NGN 39,000 or USD 39 a month). Never ask for card details in chat; always send the link.',
+    description: 'Quarter4 Cloud account. "connect" links this AI app to the user account: it returns a link and code the user approves in their browser (new users get a free account); call it again to finish. "status" shows plan, limits and sites. "pages" lists published pages. "dashboard" returns the web dashboard link (views, WhatsApp orders per product, plan). "upgrade" returns a secure Flutterwave card checkout link for Pro or Business, priced in Naira for Nigeria and US Dollars elsewhere. "signup" (fallback) emails a key instead. Never ask for passwords or card details in chat; always send the link.',
     inputSchema: {
-      action: external_exports.enum(["signup", "status", "upgrade", "pages"]),
+      action: external_exports.enum(["connect", "status", "pages", "dashboard", "upgrade", "signup"]),
       email: external_exports.string().optional(),
       plan: external_exports.enum(["pro", "business"]).optional(),
       currency: external_exports.enum(["NGN", "USD"]).optional()
     },
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
   }, wrap(async (a) => {
+    if (a.action === "connect") return json3(await cloud.connect());
+    if (a.action === "dashboard") return json3({ url: cloud.dashboardUrl(), note: "The user signs in with their email; no password." });
     if (a.action === "signup") {
       if (!a.email) throw new Error("Send the user's email.");
       return json3(await cloud.signup(a.email));
     }
     if (a.action === "status") return json3(await cloud.me());
     if (a.action === "pages") return json3(await cloud.pages());
-    const r = await cloud.checkout(a.plan ?? "pro", a.currency ?? "NGN");
+    const r = await cloud.checkout(a.plan ?? "pro", a.currency);
     return json3({ ...r, note: "Send this link to the user. Payment happens on Flutterwave's secure page; the plan activates as soon as the payment is verified." });
+  }));
+  const studioScript = fileURLToPath(new URL("../scripts/studio_photo.py", import.meta.url));
+  const runPython = (args2) => new Promise((resolveP, reject) => {
+    const tryCmd = (cmds) => {
+      if (!cmds.length) return reject(new Error('Python 3 was not found. Install it from python.org, then: pip install pillow "rembg[cpu]"'));
+      const [cmd, ...pre] = cmds[0];
+      const ps = spawn(cmd, [...pre, ...args2], { windowsHide: true });
+      let out = "", err = "";
+      ps.stdout.on("data", (d) => {
+        out += d;
+      });
+      ps.stderr.on("data", (d) => {
+        err += d;
+      });
+      ps.on("error", () => tryCmd(cmds.slice(1)));
+      ps.on("close", (code) => code === 0 ? resolveP(out) : /No module named 'PIL'/.test(err) ? reject(new Error('Install Pillow first: pip install pillow "rembg[cpu]"')) : reject(new Error(err.split("\n").filter(Boolean).pop() || `studio_photo exited ${code}`)));
+    };
+    tryCmd(process.platform === "win32" ? [["py", "-3"], ["python"], ["python3"]] : [["python3"], ["python"]]);
+  });
+  server.registerTool("studio_photo", {
+    title: "Studio product photo",
+    description: "Turn a seller's phone photo into a clean product shot on their own computer (free, nothing uploaded): fixes colour and sharpness, removes the background (when rembg is installed) and places the product on a studio backdrop in the brand colour or on a full scene photo, with a soft shadow. Use the result as products[].image in content_kit or landing_page. Local only.",
+    inputSchema: {
+      input: external_exports.string().describe("Path to the photo (or an https URL to download)"),
+      outputPath: external_exports.string().optional().describe('Where to save, .jpg or .png (default: next to the input, "-studio.jpg")'),
+      background: external_exports.string().optional().describe('Backdrop colour, e.g. "#111111" (default warm light grey)'),
+      scene: external_exports.string().optional().describe("Path to a photo to use as the full background instead of a colour"),
+      size: external_exports.number().int().min(600).max(3e3).optional(),
+      keepBackground: external_exports.boolean().optional().describe("Only enhance; do not remove the background")
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false }
+  }, wrap(async (a) => {
+    if (!allowFileWrites) throw new Error("studio_photo runs on your own computer. Use the local Quarter4 server (npx quarter4-mcp), or ask the assistant to clean up the photo with its own image tools.");
+    let input2 = a.input;
+    if (/^https:\/\//.test(input2)) {
+      const r = await fetch(input2, { signal: AbortSignal.timeout(2e4) });
+      if (!r.ok || !/^image\//.test(r.headers.get("content-type") ?? "")) throw new Error("That link is not an image.");
+      input2 = resolve(`quarter4-photo-${Date.now()}.jpg`);
+      await writeFile(input2, Buffer.from(await r.arrayBuffer()));
+    }
+    if (!existsSync(input2)) throw new Error(`File not found: ${input2}`);
+    const out = a.outputPath ?? input2.replace(/(\.[a-z0-9]+)?$/i, "-studio.jpg");
+    const args2 = [studioScript, input2, out, "--size", String(a.size ?? 1600)];
+    if (a.background) args2.push("--bg", a.background);
+    if (a.scene) args2.push("--scene", a.scene);
+    if (a.keepBackground) args2.push("--keep-bg");
+    const line = (await runPython(args2)).trim().split("\n").pop();
+    return json3({ ...JSON.parse(line), next: "Pass this file as products[].image to content_kit or landing_page." });
+  }));
+  server.registerTool("brand_profile", {
+    title: "Saved brand profile",
+    description: "Save or read the seller's brand profile in Quarter4 Cloud (needs connect): voice, products with real prices, order link, colours and logo. Saved details fill in content_kit and sales pages automatically, so the seller does not repeat them. Logo and colours on graphics are a Pro feature. Only save prices the seller gave you.",
+    inputSchema: {
+      action: external_exports.enum(["get", "save"]),
+      profile: external_exports.object({
+        brand: external_exports.string().optional(),
+        niche: external_exports.string().optional(),
+        voice: external_exports.string().max(300).optional().describe('How the brand talks, e.g. "playful, Lagos slang, short sentences"'),
+        ctaUrl: external_exports.string().optional(),
+        logoUrl: external_exports.string().optional(),
+        brandColor: external_exports.string().optional(),
+        products: external_exports.array(external_exports.object({ name: external_exports.string(), price: external_exports.string().optional(), originalPrice: external_exports.string().optional(), note: external_exports.string().optional(), image: external_exports.string().optional() })).max(20).optional()
+      }).optional()
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => json3(a.action === "save" ? await cloud.saveBrand(a.profile ?? {}) : await cloud.brand())));
+  server.registerTool("content_kit", {
+    title: "Ready-to-post content kit",
+    description: `Make finished social graphics with captions for a sale or launch: offer post (4:5), product spotlights (1:1), a carousel, Story/WhatsApp Status (9:16), a last-call story and an X/LinkedIn card (16:9). Returns a review page where the seller edits captions, then taps Share (phone share sheet: Instagram, TikTok, WhatsApp with the image attached), uses share links, copies captions or downloads PNGs. Nothing is posted automatically.
+Connected to Quarter4 Cloud: the kit is hosted at a link (Free: 7 days with a small mark; Pro: 90 days, no mark, own logo and colours). Not connected (local): an HTML file is written instead.
+Images: the seller's own photos are best (products[].image or images). If you can generate images yourself, generate them and pass their https URLs. Otherwise free licensed photos are found automatically (autoImages). Never invent prices or deadlines; leave them out if unknown.`,
+    inputSchema: {
+      brand: external_exports.string().min(1),
+      product: external_exports.string().optional().describe('What is on sale, e.g. "sneakers"'),
+      niche: external_exports.string().optional(),
+      theme: external_exports.string().optional().describe(`Event look: ${Object.keys(THEMES).join(", ")}`),
+      offer: external_exports.string().optional().describe('e.g. "30% off"'),
+      discountPercent: external_exports.number().min(1).max(95).optional(),
+      price: external_exports.string().optional(),
+      originalPrice: external_exports.string().optional(),
+      deadline: external_exports.string().optional().describe("ISO date-time the offer ends"),
+      timeZone: external_exports.string().optional(),
+      ctaUrl: external_exports.string().optional().describe("Checkout, product page or https://wa.me/<number>"),
+      pageUrl: external_exports.string().optional().describe("The live sales page link from publish_page, used in captions and share links"),
+      products: external_exports.array(external_exports.object({ name: external_exports.string(), price: external_exports.string().optional(), originalPrice: external_exports.string().optional(), note: external_exports.string().optional(), image: external_exports.string().optional() })).max(6).optional(),
+      images: external_exports.array(external_exports.object({ url: external_exports.string(), alt: external_exports.string().optional() })).max(6).optional(),
+      posts: external_exports.array(external_exports.object({ id: external_exports.string().optional(), format: external_exports.enum(["post", "square", "story", "wide"]).optional(), title: external_exports.string().optional(), headline: external_exports.string().optional(), sub: external_exports.string().optional(), caption: external_exports.string().optional(), image: external_exports.string().optional() })).max(12).optional().describe("Your own copy: replace a caption by id (offer, product-1, carousel, story, last-call, wide) or add extra posts with a headline"),
+      logoUrl: external_exports.string().optional().describe("Pro: brand logo (https)"),
+      brandColor: external_exports.string().optional().describe('Pro: brand colour, e.g. "#e11d48"'),
+      autoImages: external_exports.boolean().optional().describe("Find free photos when none are given (default true)"),
+      productPhotos: external_exports.enum(["own", "representative", "none"]).optional().describe('What the seller chose for products without photos: "own" (they are sending photos: pass them as products[].image), "representative" (closest real photo, tagged "Representative image"), "none" (text-led product posts). If you can generate images and the seller wants that, generate them and pass the URLs as products[].image. Ask the seller before choosing.'),
+      kitId: external_exports.string().regex(/^[a-f0-9]{12}$/).optional().describe("Update an existing kit at the same link (e.g. after the seller sends new photos)"),
+      outputPath: external_exports.string().optional().describe("Local mode: where to write the kit .html")
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => {
+    const notes = [];
+    let plan = "free";
+    if (cloud.hasKey()) {
+      plan = (await cloud.me().catch(() => null))?.plan ?? "free";
+      const saved = (await cloud.brand().catch(() => null))?.profile;
+      if (saved) {
+        const fill = Object.fromEntries(["product", "niche", "ctaUrl", "logoUrl", "brandColor", "products"].filter((k) => a[k] === void 0 && saved[k] !== void 0).map((k) => [k, saved[k]]));
+        if (Object.keys(fill).length) {
+          a = { ...fill, ...a };
+          notes.push(`Filled from your saved brand profile: ${Object.keys(fill).join(", ")}.`);
+        }
+      }
+    }
+    const paid = plan !== "free";
+    if (!paid && (a.logoUrl || a.brandColor)) {
+      notes.push('Your logo and brand colour on graphics are part of Pro. This kit uses the event look; upgrade with cloud_account action "upgrade".');
+      a = { ...a, logoUrl: void 0, brandColor: void 0 };
+    }
+    const missing = (a.products ?? []).filter((p) => !p.image);
+    if (missing.length && !a.productPhotos) {
+      const names = missing.slice(0, 4).map((p) => p.name).join(", ") + (missing.length > 4 ? ", ..." : "");
+      return json3({
+        needsAnswer: true,
+        askUser: [{ field: "productPhotos", question: `I need a photo for ${names}. Send your photos (phone photos are fine, I can clean them up), or should I use representative photos (tagged as such on the post), create images, or make these posts without photos?`, why: "Buyers trust real photos; anything else is clearly labelled." }],
+        howToAsk: 'Ask this in one short message. Then call content_kit again with the same details plus productPhotos ("own" with products[].image set, "representative", or "none"). If the seller wants created images and you can generate images, generate them and pass the URLs as products[].image with productPhotos "own". If they send phone photos and studio_photo is available, run it first for a clean product shot.'
+      });
+    }
+    if (a.productPhotos === "representative" && missing.length) {
+      const nicheId = classifyNiche(`${a.niche ?? ""} ${a.product ?? ""}`).id;
+      const search = cloud.hasKey() && !process.env.PEXELS_API_KEY && !process.env.UNSPLASH_ACCESS_KEY ? (q, opt) => cloud.images(q, opt) : null;
+      const used = /* @__PURE__ */ new Set();
+      const filled = await Promise.all(a.products.map(async (p) => {
+        if (p.image) return p;
+        const attributes = (p.name.match(/\b(white|black|red|blue|green|pink|brown|grey|gray|gold|silver|leather|suede|denim|silk|linen|low|high|slide|sandal|boot|runner|running)\b/gi) ?? []).join(" ");
+        const r = await Promise.race([matchingImages({ nicheId, product: a.product ?? p.name, attributes, orientation: "squarish", count: 4, search }).catch(() => null), new Promise((res) => setTimeout(() => res(null), 9e3))]);
+        const pick2 = r?.images.find((im) => !used.has(im.url));
+        if (!pick2) return p;
+        used.add(pick2.url);
+        return { ...p, image: pick2.url, representative: true, credit: pick2.attribution };
+      }));
+      const reps = filled.filter((p) => p.representative);
+      if (reps.length) notes.push(`${reps.length} product post(s) use a representative photo (tagged on the graphic) because no photo was given: ${reps.map((p) => p.name).join(", ")}. Ask for the seller's own photos to replace them; buyers trust real photos most.`);
+      a = { ...a, products: filled };
+    }
+    if (!a.images?.length && a.autoImages !== false) {
+      const nicheId = classifyNiche(`${a.niche ?? ""} ${a.product ?? ""}`).id;
+      const attributes = (a.products ?? []).map((p) => p.name).join(" ").match(/\b(white|black|red|blue|green|pink|brown|gold|silver|leather|denim|silk|linen)\b/i)?.[1] ?? "";
+      const search = cloud.hasKey() && !process.env.PEXELS_API_KEY && !process.env.UNSPLASH_ACCESS_KEY ? (q, opt) => cloud.images(q, opt) : null;
+      const found = await Promise.race([matchingImages({ nicheId, product: a.product ?? "", attributes, orientation: "squarish", count: 3, search }).catch(() => null), new Promise((r) => setTimeout(() => r(null), 9e3))]);
+      if (found?.images.length) {
+        a = { ...a, images: found.images.map((im) => ({ url: im.url, alt: im.alt })) };
+        notes.push(`Offer and story posts use ${found.images.length} licensed photos that match "${found.query}" (checked for the product type, no other brands). Credits: ${found.images.map((im) => im.attribution).filter(Boolean).join("; ")}.`);
+      } else notes.push(`No photo clearly matching "${a.product ?? "the product"}" was found, so offer posts use bold type instead of an unrelated picture.`);
+    }
+    if (!a.price && !a.products?.length) notes.push("No prices given, so graphics show the offer without prices.");
+    const hosted = cloud.hasKey();
+    const localFiles = [];
+    if (allowFileWrites) {
+      a = { ...a, products: await Promise.all((a.products ?? []).map(async (p, i) => {
+        if (!p.image || /^(https?:|data:)/.test(p.image) || !existsSync(p.image)) return p;
+        const buf = await readFile(p.image);
+        const type = /\.png$/i.test(p.image) ? "image/png" : /\.webp$/i.test(p.image) ? "image/webp" : "image/jpeg";
+        localFiles.push({ key: String(i), buf, type });
+        return { ...p, image: hosted ? void 0 : `data:${type};base64,${buf.toString("base64")}`, representative: false };
+      })) };
+    }
+    const kit = buildKit({ ...a, watermark: !paid, proxy: hosted ? (url2, i) => /^data:/.test(url2) ? url2 : `/__q4/img/__KIT__/${i}` : void 0 });
+    const { askUser, assumed } = questionsFor("kit", a);
+    const summary = { posts: kit.posts, notes, ...askUser.length ? { askUser, howToAsk: ASK_RULE } : {}, assumed };
+    if (hosted) {
+      const body = { brand: a.brand, html: kit.html, images: kit.images.filter((u) => !/^data:/.test(u)), title: `${a.brand} content kit` };
+      const r = a.kitId ? await cloud.updateKit(a.kitId, body) : await cloud.kit(body);
+      for (const f of localFiles) {
+        const ok = await cloud.kitPhoto(r.id, f.key, f.buf, f.type).then(() => true, () => false);
+        if (!ok) notes.push(`Could not upload the photo for product ${Number(f.key) + 1}. Try again with a JPEG or PNG under 4 MB.`);
+      }
+      return json3({ url: r.url, kitId: r.id, ...a.kitId ? { updated: "Same link, updated in place." } : {}, expiresAt: r.expiresAt, watermark: r.watermark, ...summary, share: `Open ${r.url} on your phone and tap Share on each post, or download the images.`, ...r.note ? { planNote: r.note } : {} });
+    }
+    if (!allowFileWrites) throw new Error(`Connect first to get a kit link: ${cloud.dashboardUrl()} (or call cloud_account action "connect" when running locally).`);
+    const file2 = await maybeWrite(a.outputPath ?? `${a.brand.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-content-kit.html`, kit.html, [".html", ".htm"]);
+    return json3({ file: file2, ...summary, next: 'Open the file in a browser to review, download and share. Call cloud_account action "connect" to get a link you can open on your phone.' });
   }));
   server.registerPrompt("q4-campaign", {
     title: "Plan my campaign",
