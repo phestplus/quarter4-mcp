@@ -4,9 +4,11 @@
 
 Works with Claude (Code and Desktop), ChatGPT and Codex, or any MCP client.
 
+Docs and examples: https://phestplus.github.io/quarter4-mcp/ (mirror: https://q4.erasstack.com/docs/)
+
 ## What it does
 
-**Understands messy requests.** `start_campaign` reads whatever the user typed: platforms like "ig, tik tok, status", places like "Lagos", "the Gulf" or "West Africa", offers like "30 percent off" or "N5k off", deadlines like "ends nov 30". It says what it assumed, asks at most three questions, and never blocks: each question comes with the default it will use.
+**Understands messy requests.** `start_campaign` reads whatever the user typed: platforms like "ig, tik tok, status", places like "Lagos", "the Gulf" or "West Africa", offers like "30 percent off" or "N5k off", deadlines like "ends nov 30". It says what it assumed and asks at most three questions, each with the default it will use. It only waits for an answer when it cannot tell what you sell, because the plan, posts and page all depend on that.
 
 **Knows the calendar, all year.** 60+ curated events (Valentine's, Lunar New Year, Ramadan and Eid, Mothering Sunday and Mother's Day, Easter, Father's Day, back to school, Diwali, Black Friday, Christmas and more), computed by rule (Easter, Thanksgiving, Super Saturday) or verified tables (lunar and religious dates, with a note where moon sighting can shift a day). Plus live official public holidays for 100+ countries.
 
