@@ -88,6 +88,10 @@ h2{font-size:clamp(34px,4.6vw,60px);line-height:1;font-weight:800;margin-bottom:
 .tag{font:600 11px var(--b);letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:6px}
 .tag.ok{background:#e3f4ea;color:var(--ok)}.tag.no{background:#fde8dd;color:var(--warn)}.tag.fit{background:var(--hi2);color:#7a5b00}
 /* compare */
+.new{margin:-6px 0 26px;font-size:15px;color:var(--ink2)}.new b{display:inline-block;margin-right:8px;padding:3px 10px;border-radius:999px;background:var(--hi);color:var(--ink);font-size:12px;letter-spacing:.06em;text-transform:uppercase}.new a{color:var(--ink)}
+.kit{display:grid;gap:28px;align-items:start}@media(min-width:900px){.kit{grid-template-columns:.8fr 1.2fr;gap:48px}}
+.kit-img{margin:0;border-radius:22px;overflow:hidden;border:1px solid var(--line);background:var(--paper)}.kit-img img{display:block;width:100%;height:auto}.kit-img figcaption{padding:14px 18px;font-size:14px;color:var(--mu)}
+.kit-list{display:grid;gap:4px}.kit-row{display:grid;gap:4px;padding:18px 0;border-bottom:1px solid var(--line)}.kit-row:first-child{padding-top:0}.kit-row b{font-size:18px}.kit-row span{color:var(--ink2)}
 .vs{display:grid;gap:18px}@media(min-width:860px){.vs{grid-template-columns:1fr 1fr}}
 .vs ul{margin:0;padding-left:18px;color:var(--ink2)}.vs li{margin:8px 0}
 .vs .good{border-color:var(--ink);box-shadow:6px 6px 0 var(--hi)}
@@ -103,14 +107,15 @@ footer .w{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 </style>
 </head>
 <body>
-<nav><div class="w"><a class="logo" href="#"><img src="icon.png" alt="">Quarter4</a><div class="nl"><a class="hide" href="#how">How it works</a><a class="hide" href="#pages">Pages</a><a class="hide" href="#tools">Tools</a><a class="btn sm" href="#install">Install free</a></div></div></nav>
+<nav><div class="w"><a class="logo" href="#"><img src="icon.png" alt="">Quarter4</a><div class="nl"><a class="hide" href="#how">How it works</a><a class="hide" href="#kits">Content kits</a><a class="hide" href="#pages">Pages</a><a class="hide" href="#tools">Tools</a><a class="btn sm" href="#install">Install free</a></div></div></nav>
 
 <div class="w">
 <header class="hero">
 <div>
 <span class="kick"><i></i><span data-next>Every season, every country</span></span>
 <h1>Your AI's <span class="mark">marketing team</span>, all year round.</h1>
-<p class="lead">Tell Claude, ChatGPT or Codex what you sell, in your own words. Quarter4 finds the dates and trends that matter where your customers live, plans the content, writes the posts and builds a sales page around your product.</p>
+<p class="lead">Tell Claude, ChatGPT or Codex what you sell, in your own words. Quarter4 finds the dates and trends that matter where your customers live, plans the content, makes finished posts ready to share, and builds a sales page around your product.</p>
+<p class="new"><b>New in 0.4.0</b> Ready-to-post content kits, one-step connect, studio photos on your own computer. <a href="https://github.com/phestplus/quarter4-mcp/releases/tag/v0.4.0">What changed</a></p>
 <div class="cta"><a class="btn" href="#install">Install free</a><a class="btn ghost" href="#pages">See the pages</a></div>
 <div class="works"><span>Claude Code</span><span>Claude Desktop</span><span>ChatGPT</span><span>Codex</span><span>Cursor</span><span>Any MCP client</span></div>
 </div>
@@ -142,6 +147,22 @@ footer .w{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <p class="sub">Computed by rule (Easter, Thanksgiving, Mother's Day) or verified tables (Ramadan, Eid, Lunar New Year, Diwali, Hanukkah), with a note where moon sighting can move a date. Plus live official holidays for 100+ countries.</p>
 <div class="year" data-year></div>
 <p class="legend">Highlighted: high-impact shopping moments. This strip is generated from the same data the tools use.</p>
+</div></section>
+
+<section id="kits"><div class="w">
+<span class="kick"><i></i>Content kits</span>
+<h2>Finished posts, <span class="mark">ready to share</span>.</h2>
+<p class="sub">Ask for a kit and get every post for your sale on one page: designed graphics at the right size for each app, with captions written for Instagram, WhatsApp, X and LinkedIn. Open it on your phone, tap Share, and the image goes straight into Instagram, TikTok or WhatsApp.</p>
+<div class="kit">
+<figure class="kit-img"><img src="img/kit-offer.jpg" alt="A 4:5 Black Friday post: 30% off in large type, the price and the end date" width="720" height="900" loading="lazy"><figcaption>One focal point, then price, then the end date. Exported at 1080×1350.</figcaption></figure>
+<div class="kit-list">
+<div class="kit-row"><b>Eight posts per sale</b><span>Offer post, product spotlights, a carousel, Story and WhatsApp Status, a last-call story and a card for X and LinkedIn.</span></div>
+<div class="kit-row"><b>Captions per app</b><span>Written from your real prices and dates. X posts always fit 280 characters. No hook is used twice in a plan.</span></div>
+<div class="kit-row"><b>Your real products</b><span>Before making anything, your assistant asks once: send your photos, use a representative photo (labelled on the post), create images, or go without. Products are never drawn or faked.</span></div>
+<div class="kit-row"><b>Studio photos, free</b><span>Phone photos are cleaned up on your own computer: colour, sharpness and background removed, placed on a studio colour or a scene of your choice.</span></div>
+<div class="kit-row"><b>Change anything later</b><span>Ask for a new photo or caption and the kit updates at the same link.</span></div>
+</div>
+</div>
 </div></section>
 
 <section id="pages"><div class="w">
@@ -182,14 +203,14 @@ footer .w{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <span class="kick"><i></i>Honest by default</span>
 <h2>Built to sell <span class="mark">without lying</span>.</h2>
 <div class="vs">
-<div class="card"><h3>What Quarter4 never does</h3><ul><li>Invent reviews, results or stock counts</li><li>Show a "was" price you never charged</li><li>Run a countdown that resets</li><li>Use another brand's logo photos (filtered out)</li><li>Sell on remembrance days or around tragedies</li></ul></div>
-<div class="card good"><h3>What every brief includes</h3><ul><li>Ad and affiliate disclosure</li><li>AI-image labels where platforms require them</li><li>Licensed music reminders</li><li>Niche rules: APR for car finance, no cure claims for beauty, allergens for food</li><li>Photo credits on every page</li></ul></div>
+<div class="card"><h3>What Quarter4 never does</h3><ul><li>Invent reviews, results or stock counts</li><li>Show a "was" price you never charged</li><li>Run a countdown that resets</li><li>Use another brand's logo photos (filtered out)</li><li>Show a stock or drawn picture as your product</li><li>Sell on remembrance days or around tragedies</li></ul></div>
+<div class="card good"><h3>What every brief includes</h3><ul><li>Ad and affiliate disclosure</li><li>AI-image labels where platforms require them</li><li>Licensed music reminders</li><li>Niche rules: APR for car finance, no cure claims for beauty, allergens for food</li><li>Photo credits on every page</li><li>A label on any representative photo</li></ul></div>
 </div>
 </div></section>
 
 <section id="tools"><div class="w">
 <span class="kick"><i></i>Inside</span>
-<h2>Thirteen tools, six skills.</h2>
+<h2>Sixteen tools, six skills.</h2>
 <p class="sub">The tools work in every MCP client. Claude Code and Codex also get guided skills: <code style="font:500 15px var(--m)">/quarter4:campaign</code> runs the whole flow from one sentence.</p>
 <div class="grid3">
 <div class="card"><code>start_campaign</code><p style="margin-top:10px">Understands the request, ranks the moments, says what to post now.</p></div>
@@ -204,13 +225,17 @@ footer .w{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <div class="card"><code>publish_page</code><p style="margin-top:10px">Live link in seconds: q4-yourbrand.erasstack.com.</p></div>
 <div class="card"><code>page_stats</code><p style="margin-top:10px">Views and WhatsApp order clicks per product.</p></div>
 <div class="card"><code>connect_domain</code><p style="margin-top:10px">Pro: your own domain with automatic HTTPS.</p></div>
+<div class="card"><code>content_kit</code><p style="margin-top:10px">Finished graphics and captions on one page: share, copy, download.</p></div>
+<div class="card"><code>studio_photo</code><p style="margin-top:10px">Clean product shots on your own computer, background removed.</p></div>
+<div class="card"><code>brand_profile</code><p style="margin-top:10px">Save your voice, products and order link once; reused everywhere.</p></div>
+<div class="card"><code>cloud_account</code><p style="margin-top:10px">Connect in one step, plan, dashboard and upgrade links.</p></div>
 </div>
 </div></section>
 
 <section id="install"><div class="w">
 <span class="kick"><i></i>Install</span>
 <h2>Free. <span class="mark">30 seconds.</span></h2>
-<p class="sub">Open source, MIT licensed. No account. Optional free Pexels or Unsplash key for studio-quality stock photos.</p>
+<p class="sub">Open source, MIT licensed, no account needed. For live links, content kits and your dashboard, say "connect my Quarter4 account" and approve in your browser: no keys to paste. Optional for studio photos: <code style="font:500 15px var(--m)">pip install pillow "rembg[cpu]"</code>.</p>
 <div class="tabs" role="tablist">
 <button class="tab" role="tab" aria-selected="true" data-tab="cc">Claude Code</button>
 <button class="tab" role="tab" aria-selected="false" data-tab="codex">Codex</button>
@@ -228,8 +253,7 @@ footer .w{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   "mcpServers": {
     "quarter4": {
       "command": "npx",
-      "args": ["-y", "quarter4-mcp"],
-      "env": { "PEXELS_API_KEY": "optional" }
+      "args": ["-y", "quarter4-mcp"]
     }
   }
 }</pre>
