@@ -41,6 +41,14 @@ Docs and examples: https://phestplus.github.io/quarter4-mcp/ (mirror: https://q4
 | `cloud_account` | Connect in one step (browser approval), plan status, dashboard link, and Flutterwave upgrade links. |
 | `content_kit` | Finished graphics with captions (post, spotlights, carousel, Story/Status, X/LinkedIn) on a review page: share from the phone, copy captions, download PNGs. |
 | `brand_profile` | Save voice, products, order link, logo and colours once; kits and pages reuse them. |
+| `campaign_go` | The whole campaign in one go: brand, plan, illustrations to make, landing page, content kit, checks, private review links. |
+| `brand_extract` | Read a brand's own website: palette, fonts, wordmark, logo, positioning and copy samples, with evidence. |
+| `illustrate` | On-brand illustrations of people without Figma. Pro and above: Quarter4 generates them (quality-checked, transparent, saved to the brand). Every plan: style options and ready prompts for the AI's own image tool, then transparent cut-outs. |
+| `video` | Short AI videos (5 or 10 seconds) animated from an approved illustration or photo (Studio and Business). |
+| `asset_upload` | Host the brand's logo, wordmark, illustrations and fonts (every plan). |
+| `kit_edit` | Change a shared kit at the same link: remove, reorder, replace or add posts. |
+| `unpublish` | Take a page or kit offline immediately. |
+| `report_issue` | File the seller's complaint ("off-brand", "wrong image") with context, so nobody writes a report. |
 
 Skills for Claude Code and Codex: `/quarter4:campaign` (does everything), `/quarter4:plan`, `/quarter4:posts`, `/quarter4:visuals`, `/quarter4:landing`, `/quarter4:trends`.
 

@@ -17,6 +17,14 @@ const sentence = (s) => (s && !/[.!?]$/.test(s.trim()) ? `${s.trim()}.` : s?.tri
  *   kind: 'offer' | 'product' | 'list' | 'last-call'
  */
 export function captionsFor(c) {
+  if (c.kind === 'content') {
+    // Everyday content: the post's own line and a quiet link. No offer, no price, no purchase push.
+    const tagLine = (c.tags ?? []).slice(0, 3).join(' ');
+    const ig = [c.hook, c.link ? 'More through the link in our bio.' : null, tagLine || null].filter(Boolean).join('\n\n');
+    let xs = [c.hook, c.link].filter(Boolean).join(' ');
+    while (xLength(xs) > X_LIMIT) xs = xs.replace(/\s*\S+(?=\s+https?:\/\/|$)/, '');
+    return { instagram: ig, whatsapp: [c.hook, c.link ? `More: ${c.link}` : null].filter(Boolean).join('\n'), x: xs, linkedin: [c.hook, c.link].filter(Boolean).join('\n\n') };
+  }
   const item = c.items?.[0];
   const priceOf = (p) => (p?.price ? `${p.price}${p.originalPrice ? ` (was ${p.originalPrice})` : ''}` : null);
   const offerLine = c.offTxt

@@ -4,7 +4,7 @@
     "quarter4": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "quarter4-mcp@0.6.0"]
+      "args": ["-y", "quarter4-mcp@0.7.0"]
     }
   }
 }

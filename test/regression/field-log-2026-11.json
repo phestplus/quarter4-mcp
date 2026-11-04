@@ -1,0 +1,23 @@
+[
+  { "name": "content-only kit never shows saved prices or offer badges (log 12, 13, 17)", "tool": "kit",
+    "args": { "brand": "Brightly", "niche": "habit tracking app", "theme": "default", "ctaUrl": "https://example.com", "products": [{ "name": "Premium yearly", "price": "₦31,500", "originalPrice": "₦45,000" }] },
+    "mustNotInclude": ["₦31,500", "Limited-time offer", "Start your plan"] },
+  { "name": "subscription kit has no retail lines or squashed hashtags (log 2, 6d)", "tool": "kit",
+    "args": { "brand": "Brightly", "niche": "habit tracking app with subscriptions", "product": "Brightly Premium and Family yearly plans", "displayName": "Brightly Premium", "discountPercent": 30, "price": "₦31,500", "ctaUrl": "https://example.com/premium", "products": [{ "name": "Premium yearly", "price": "₦31,500" }, { "name": "Family yearly", "price": "₦42,000" }] },
+    "mustNotInclude": ["in your cart", "Reply to this message to order", "#BrightlyPremiumandFamily", "Shop now"] },
+  { "name": "AI hooks reach the graphic and removed slots stay removed (log 14, 16)", "tool": "kit",
+    "args": { "brand": "Brightly", "niche": "habit tracking app", "discountPercent": 30, "ctaUrl": "https://example.com", "posts": [{ "id": "offer", "hook": "Small habits, kept all year." }, { "id": "wide", "remove": true }, { "id": "tease", "hook": "Something calm is coming.", "format": "story" }] },
+    "mustInclude": ["Small habits, kept all year.", "Something calm is coming."] },
+  { "name": "minimal-input subscription page: no hype, no Shop heading, offer-type button (log retest 3, 4)", "tool": "page",
+    "args": { "brand": "Brightly", "niche": "habit tracking app", "product": "Brightly Premium and Family yearly plans", "displayName": "Brightly Premium", "theme": "black-friday", "discountPercent": 30, "ctaUrl": "https://example.com", "autoImages": false, "products": [{ "name": "Premium yearly", "price": "₦31,500" }, { "name": "Family yearly", "price": "₦42,000" }] },
+    "mustNotInclude": ["The biggest drop of the year", "Shop Brightly", "Shop the sale", "Built with care", "For a limited time only"], "mustInclude": ["Start your plan", "Choose your plan"] },
+  { "name": "light brand look is applied, not the event palette (log 6b, 6c)", "tool": "page",
+    "args": { "brand": "Brightly", "niche": "habit tracking app", "theme": "black-friday", "discountPercent": 30, "ctaUrl": "https://example.com", "autoImages": false, "brandStyle": { "palette": { "bg": "#F5EFE8", "text": "#493A35", "accent": "#8B72A8" }, "fontDisplay": "Fraunces", "fontBody": "Inter" } },
+    "mustInclude": ["--bg:#f5efe8", "Fraunces"], "mustNotInclude": ["--bg:#08080a"] },
+  { "name": "words the brand avoids never appear (log U13)", "tool": "kit",
+    "args": { "brand": "Brightly", "niche": "habit tracking app", "ctaUrl": "https://example.com", "avoidWords": ["cheap", "swipe"], "positioning": { "isNot": ["a dating app"] } },
+    "mustNotInclude": ["cheap", "swipe", "dating app"] },
+  { "name": "story page composes signature sections with the wordmark (report §10)", "tool": "page",
+    "args": { "brand": "Brightly", "niche": "habit tracking app", "headline": "Small habits, kept all year.", "ctaText": "Start your plan", "ctaUrl": "https://example.com", "statement": "Two routines, one calm home.", "promise": "No streak anxiety.", "steps": [{ "title": "Pick a habit" }, { "title": "Keep it" }], "brandStyle": { "palette": { "bg": "#F5EFE8", "text": "#493A35", "accent": "#8B72A8" }, "wordmark": { "text": "brightly", "case": "lower" } } },
+    "mustInclude": ["s-statement", "s-band", "s-journey", "ft-mark", "brightly"] }
+]

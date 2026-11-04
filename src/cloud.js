@@ -52,6 +52,15 @@ export function createCloud({ persist = false, client: initialClient = 'AI app' 
     return { ...data, httpStatus: res.status };
   }
   const strip = ({ httpStatus, ...d }) => d;
+  // Generation answers with 402/503 when the plan or the service cannot make it; those come back as data
+  // (with fallback: "handoff") instead of an error, so the tool can switch to the free prompts.
+  async function soft(path, { method = 'GET', body, timeout = 20000 } = {}) {
+    const k = key();
+    if (!k) throw new Error(NO_KEY);
+    const res = await fetch(`${base()}${path}`, { method, headers: { 'content-type': 'application/json', 'user-agent': 'quarter4-mcp', authorization: `Bearer ${k}` }, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(timeout) });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, ...data };
+  }
   const call = async (...a) => strip(await api(...a));
 
   async function pollOnce() {
@@ -117,6 +126,20 @@ export function createCloud({ persist = false, client: initialClient = 'AI app' 
       return true;
     },
     brand: () => call('/v1/brand'),
+    reportIssues: (b) => call('/v1/issues', { method: 'POST', body: b }),
+    countRun: (tool, passed) => call('/v1/metrics', { method: 'POST', body: { tool, passed } }),
+    getKit: (id) => call(`/v1/kits/${id}`),
+    async uploadAsset(buf, type, name) {
+      const res = await fetch(`${base()}/v1/assets${name ? `?name=${encodeURIComponent(name)}` : ''}`, { method: 'POST', headers: { authorization: `Bearer ${keyOf()}`, 'content-type': type, 'user-agent': 'quarter4-mcp' }, body: buf, signal: AbortSignal.timeout(60000) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? `upload ${res.status}`);
+      return data;
+    },
+    deleteKit: (id) => call(`/v1/kits/${id}`, { method: 'DELETE' }),
+    genImage: (b) => soft('/v1/generate/image', { method: 'POST', body: b, timeout: 180000 }),
+    videoStart: (b) => soft('/v1/generate/video', { method: 'POST', body: b, timeout: 60000 }),
+    videoStatus: (id) => soft(`/v1/generate/video/${encodeURIComponent(id)}`, { timeout: 120000 }),
+    usage: () => call('/v1/usage'),
     images: (q, o = {}) => call(`/v1/images?q=${encodeURIComponent(q)}&count=${o.count ?? 15}${o.orientation ? `&orientation=${o.orientation === 'squarish' ? 'square' : o.orientation}` : ''}`),
     saveBrand: (profile) => call('/v1/brand', { method: 'PUT', body: { profile } }),
     pages: () => call('/v1/pages'),

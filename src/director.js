@@ -5,6 +5,8 @@
 // get the same page. Motion is scroll-linked: elements are scrubbed by scroll
 // position inside pinned scenes, not faded in on a timer.
 
+import { VERBS } from './offer.js';
+import { wordmarkHtml } from './brand.js';
 const PAIRINGS = {
   cinematic: [['Anton', 'Inter'], ['Bebas Neue', 'Inter'], ['Oswald', 'Inter'], ['Archivo Black', 'Archivo'], ['Syne', 'Inter']],
   split: [['Playfair Display', 'Inter'], ['Cormorant Garamond', 'Jost'], ['Fraunces', 'Inter'], ['DM Serif Display', 'DM Sans'], ['Bodoni Moda', 'Manrope']],
@@ -59,6 +61,8 @@ export function archetypeFor(nicheId) { return ARCH_BY_NICHE[nicheId] ?? 'cinema
 export function renderDirector(x) {
   let { c } = x;
   const { esc, o, t, discount, deadlineMs, deadlineLabel, cta, terms, year, title, jsonLd, hash, nicheId, eventName } = x;
+  // SVG and PNG are treated as illustrations or cut-outs: contain, transparent, no zoom.
+  const isArt = (u) => /\.svg(\?|$)|\.png(\?|$)|^data:image\/(svg|png)/i.test(String(u ?? ''));
   const arch = ['cinematic', 'split', 'stage', 'editorial'].includes(o.archetype) ? o.archetype : archetypeFor(nicheId);
   const seed = hash(`${o.brand}|${c.product}|${o.variant ?? 0}`);
   const pick = (arr, salt) => arr[(seed >> salt) % arr.length];
@@ -96,12 +100,12 @@ export function renderDirector(x) {
   const priceHtml = o.price ? `<p class="pr"><b>${esc(o.price)}</b>${o.originalPrice ? `<s><span class="sr">Was </span>${esc(o.originalPrice)}</s>` : ''}${off ? `<em>${esc(off)}</em>` : ''}</p>` : off ? `<p class="pr"><em>${esc(off)}</em></p>` : '';
 
   const navHtml = nav === 'center'
-    ? `<nav class="nv nv-center"><a href="#" class="lg">${esc(o.brand)}</a></nav>`
+    ? `<nav class="nv nv-center"><a href="#" class="lg">${wordmarkHtml(o)}</a></nav>`
     : nav === 'pill'
-      ? `<nav class="nv nv-pill"><a href="#" class="lg">${esc(o.brand)}</a><a href="${esc(cta)}" data-cta class="nv-cta">${esc(c.ctaText)}</a></nav>`
+      ? `<nav class="nv nv-pill"><a href="#" class="lg">${wordmarkHtml(o)}</a><a href="${esc(cta)}" data-cta class="nv-cta">${esc(c.ctaText)}</a></nav>`
       : nav === 'side'
-        ? `<nav class="nv nv-side"><a href="#" class="lg">${esc(o.brand)}</a><span>${esc(eventName ? `${eventName} ${year}` : c.product)}</span></nav>`
-        : `<nav class="nv nv-split"><a href="#" class="lg">${esc(o.brand)}</a><a href="${esc(cta)}" data-cta class="nv-cta">${esc(c.ctaText)} →</a></nav>`;
+        ? `<nav class="nv nv-side"><a href="#" class="lg">${wordmarkHtml(o)}</a><span>${esc(eventName ? `${eventName} ${year}` : c.product)}</span></nav>`
+        : `<nav class="nv nv-split"><a href="#" class="lg">${wordmarkHtml(o)}</a><a href="${esc(cta)}" data-cta class="nv-cta">${esc(c.ctaText)} →</a></nav>`;
 
   // Product visual: 3D model, scroll-scrubbed video, photo, or typographic fallback.
   const fallback = o.productImage ? { url: o.productImage, alt: o.imageAlt } : images[0] ?? null;
@@ -114,20 +118,22 @@ export function renderDirector(x) {
         // No photo: the offer itself is the focal point. Products are never drawn or faked.
         : `<div class="pv pv-stmt ${cls}" aria-hidden="true"><span>${esc(discount ? `${discount}%` : (c.product.split(' ').pop() || o.brand).toUpperCase())}</span>${discount ? '<em>off</em>' : ''}</div>`;
 
-  const fill = `<section class="fillsec" data-scene style="--h:220vh"><div class="pin"><p class="fill" data-fill>${words(off && !c.subheadline.toLowerCase().includes(off.toLowerCase()) ? `${c.subheadline} ${off.charAt(0).toUpperCase()}${off.slice(1)} on ${c.product}.` : c.subheadline).map((w) => `<span>${w}</span>`).join(' ')}</p></div></section>`;
+  // The scroll-fill statement only appears when the AI wrote one (o.statement); it never re-uses the
+  // subheadline word by word, which read as a broken list and is an overused effect.
+  const fill = o.statement ? `<section class="fillsec" data-scene style="--h:200vh"><div class="pin"><p class="fill" data-fill>${words(String(o.statement).slice(0, 160)).map((w) => `<span>${w}</span>`).join(' ')}</p></div></section>` : '';
 
   // Products: the real items on sale. On WhatsApp shops each card opens a prefilled chat.
   const products = (o.products ?? []).filter((it) => it && it.name).slice(0, 12);
   const sizeHint = ['footwear', 'fashion'].includes(nicheId) ? ', size __' : '';
   const itemLink = (it) => (/wa\.me/i.test(cta) ? `${cta.split('?')[0]}?text=${encodeURIComponent(`Hi ${o.brand}, I want the ${it.name}${sizeHint}`)}` : it.url ?? cta);
   const pct = (it) => { const n = (v) => Number(String(v ?? '').replace(/[^0-9.]/g, '')); const a = n(it.price), b = n(it.originalPrice); return a && b > a ? Math.round((1 - a / b) * 100) : null; };
-  const productsHtml = products.length ? `<section class="pg"><div class="pg-head"><p class="ey">${esc(eyebrow)}</p><h2>${esc(nicheId === 'footwear' ? 'Pick your pair' : nicheId === 'fashion' ? 'Pick your look' : `Shop ${c.product}`)}</h2></div><div class="pg-grid">${products.map((it, i) => `<article class="pc" style="--i:${i}">
+  const productsHtml = products.length ? `<section class="pg"><div class="pg-head"><p class="ey">${esc(eyebrow)}</p><h2>${esc(o.gridTitle ?? (c.offerType && c.offerType !== 'physical' ? VERBS[c.offerType].grid : nicheId === 'footwear' ? 'Pick your pair' : nicheId === 'fashion' ? 'Pick your look' : VERBS.physical.grid))}</h2></div><div class="pg-grid">${products.map((it, i) => `<article class="pc" style="--i:${i}">
 ${it.image ? `<a class="pc-img" href="${esc(itemLink(it))}" data-cta><img src="${esc(it.image)}" alt="${esc(it.name)}" loading="lazy">${pct(it) ? `<em>-${pct(it)}%</em>` : ''}</a>` : ''}
-<div class="pc-body"><h3>${esc(it.name)}</h3>${it.note ? `<p>${esc(it.note)}</p>` : ''}<p class="pc-pr">${it.price ? `<b>${esc(it.price)}</b>` : ''}${it.originalPrice ? `<s>${esc(it.originalPrice)}</s>` : ''}</p><a class="pc-cta" href="${esc(itemLink(it))}" data-cta>${/wa\.me/i.test(cta) ? 'Order on WhatsApp' : esc(c.ctaText)} →</a></div></article>`).join('')}</div></section>` : '';
+<div class="pc-body"><h3>${esc(it.name)}</h3>${it.note ? `<p>${esc(it.note)}</p>` : ''}<p class="pc-pr">${it.price ? `<b>${esc(it.price)}</b>` : ''}${it.originalPrice ? `<s>${esc(it.originalPrice)}</s>` : ''}</p><a class="pc-cta" href="${esc(itemLink(it))}" data-cta>${/wa\.me/i.test(cta) ? (c.offerType && c.offerType !== 'physical' ? 'Message us on WhatsApp' : 'Order on WhatsApp') : esc(c.ctaText)} →</a></div></article>`).join('')}</div></section>` : '';
 
   const features = c.features.map((f, i) => `<article class="ft" data-depth="${(0.04 * ((i % 3) - 1)).toFixed(2)}"><span class="ftn">${String(i + 1).padStart(2, '0')}</span><h3>${esc(f.title)}</h3><p>${esc(f.text)}</p></article>`).join('');
 
-  const galleryHtml = gallery.length >= 2 ? `<section class="hz" data-scene style="--h:${120 + gallery.length * 60}vh"><div class="pin"><h2 class="hz-h">${esc(c.product)}</h2><div class="track" data-track>${gallery.map((im, i) => `<figure class="card" style="${bg(im)}"><figcaption>${esc(c.features[i % c.features.length]?.title ?? im.alt ?? '')}</figcaption></figure>`).join('')}</div></div></section>` : '';
+  const galleryHtml = gallery.length >= 2 ? `<section class="hz" data-scene style="--h:${120 + gallery.length * 60}vh"><div class="pin">${o.galleryTitle ? `<h2 class="hz-h">${esc(o.galleryTitle)}</h2>` : ''}<div class="track" data-track>${gallery.map((im, i) => `<figure class="card${isArt(im.url) ? ' art' : ''}" style="${bg(im)}">${im.caption ? `<figcaption>${esc(im.caption)}</figcaption>` : ''}</figure>`).join('')}</div></div></section>` : '';
 
   // How to order, from the link itself (WhatsApp, Instagram, checkout). Facts only.
   const viaWhatsApp = /wa\.me|whatsapp/i.test(cta);
@@ -169,7 +175,7 @@ ${it.image ? `<a class="pc-img" href="${esc(itemLink(it))}" data-cta><img src="$
 ${productsHtml}
 ${fill}
 ${galleryHtml}
-<section class="fts fts-c">${features}</section>
+${features ? `<section class="fts fts-c">${features}</section>` : ''}
 ${finalHtml}
 ${faqHtml}`;
   } else if (arch === 'split') {
@@ -199,7 +205,7 @@ ${faqHtml}`;
 </div></section>
 ${productsHtml}
 ${galleryHtml}
-${products.length ? '' : `<section class="rows">${c.features.map((f, i) => `<div class="row" data-depth="${(0.03 * (i % 2 ? 1 : -1)).toFixed(2)}"><span>${String(i + 1).padStart(2, '0')}</span><h3>${esc(f.title)}</h3><p>${esc(f.text)}</p></div>`).join('')}</section>`}
+${products.length || !c.features.length ? '' : `<section class="rows">${c.features.map((f, i) => `<div class="row" data-depth="${(0.03 * (i % 2 ? 1 : -1)).toFixed(2)}"><span>${String(i + 1).padStart(2, '0')}</span><h3>${esc(f.title)}</h3><p>${esc(f.text)}</p></div>`).join('')}</section>`}
 ${fill}
 ${finalHtml}
 ${faqHtml}`;
@@ -209,12 +215,12 @@ ${faqHtml}`;
   <p class="ey">${esc(eyebrowWithBrand)}</p>
   <h1 class="ed-h">${words(headline).map((w, i) => `<span style="--i:${i}">${w}</span>`).join(' ')}</h1>
   <div class="ed-row"><p class="lead">${esc(c.subheadline)}</p><div>${priceHtml}${clockHtml}${btn(c.ctaText)}</div></div>
-  ${hero ? `<div class="ed-img" data-depth="-0.08" style="${bg(hero)}" role="img" aria-label="${esc(hero.alt ?? c.product)}"></div>` : ''}
+  ${hero ? (isArt(hero.url) ? `<img class="ed-art" src="${esc(hero.url)}" alt="${esc(hero.alt ?? '')}">` : `<div class="ed-img" data-depth="-0.08" style="${bg(hero)}" role="img" aria-label="${esc(hero.alt ?? c.product)}"></div>`) : ''}
 </section>
 ${productsHtml}
 ${fill}
 ${galleryHtml}
-<section class="fts fts-e">${features}</section>
+${features ? `<section class="fts fts-e">${features}</section>` : ''}
 ${finalHtml}
 ${faqHtml}`;
   }
@@ -257,6 +263,7 @@ ${navHtml}
 <main>
 ${main}
 </main>
+<div class="ft-mark" aria-hidden="true">${wordmarkHtml(o)}</div>
 <footer class="ft-legal">${terms ? `<p id="terms"><b>Offer terms.</b> ${esc(terms)}</p>` : ''}${credits.length ? `<p class="credits">Photos: ${credits.join(' · ')}</p>` : ''}<p>© ${new Date().getFullYear()} ${esc(o.brand)}</p></footer>
 <div class="sticky" data-sticky><span>${esc(off || o.brand)}</span>${btn(c.ctaText)}</div>
 ${paletteSrc ? `<img src="${esc(paletteSrc)}" alt="" crossorigin="anonymous" data-palette hidden>` : ''}
@@ -320,7 +327,7 @@ body.n-side main,body.n-side .ft-legal{margin-left:56px}
 .hc-sweep{position:absolute;top:-20%;bottom:-20%;width:38vw;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);mix-blend-mode:overlay;rotate:12deg}
 .hc-h{position:absolute;inset:0;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:0 .25em;padding:0 5vw;text-align:center;font-size:clamp(56px,11vw,190px);line-height:.88;text-transform:uppercase;color:#fff;text-shadow:0 10px 60px rgba(0,0,0,.4)}
 .hc-h span{display:inline-block}
-.hc-deal{position:absolute;left:clamp(18px,6vw,90px);bottom:clamp(30px,10vh,110px);max-width:560px;opacity:0;color:#fff}
+.hc-deal{position:absolute;left:0;right:0;margin-inline:auto;bottom:clamp(30px,10vh,110px);max-width:620px;opacity:0;color:#fff;text-align:center;display:flex;flex-direction:column;align-items:center}.hc-deal .pr,.hc-deal .ck,.hc-deal .ck-boxes,.hc-deal .ck-flip{justify-content:center}
 .hc-deal::before{content:'';position:absolute;inset:-28% -40% -30% -30%;z-index:-1;background:radial-gradient(closest-side,rgba(0,0,0,.72),rgba(0,0,0,.4) 60%,transparent);filter:blur(10px)}
 .hc-deal .ey{color:#fff}
 .hc-scroll{position:absolute;bottom:26px;left:50%;translate:-50% 0;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#fff;opacity:.8}
@@ -387,9 +394,19 @@ model-viewer.pv{--poster-color:transparent;background:transparent}
 .st-h{position:absolute;top:max(13vh,92px);left:0;right:0;text-align:center;font-size:clamp(40px,6vw,96px);line-height:.95;padding:0 5vw}
 .st-deal{position:absolute;bottom:7vh;left:0;right:0;display:flex;flex-direction:column;align-items:center;text-align:center}
 .st-deal .pr,.st-deal .ck{justify-content:center}
-@media(min-width:1000px){.st-deal{left:auto;right:6vw;bottom:9vh;max-width:380px;align-items:flex-end;text-align:right}.st-deal .pr,.st-deal .ck{justify-content:flex-end}}
+/* focal group stays centred on every screen: no offer block alone in a corner */
+.st-deal{margin-inline:auto;max-width:560px}
 /* editorial */
-.ed{padding:clamp(110px,16vh,180px) clamp(18px,6vw,90px) 60px}
+.ed{padding:clamp(110px,16vh,180px) clamp(18px,6vw,90px) 60px;text-align:center}
+.ed .ey{margin-inline:auto}.ed-h{margin-inline:auto!important;max-width:16ch!important}.ed .lead{margin:0 auto 26px}
+.ed-row{display:flex!important;flex-direction:column;align-items:center;gap:22px}.ed-row>div{display:flex;flex-direction:column;align-items:center}
+.ed .pr,.ed .ck{justify-content:center}.ed-art{display:block;width:min(100%,960px);height:auto;margin:56px auto 0;background:transparent}
+.card.art{background-size:contain;background-repeat:no-repeat;background-color:transparent}
+.pg-head{text-align:center}.pg-head .ey{margin-inline:auto}.pg-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),360px))!important;justify-content:center}
+.hz-h,.faq h2,.fts-head{text-align:center}
+/* light brands: a calm button (accent, readable text, soft shadow), never a hard offset shadow */
+.m-light .b-block{box-shadow:0 12px 28px -14px color-mix(in srgb,var(--ac) 70%,transparent);text-transform:none;letter-spacing:0}
+.m-light .b-block:hover{transform:translateY(-2px);box-shadow:0 16px 34px -14px color-mix(in srgb,var(--ac) 75%,transparent)}
 .ed-h{font-size:clamp(56px,9vw,150px);line-height:.92;max-width:12ch;margin-bottom:40px}
 .ed-h span{display:inline-block;animation:edin 1s var(--e) both;animation-delay:calc(var(--i)*80ms)}
 @keyframes edin{from{transform:translateY(40%);opacity:0}}
@@ -430,7 +447,8 @@ model-viewer.pv{--poster-color:transparent;background:transparent}
 .qc span{font-weight:800;color:var(--ac);letter-spacing:.12em;font-size:13px}.qc h3{font-size:24px;margin:12px 0 10px;line-height:1.15}.qc p{margin:0;color:var(--mu)}
 .faq{max-width:820px;margin:0 auto;padding:60px clamp(18px,6vw,40px) 40px}
 .faq details{border-bottom:1px solid var(--bd);padding:20px 0}.faq summary{cursor:pointer;font-weight:600;font-size:19px;list-style:none}.faq summary::after{content:'+';float:right;color:var(--ac)}.faq details[open] summary::after{content:'−'}.faq p{color:var(--mu)}
-.ft-legal{padding:40px clamp(18px,6vw,90px) 130px;font-size:13px;color:var(--mu)}.credits{opacity:.8}
+.ft-mark{padding:clamp(60px,10vw,140px) clamp(18px,4vw,60px) 0;text-align:center;font:400 clamp(72px,17vw,260px)/.85 var(--d);letter-spacing:-.04em;color:color-mix(in srgb,var(--tx) 88%,var(--bg));overflow:hidden;white-space:nowrap}.ft-mark .wm{display:inline-block}.ft-mark svg{height:clamp(72px,17vw,260px);width:auto;display:inline-block}
+.ft-legal{padding:40px clamp(18px,6vw,90px) 130px;font-size:13px;color:var(--mu);text-align:center}.credits{opacity:.8}
 .sticky{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 8px 8px 18px;border-radius:999px;background:color-mix(in srgb,var(--sf) 88%,transparent);backdrop-filter:blur(14px);border:1px solid var(--bd);transform:translateY(150%);transition:transform .4s var(--e)}
 .sticky.show{transform:none}.sticky .b{padding:12px 18px;font-size:14px;width:auto;height:auto;border-radius:999px;box-shadow:none;flex-direction:row}.sticky span{font-weight:600;font-size:14px}
 body.n-pill .sticky{display:none}

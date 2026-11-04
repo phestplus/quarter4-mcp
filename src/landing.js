@@ -2,6 +2,8 @@ import { archetypeFor, renderDirector } from './director.js';
 import { classifyNiche } from './niches.js';
 import { SCENES } from './scenes.js';
 import { brandTheme, brandTokens, hasBrandLook } from './brand.js';
+import { VERBS, displayNameOf, offerTypeOf } from './offer.js';
+import { renderStory } from './story.js';
 // Sales landing page generator. One self-contained HTML file with a premium look:
 // four distinct layouts, 3D tilt offer card, holiday particle effects, aurora/grid
 // backgrounds, kinetic type, marquees and scroll reveals. Works from minimal input
@@ -58,7 +60,8 @@ const hex = (c) => (typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c) ? c : nul
 export function readableOn(bgHex) {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(bgHex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
   const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return (L + 0.05) / 0.05 > 1.05 / (L + 0.05) ? '#111111' : '#ffffff';
+  // Prefer white on the brand colour when it is clearly readable (button text is bold and 16px+).
+  return 1.05 / (L + 0.05) >= 4 ? '#ffffff' : '#111111';
 }
 
 function hash(s) {
@@ -88,22 +91,29 @@ function fmtDeadline(ms, tz) {
 
 // Turn minimal input into complete, truthful copy.
 function writeCopy(o, themeKey, t, discount, deadlineLabel) {
-  const product = tidy(o.product) || 'everything';
+  // Fallback copy only: the calling AI should write headline, subheadline, features and CTA (see copyBrief).
+  // These fallbacks state facts the seller gave, use the offer type's verb, and never add hype or filler.
+  const nicheId = classifyNiche(`${o.niche ?? ''} ${o.product ?? ''}`).id;
+  const offerType = o.offerType ?? offerTypeOf(nicheId, `${o.niche ?? ''} ${o.product ?? ''}`);
+  const product = displayNameOf(o, tidy(o.product) || o.brand);
+  const calm = offerType !== 'physical' || /calm|no hype|understated|quiet|minimal|premium/i.test(String(o.voice ?? ''));
   const pick = (arr) => arr[hash(`${o.brand}|${product}|${themeKey}`) % arr.length];
   const fill = (s) => s.replace('{Product}', cap(product)).replace('{product}', product);
-  const offer = tidy(o.offer) || (discount ? `${discount}% off ${product === 'everything' ? 'everything' : product}` : null);
+  const offer = tidy(o.offer) || (discount ? `${discount}% off ${product}` : null);
+  const eventName = THEMES[o.theme] && o.theme !== 'default' ? EVENT_NAMES[o.theme] : null;
 
-  const headline = tidy(o.headline) || fill(pick(HEADLINES[themeKey] ?? HEADLINES.default));
+  const headline = tidy(o.headline) || (calm || !THEMES[themeKey]
+    ? (offer ? `${cap(offer)}${eventName ? `, this ${eventName}` : ''}.` : `${cap(product)}.`)
+    : fill(pick(HEADLINES[themeKey] ?? HEADLINES.default)));
   const subheadline = tidy(o.subheadline) || [
-    offer ? `${cap(offer)}${o.price ? `, now ${o.price}` : ''}.` : `${cap(product)} from ${o.brand}.`,
-    deadlineLabel ? `Ends ${deadlineLabel}.` : 'For a limited time only.',
-    GIFT_THEMES.has(themeKey) ? 'Made for gifting, and for treating yourself.' : '',
+    offer && o.price ? `Now ${o.price}${o.originalPrice ? `, was ${o.originalPrice}` : ''}.` : null,
+    !offer && o.positioning?.is ? tidy(o.positioning.is) : null,
+    deadlineLabel ? `Ends ${deadlineLabel}.` : null,
   ].filter(Boolean).join(' ');
 
-  const features = (o.features?.length ? o.features : [
-    offer ? { title: cap(offer), text: `Our best saving on ${product} this season.` } : { title: cap(product), text: `The ${product} people come back to ${o.brand} for.` },
-    deadlineLabel ? { title: 'Ends on time, every time', text: `The countdown is live. When it hits zero on ${deadlineLabel}, the offer is gone.` } : { title: 'While it lasts', text: 'This offer is only here for the season.' },
-    GIFT_THEMES.has(themeKey) ? { title: 'Ready to gift', text: `An easy win for everyone on your list.` } : { title: `Made by ${o.brand}`, text: 'Built with care, down to the details.' },
+  // Features only from the seller (or honest offer facts); never invented praise.
+  const features = (o.features?.length ? o.features.map((f) => (typeof f === 'string' ? { title: f, text: '' } : f)) : [
+    ...(deadlineLabel ? [{ title: 'An honest countdown', text: `The offer ends ${deadlineLabel}. The timer shows the time left in your time zone.` }] : []),
   ]).slice(0, 6).map((f) => ({ title: tidy(f.title), text: tidy(f.text) }));
 
   const faq = (o.faq?.length ? o.faq : [
@@ -111,8 +121,10 @@ function writeCopy(o, themeKey, t, discount, deadlineLabel) {
     ...(o.terms ? [{ q: 'What is included?', a: o.terms }] : []),
   ]).map((x) => ({ q: tidy(x.q), a: tidy(x.a) }));
 
-  const marquee = [offer ?? t.eyebrow, t.eyebrow, deadlineLabel ? `Ends ${deadlineLabel.split(',').slice(0, 2).join(',')}` : 'Limited time', cap(product)].map(tidy);
-  return { product, offer, headline, subheadline, features, faq, marquee, ctaText: tidy(o.ctaText) || t.cta };
+  const marquee = [offer, eventName, deadlineLabel ? `Ends ${deadlineLabel.split(',').slice(0, 2).join(',')}` : null, cap(product)].filter(Boolean).map(tidy);
+  const ctaText = tidy(o.ctaText) || (VERBS[offerType] ?? VERBS.physical).cta;
+  const used = { headline: !tidy(o.headline), subheadline: !tidy(o.subheadline), features: !o.features?.length, ctaText: !tidy(o.ctaText) };
+  return { product, offer, headline, subheadline, features, faq, marquee, ctaText, offerType, fallbacks: Object.keys(used).filter((k) => used[k]) };
 }
 
 // Split the headline into words for the kinetic reveal.
@@ -179,6 +191,17 @@ export function buildLanding(o) {
   } : null;
 
   const jsonLdTag = jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>` : '';
+
+  // Art-directed "story" design: signature sections composed per brand (asked for, or when the AI
+  // supplies story content such as moments, a promise or journey steps).
+  if (o.design === 'story' || (o.design !== 'classic' && (o.moments?.length || o.promise || o.steps?.length))) {
+    const fontsHref = [...new Set([t.display, t.body])].map((f) => `family=${f.replace(/ /g, '+')}:wght@400;500;600;700`).join('&');
+    const priceHtml = o.price ? `<div class="pr"><b>${esc(o.price)}</b>${o.originalPrice ? `<s>${esc(o.originalPrice)}</s>` : ''}${discount ? `<em>${discount}% off</em>` : ''}</div>` : '';
+    const clockHtml = deadlineMs ? `<p class="ck" data-clock>Ends ${esc(deadlineLabel)}</p>` : '';
+    const faqHtml = c.faq.length ? `<section class="faq"><h2>Questions</h2>${c.faq.map((f) => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('')}</section>` : '';
+    return renderStory({ esc, o, t, c, cta, deadlineMs, deadlineLabel, priceHtml, clockHtml, faqHtml, title, jsonLd: jsonLdTag, nicheId: classifyNiche(`${o.niche ?? ''} ${o.product ?? ''}`).id, fontsHref, terms,
+      eyebrow: THEMES[o.theme] && o.theme !== 'default' ? EVENT_NAMES[o.theme] : o.brand });
+  }
 
   // Product-led page (art director) whenever we know what is sold or have product media.
   // Holiday-only pages (no niche, no media) keep the signature holiday scenes.

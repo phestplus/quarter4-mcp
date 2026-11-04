@@ -1,5 +1,46 @@
 # Changelog
 
+## Unreleased (after 0.7.0)
+
+- **AI illustrations made by Quarter4 (`illustrate` action "generate", Pro and above):** the best model for each job (cheap drafts for style previews, a premium model for finals with a transparent background, a fallback model), a quality check on every final with one free automatic redo, saved to the brand so pages and kits use them. `regenerate` makes a new version a seller asks for. Free plans, and any time generation is unavailable, get the free prompts instead.
+- **AI video (`video`, Studio and Business):** 5 or 10-second clips animated from an approved illustration or photo; failed videos are refunded; kept 90 days.
+- **Studio plan and top-ups (cloud):** Studio adds 60 images and 15 videos a month; one-off packs of 20 images or 5 videos. Allowances and a daily spending cap protect costs.
+- **Retention (cloud):** a daily cleanup removes expired kits, ended campaigns, idle Free pages (after an email warning), old analytics, old issues, generated art after a plan lapses and videos after 90 days.
+
+- **One go (`campaign_go`):** brand (saved profile or its website), plan, illustrations to make, landing page, content kit (offer or content-only), checks and private review links from one request. Nothing goes public until the seller approves.
+- **Brand understanding (`brand_extract`):** reads the brand's own website for palette (CSS variables and usage), heading and body fonts, wordmark case or SVG logotype, logo, a positioning line and copy samples, each with evidence; saves after the seller confirms.
+- **Illustrations without Figma (`illustrate`):** three style options; ready prompts for the AI's own image tool built from the accepted recipe (palette locked to hex, flat background for a clean cut-out, avoid list, audience); scene templates per niche; acceptance checks; `register` turns generated images into transparent cut-outs locally (rembg), uploads them and saves them with a style reference for consistency. Pages and kits lay them out frameless.
+- **Brand assets (`asset_upload`):** logos, wordmark SVGs, illustrations, photos and web fonts hosted on every plan (small Free quota); SVGs with scripts are refused.
+- **Motifs by category:** joining lines and arches for relationship and app brands, steam for food, motion lines for fitness and footwear, stitching for fashion, interface fragments for software and more, stable per brand.
+- **Story page design:** an art-directed page composed per brand from signature sections (centred hero with frameless art, a statement with a thread that draws as you scroll, illustrated moments, a promise band, a journey that fills, centred offer cards, a giant wordmark footer). Used when the AI passes story content; sections without real content are left out.
+- **Motion:** every kit post can preview its motion and download a 6-second video (MP4 where the browser supports it, otherwise WebM) for Reels, TikTok and Status, rendered in the browser.
+- **Wordmark everywhere:** page navigation and a giant wordmark footer; centred offer blocks on every page style.
+- **Dashboard:** site map with role and status, and Unpublish buttons for pages and kits; issues page shows the first-pass check rate and how many issues the engine caught versus people.
+- **Regression suite:** every field-log issue is a stored case re-run on every test; `scripts/import-issues.mjs` turns the issues export into new cases.
+- **Questions:** Quarter4 blocks only when it cannot tell what is sold; a reasonable guess proceeds and says what it assumed.
+
+## 0.7.0 (2026-11-04)
+
+Trust and control: no wrong content, nothing orphaned, problems caught before a seller sees them. Built from a full-day field test.
+
+- **Content-only mode:** with no offer, kits make everyday posts only: no sale posts, no prices (saved prices stay hidden), no stickers, no "offer" badges, and no question about prices. `mode: "content"` or `offer: "none"` makes it explicit.
+- **Your words on the graphic:** a post's `hook` or `headline` is drawn on the image, not only in the caption; `title` and `format` are kept; posts can be removed (`remove`, `posts[].remove`) and reordered (`order`).
+- **`kit_edit`:** change a shared kit at the same link: remove, reorder, replace or add posts, change settings.
+- **`unpublish`:** take a page or kit offline immediately.
+- **Page roles:** `publish_page` takes `role` (home, campaign, product, legal, review) and `endsAt`. Review pages are private, not indexed and don't use a page slot. The home page links live campaigns automatically; ended campaigns say so, then redirect home after 7 days. `cloud_account pages` returns a site map with role, status and reachability.
+- **Automatic checks (`checks` in every page and kit result):** leaked markup, double-escaped entities, empty values, retail wording for non-retail offers, placeholders, raw product text as headings, repeated brand names, prices or offer wording without an offer, avoided words, unrequested locations, palette not applied, UTC deadlines. `publish_page` refuses a failing page unless `force` is set. When connected, issues are filed automatically (arguments and the failing snippet only; `reportIssues: false` turns it off).
+- **`report_issue`, a feedback button and an issues page:** the AI files the seller's complaint in their words; each post on a hosted kit has a "Something's wrong" button; `q4.erasstack.com/dashboard/issues` groups reports by rule with counts, versions and examples (JSON export).
+- **Brand positioning:** `positioning` (is / isNot), `avoidWords`, `alwaysSay`, `noLocationMentions` in `brand_profile`, `landing_page` and `content_kit`; hooks that use an avoided word are never dealt.
+- **Wordmark:** `brandStyle.wordmark` (text, case, weight, letter spacing, accent letters, or an SVG) is used as written and never re-cased.
+- **Sentence case:** headlines are no longer forced into capitals.
+- **Frameless art:** SVG and PNG illustrations are shown whole, with no white card behind them, in kits and pages.
+- **Pages:** the editorial hero, section headings and price cards are centred; light brands get a calm button with readable text instead of a hard offset shadow; white text on the accent whenever it is readable.
+- **Copy fallbacks are plain and factual:** no invented claims ("our best saving", "biggest offer of the year"), no "For a limited time only" without an offer, no filler features, and the button uses the offer type's verb. `landing_page` reports which parts used fallback copy (`fallbacks`) so the AI can write them. The scroll statement appears only when `statement` is given. Gallery captions are never assigned to photos by position.
+- **Briefs are filled in:** `asset_brief` returns a written video script (shot, on-screen text and voiceover per beat), a real image prompt with the brand palette, and an email outline built from the actual products or plans. Customer quotes are never written for you.
+- **Images:** keyless search drops results that don't match what was asked for and says so when nothing fits; credits are decoded and short.
+- **Events and trends:** `event_calendar` puts events celebrated in the chosen place first and marks other markets' events `lowRelevance`; `whats_on` lists `use` (safe and relevant), `safeButUnrelated` and `nothingFitsToday`.
+- **Fixes:** `publish_page` with `page` applies the saved brand profile; `nextCalls` deadlines use the audience's time zone; the kit note states the real expiry date; the brand profile rejects unknown fields and reports shortened text (`warnings`); plain "app" is recognised as a consumer app.
+
 ## 0.6.0 (2026-11-03)
 
 - **Designed posts, not boxes:** mood and scene photos fill the whole post (full bleed) with a soft gradient so text stays readable; product photos show the whole product on a clean panel (no cropping); posts without photos lead with the offer in the brand's display font.

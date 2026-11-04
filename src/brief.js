@@ -4,7 +4,7 @@ import { classifyNiche, NICHES, phaseAngles } from './niches.js';
 import { normalizePlatforms, parseOffer } from './normalize.js';
 import { PLATFORMS } from './specs.js';
 import { hooksFor } from './hooks.js';
-import { offerTypeOf } from './offer.js';
+import { VERBS, displayNameOf, offerTypeOf } from './offer.js';
 
 // Rules that keep promotional content legal and platform-safe. Not legal advice.
 const COMPLIANCE = {
@@ -81,19 +81,30 @@ export function buildBrief(o) {
   const product = o.product || cls.matched[0] || 'the product';
   const offer = parseOffer(o.offer);
 
+  const offerType = o.offerType ?? offerTypeOf(nicheId, `${o.niche ?? ''} ${o.product ?? ''}`);
+  const name = displayNameOf({ brand: o.brand, displayName: o.displayName }, o.product ?? o.brand);
+  const verbs = VERBS[offerType] ?? VERBS.physical;
+  const RETAIL_ANGLE = /stock|doorbuster|gift guide|in-store|pickup|bundle|by budget|unboxing/i;
+  const evAngles = ev ? ev.angles.filter((x) => offerType === 'physical' || !RETAIL_ANGLE.test(x)) : [];
+  const offerShort = offer?.type === 'percent' ? `${offer.value}% off` : o.offer ?? null;
+  const ends = ev ? `ends ${ev.name}` : null;
+  const firstWords = (t, n) => String(t).replace(/[.!?]+$/, '').split(/\s+/).slice(0, n).join(' ');
+  const scriptAngles = () => (brief.context.angles.length ? brief.context.angles : phaseAngles(nicheId, ev ? 'launch' : 'warm-up', name));
+  const up = (t) => (t ? `${String(t)[0].toUpperCase()}${String(t).slice(1)}` : t);
   const brief = {
     platform: p.name,
     format: formatId,
     specs: { ...format, caption: p.caption, hashtags: p.hashtags },
     context: {
       brand: o.brand, product: o.product ?? null, offer: o.offer ?? null, tone: o.tone ?? 'warm, confident, specific',
-      event: ev ? { name: ev.name, date: ev.date, daysUntil: ev.daysUntil, angles: ev.angles, hashtags: ev.hashtags } : null,
+      event: ev ? { name: ev.name, date: ev.date, daysUntil: ev.daysUntil, angles: evAngles, hashtags: ev.hashtags } : null,
+      offerType, name,
       phase: o.phase ?? null,
       niche: niche.label,
       angles: o.phase ? phaseAngles(nicheId, o.phase, product) : [],
     },
     copy: {
-      hooks: hooksFor({ offerType: offerTypeOf(nicheId, `${o.niche ?? ''} ${o.product ?? ''}`), nicheHooks: niche.hooks, phase: o.phase ?? (ev ? 'launch' : 'evergreen'), product, discount: offer?.type === 'percent' ? `${offer.value}%` : null, event: ev?.name ?? null, brand: o.brand ?? 'us', limit: 10 }),
+      hooks: hooksFor({ offerType: offerTypeOf(nicheId, `${o.niche ?? ''} ${o.product ?? ''}`), nicheHooks: niche.hooks, phase: o.phase ?? (ev ? 'launch' : 'evergreen'), product: displayNameOf({ brand: o.brand, displayName: o.displayName }, o.product ?? o.brand), discount: offer?.type === 'percent' ? `${offer.value}%` : null, event: ev?.name ?? null, brand: o.brand ?? 'us', limit: 10 }),
       structure: ['Hook (first line / first 2 seconds)', 'Value or proof', 'Offer with real terms', 'One clear CTA'],
       captionLimit: p.caption,
     },
@@ -106,7 +117,7 @@ export function buildBrief(o) {
 
   if (['image', 'post', 'carousel', 'story'].includes(o.assetType) && format.aspect) {
     brief.imagePrompt = {
-      template: `${o.product ?? `${o.brand} product`}, ${ev ? `${ev.name} theme, ` : ''}[setting], [lighting: soft natural / studio], [style: clean editorial photography], negative space at the [top] for headline text, brand colours [hex], no text in image`,
+      template: `${name}, ${ev ? `${ev.name} mood, ` : ''}${(niche.shots[0] ?? 'in everyday use').toLowerCase()}, soft natural light, clean editorial photography, negative space at the top for headline text, ${o.brandStyle?.palette ? `colour palette ${Object.values(o.brandStyle.palette).filter(Boolean).join(' ')}` : 'brand colours'}, no text, no logos, no watermark`,
       sizeByTool: Object.fromEntries(Object.entries(IMAGE_TOOL_SIZES).map(([tool, fn]) => [tool, fn(format.aspect)])),
       tips: ['Add headline text in your design tool, not in the generated image (AI text is unreliable).', 'Generate 4 variants and A/B test the top 2.'],
     };
@@ -118,14 +129,38 @@ export function buildBrief(o) {
     const secs = [15, 30, 60].includes(o.videoSeconds) ? o.videoSeconds : 30;
     brief.video = {
       seconds: secs,
-      beats: VIDEO_STRUCTURES[secs].map(([t, beat]) => ({ time: t, beat, shot: '[describe shot]', onScreenText: '[≤6 words]', voiceover: '[line]' })),
+      beats: VIDEO_STRUCTURES[secs].map(([t, beat], i, all) => {
+        const hook = brief.copy.hooks[0] ?? `${name}.`;
+        const last = i === all.length - 1;
+        const proof = /^social proof/i.test(beat);
+        return {
+          time: t, beat,
+          shot: last ? 'End card: logo or wordmark, the offer and the link' : niche.shots[i % niche.shots.length],
+          onScreenText: i === 0 ? firstWords(hook, 6) : last ? up([offerShort, ends].filter(Boolean).join(' · ')) || verbs.cta : proof ? 'From a real customer' : up(firstWords(scriptAngles()[i - 1] ?? evAngles[i - 1] ?? name, 6)),
+          voiceover: i === 0 ? hook : last ? `${offerShort ? `${up(offerShort)}${ev ? ` for ${ev.name}` : ''}. ` : ''}${verbs.ig}` : proof ? null : `${up(scriptAngles()[i - 1] ?? evAngles[i - 1] ?? `Here is what ${name} does for you`)}.`,
+          ...(proof ? { note: 'Use a real customer quote or result, with their permission. Never write one.' } : {}),
+        };
+      }),
+      voice: o.tone ?? 'warm, confident, specific',
       shotList: [...niche.shots, 'End card with the offer and deadline'],
       safeZone: format.safeZone ?? null,
       tips: ['Burn in captions; most people watch muted.', 'Film vertical 4K so you can crop for 4:5 too.'],
     };
   }
   if (o.assetType === 'email') {
-    brief.email = { subject: '≤50 chars, benefit or curiosity + deadline', preheader: '40-100 chars that extend the subject', sections: ['Hero image (live text headline)', 'Offer and terms', 'Top 3 products', 'CTA button', 'Footer with unsubscribe and address'] };
+    const items = (o.products ?? []).filter((x) => x?.name).slice(0, 3);
+    brief.email = {
+      subject: `${offerShort ? `${offerShort[0].toUpperCase()}${offerShort.slice(1)} ${name}` : name}${ev ? ` for ${ev.name}` : ''}`.slice(0, 50),
+      preheader: offerShort && ev ? `${up(evAngles[0] ?? 'Our offer')}, until ${ev.name}.` : `What is new at ${o.brand}.`,
+      voice: o.tone ?? 'warm, confident, specific',
+      sections: [
+        `Hero: ${name}${offerShort ? `, ${offerShort}` : ''} (live text headline, not text in an image)`,
+        offerShort ? 'The offer and its real terms (renewal price and how to cancel for subscriptions)' : 'One clear story or update',
+        items.length ? `${offerType === 'subscription' ? 'Plans' : 'Products'}: ${items.map((x) => x.name).join(', ')}` : offerType === 'subscription' ? 'What is included, plan by plan (only the plans you sell)' : 'The products in this offer (only real ones)',
+        `Button: ${verbs.cta}`,
+        'Footer with unsubscribe link and your business address',
+      ],
+    };
   }
   return brief;
 }

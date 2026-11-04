@@ -81,6 +81,27 @@ test('publish, measure and upgrade through MCP tools', { skip, timeout: 30000 },
     const k2 = await call('content_kit', { brand: 'Kora Kicks', autoImages: false, productPhotos: 'none' });
     assert.ok(!k2.err, k2.text);
     assert.ok(k2.data.notes.some((n) => /saved brand profile: .*products/.test(n)));
+    // Edit the shared kit at the same link, then take it offline.
+    const ed = await call('kit_edit', { kitId: kit.data.kitId, remove: ['wide'], posts: [{ id: 'offer', hook: 'Built for every step.' }] });
+    assert.ok(!ed.err, ed.text);
+    assert.equal(ed.data.url, kit.data.url, 'same link after editing');
+    assert.ok(!ed.data.posts.some((x) => x.id === 'wide'));
+    assert.equal(ed.data.posts.find((x) => x.id === 'offer').hook, 'Built for every step.');
+    assert.ok(ed.data.checks && typeof ed.data.checks.passed === 'boolean', 'checks run on every kit');
+    const off = await call('unpublish', { kitId: kit.data.kitId });
+    assert.ok(!off.err, off.text);
+    assert.equal((await realFetch(`${base}/k/${kit.data.kitId}`, { headers: { 'x-host': 'q4-korakicks.erasstack.com' } })).status, 410);
+    // One go: content-only week with the AI's own copy -> private review page + kit + plan + illustration prompts.
+    const go = await call('campaign_go', { request: 'this week of everyday content for our sneaker shop in Lagos, instagram and whatsapp', brand: 'Kora Kicks', offer: 'none', ctaUrl: 'https://wa.me/2348031234567',
+      copy: { headline: 'Fresh pairs, every week.', statement: 'Two feet, one good day.', steps: [{ title: 'Pick a pair' }, { title: 'Message us' }, { title: 'Wear it out' }] } });
+    assert.ok(!go.err, go.text);
+    assert.match(go.data.review.page, /\/review-/, 'the page goes up privately for review');
+    assert.match(go.data.review.kit, /\/k\/[a-f0-9]{12}$/);
+    assert.ok(go.data.plan.totals.slots > 0);
+    assert.ok(go.data.illustrationsToMake.length >= 1, 'illustration prompts for the host AI');
+    assert.equal(go.data.checks.page.passed, true, JSON.stringify(go.data.checks.page.issues));
+    const reviewPage = await realFetch(go.data.review.page.replace('https://q4-korakicks.erasstack.com', base), { headers: { 'x-host': 'q4-korakicks.erasstack.com' } });
+    assert.equal(reviewPage.headers.get('x-robots-tag'), 'noindex, nofollow');
     assert.ok(!k2.data.notes.some((n) => /part of Pro/.test(n)), 'brand colours are not paywalled (only the logo is Pro)');
     assert.equal(st.data.pages[0].byItem['Runner One'], 1);
 
@@ -158,5 +179,59 @@ test('connect: browser approval saves the key locally, then publishing works', {
   } finally {
     await client.close(); http.close();
     delete process.env.QUARTER4_API_URL; delete process.env.QUARTER4_HOME;
+  }
+});
+
+test('AI generation through MCP: Free gets the free prompts, Pro generates and saves, video needs Studio', { skip, timeout: 30000 }, async () => {
+  const { default: worker } = await import(workerPath.href);
+  const { MemoryStore, MemoryBucket } = await import(new URL('../../quarter4-cloud/src/store.js', import.meta.url).href);
+  const env = { store: new MemoryStore(), PAGES: new MemoryBucket(), DEV: '1', APP_HOST: 'q4.erasstack.com', ROOT_DOMAIN: 'erasstack.com', PAGE_PREFIX: 'q4-', KEY_PEPPER: 'p', OPENAI_API_KEY: 'sk-test', FAL_KEY: 'fal-test' };
+  const realFetch = globalThis.fetch;
+  const http = createHttp(async (req, res) => {
+    const chunks = []; for await (const c of req) chunks.push(c);
+    const r = await worker.fetch(new Request(`https://q4.erasstack.com${req.url}`, { method: req.method, headers: req.headers, body: chunks.length ? Buffer.concat(chunks) : undefined }), env, { waitUntil() {} });
+    res.writeHead(r.status, Object.fromEntries(r.headers)); res.end(Buffer.from(await r.arrayBuffer()));
+  });
+  await new Promise((r) => http.listen(0, '127.0.0.1', r));
+  // Image and vision providers are faked; everything else goes to the local worker.
+  globalThis.fetch = async (input, init) => {
+    const url = typeof input === 'string' ? input : input.url;
+    if (url === 'https://api.openai.com/v1/images/generations') return Response.json({ data: [{ b64_json: Buffer.from('png-bytes-for-the-test').toString('base64') }] });
+    if (url === 'https://api.openai.com/v1/chat/completions') return Response.json({ choices: [{ message: { content: '{"passed":true,"reasons":[]}' } }] });
+    return realFetch(input, init);
+  };
+  process.env.QUARTER4_API_URL = `http://127.0.0.1:${http.address().port}`;
+  delete process.env.QUARTER4_API_KEY;
+  const server = createServer({ allowFileWrites: false });
+  const client = new Client({ name: 't', version: '0' });
+  const [a, b] = InMemoryTransport.createLinkedPair();
+  await Promise.all([server.connect(a), client.connect(b)]);
+  const call = async (name, args) => { const r = await client.callTool({ name, arguments: args }); return { err: r.isError, text: r.content[0].text, data: (() => { try { return JSON.parse(r.content[0].text); } catch { return null; } })() }; };
+  try {
+    const s = await call('cloud_account', { action: 'signup', email: 'ama@brand.com' });
+    process.env.QUARTER4_API_KEY = s.data.apiKey;
+    const free = await call('illustrate', { action: 'generate', niche: 'coffee shop', count: 2 });
+    assert.ok(!free.err, free.text);
+    assert.equal(free.data.generated.length, 0);
+    assert.equal(free.data.prompts.length, 2, 'Free falls back to the free prompts');
+    assert.match(free.data.why, /Pro, Studio and Business/);
+
+    await env.store.setPlan(env.store.accounts[0].id, 'pro', Date.now() + 864e5);
+    const pro = await call('illustrate', { action: 'generate', niche: 'coffee shop', count: 2 });
+    assert.ok(!pro.err, pro.text);
+    assert.equal(pro.data.generated.length, 2);
+    assert.match(pro.data.generated[0].url, /\/a\/[a-f0-9]{16}\.png$/);
+    assert.equal(pro.data.allowance.used, 2);
+    const brand = await (await realFetch(`${process.env.QUARTER4_API_URL}/v1/brand`, { headers: { authorization: `Bearer ${s.data.apiKey}` } })).json();
+    assert.equal(brand.profile.illustration.scenes.length, 2, 'saved to the brand for pages and kits');
+
+    const v = await call('video', { action: 'create', image: brand.profile.illustration.scenes[0].scene, prompt: 'She smiles.' });
+    assert.equal(v.data.started, false);
+    assert.match(v.data.why, /Studio and Business/);
+    const u = await call('video', { action: 'usage' });
+    assert.equal(u.data.images.used, 2);
+  } finally {
+    await client.close(); http.close(); globalThis.fetch = realFetch;
+    delete process.env.QUARTER4_API_URL; delete process.env.QUARTER4_API_KEY;
   }
 });

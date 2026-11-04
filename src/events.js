@@ -56,7 +56,7 @@ const Q4_EVENTS = [
   { id: 'us-thanksgiving', name: 'Thanksgiving (US)', rule: { nth: [11, 4, 4] }, regions: ['US'], category: 'cultural', impact: 'high', leadDays: 14,
     angles: ['gratitude and customer thank-yous', 'recipes and hosting', 'early-access deals for subscribers'], hashtags: ['#Thanksgiving', '#Grateful'] },
   { id: 'black-friday', name: 'Black Friday', rule: { after: ['us-thanksgiving', 1] }, regions: ['global'], category: 'shopping', impact: 'high', leadDays: 21,
-    angles: ['biggest offer of the year', 'doorbuster limited stock (state real quantities)', 'gift guides by budget', 'bundles', 'waitlist/early access'], hashtags: ['#BlackFriday', '#BlackFridayDeals', '#BlackFriday{year}'] },
+    angles: ['the offer explained clearly, with real prices and terms', 'doorbuster limited stock (state real quantities)', 'gift guides by budget', 'bundles', 'waitlist/early access'], hashtags: ['#BlackFriday', '#BlackFridayDeals', '#BlackFriday{year}'] },
   { id: 'small-business-saturday', name: 'Small Business Saturday (US)', rule: { after: ['us-thanksgiving', 2] }, regions: ['US'], category: 'shopping', impact: 'medium', leadDays: 10,
     angles: ['founder story', 'behind the scenes', 'shop-local collaborations'], hashtags: ['#ShopSmall', '#SmallBusinessSaturday'] },
   { id: 'cyber-monday', name: 'Cyber Monday', rule: { after: ['us-thanksgiving', 4] }, regions: ['global'], category: 'shopping', impact: 'high', leadDays: 14,

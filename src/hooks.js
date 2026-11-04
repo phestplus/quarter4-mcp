@@ -141,10 +141,11 @@ const phaseOf = (p) => (BY_PHASE[p] ? p : p === 'observance' ? null : 'evergreen
  * (falls back to other phases, then allows repeats only when everything is used).
  * @param {{ nicheHooks?: string[], product: string, discount?: string|null, event?: string|null, brand?: string, seed?: number }} o
  */
-export function hookDeck({ nicheHooks = [], product, discount = null, brand = 'us', seed = 0, offerType = 'physical' }) {
+export function hookDeck({ nicheHooks = [], product, discount = null, brand = 'us', seed = 0, offerType = 'physical', avoid = [] }) {
+  const avoidRe = avoid.length ? new RegExp(`(^|[^a-z])(${avoid.map((w) => String(w).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'i') : null;
   const used = new Set();
   let repeats = 0;
-  const usable = (t, event) => (!t.includes('{discount}') || discount) && (!t.includes('{event}') || event);
+  const usable = (t, event) => (!t.includes('{discount}') || discount) && (!t.includes('{event}') || event) && !(avoidRe && avoidRe.test(t));
   const fill = (t, event) => t.replaceAll('{product}', product).replaceAll('{discount}', discount ?? '').replaceAll('{event}', event ?? '').replaceAll('{brand}', brand).replaceAll('{date}', event ?? 'this week');
   // Niche lines are strongest, so they are mixed into every phase.
   const pool = (phase) => {

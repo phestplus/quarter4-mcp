@@ -180,7 +180,7 @@ export const NICHES = {
   },
   apps: {
     label: 'Consumer apps and subscriptions', kind: 'digital', archetype: 'editorial',
-    keywords: ['mobile app', 'dating app', 'relationship app', 'marriage app', 'couples app', 'wellness app', 'meditation app', 'fitness app', 'finance app', 'budgeting app', 'savings app', 'premium plan', 'yearly plan', 'monthly plan', 'subscription', 'membership', 'relationship', 'marriage', 'couples', 'dating', 'meditation', 'budgeting'],
+    keywords: ['app', 'apps', 'habit', 'tracker app', 'mobile app', 'dating app', 'relationship app', 'marriage app', 'couples app', 'wellness app', 'meditation app', 'fitness app', 'finance app', 'budgeting app', 'savings app', 'premium plan', 'yearly plan', 'monthly plan', 'subscription', 'membership', 'relationship', 'marriage', 'couples', 'dating', 'meditation', 'budgeting'],
     phases: {
       tease: ['One screen from the app, no words', 'A question your users ask themselves (no answer yet)'],
       'warm-up': ['What changes in the first week of using it', 'Free vs paid: what you actually get', 'A real user story (with permission)'],

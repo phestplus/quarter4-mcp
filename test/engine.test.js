@@ -122,3 +122,64 @@ test('subscription apps get subscription copy, never retail lines', async () => 
   assert.ok(!/cart|Reply to this message to order|#BrightlyPremium/i.test(caps));
   assert.equal(k.posts.find((x) => x.id === 'offer').hook, 'Small habits, kept all year. 30% off this Black Friday.', 'the AI headline becomes the hook');
 });
+
+test('content-only kits: no sale posts, prices, stickers or offer badges', async () => {
+  const { buildKit } = await import('../src/kit.js');
+  const k = buildKit({ brand: 'Brightly', niche: 'habit tracking app', theme: 'default', ctaUrl: 'https://example.com', products: [{ name: 'Premium yearly', price: '₦31,500', originalPrice: '₦45,000' }] });
+  assert.equal(k.contentOnly, true);
+  const text = k.html.replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/g, '');
+  assert.ok(!/₦31,500|₦45,000/.test(text), 'saved prices are not shown without an offer');
+  assert.ok(!/Limited-time offer/i.test(text), 'no offer badge from the default theme');
+  assert.ok(!k.posts.some((p) => ['offer', 'story', 'last-call', 'wide'].includes(p.id)), 'no sale slots');
+  assert.ok(!/g-stk/.test(text), 'no discount sticker');
+  const caps = k.posts.flatMap((p) => Object.values(p.caption)).join(' | ');
+  assert.ok(!/Start your plan|Order here|₦/.test(caps), caps);
+});
+
+test('kit slots: AI hooks reach the graphic; title, format, removal and order are kept', async () => {
+  const { buildKit } = await import('../src/kit.js');
+  const k = buildKit({ brand: 'Brightly', niche: 'habit tracking app', discountPercent: 30, price: '₦31,500', ctaUrl: 'https://example.com', deadline: '2026-11-27T23:59:00+01:00',
+    posts: [{ id: 'offer', hook: 'Small habits, kept all year.', title: 'Launch post' }, { id: 'wide', remove: true }, { id: 'tease', hook: 'Something calm is coming.', format: 'story' }], order: ['tease', 'offer'] });
+  const offer = k.posts.find((p) => p.id === 'offer');
+  assert.equal(offer.title, 'Launch post');
+  assert.ok(k.html.includes('Small habits, kept all year.'), 'the hook is drawn on the graphic');
+  assert.ok(!k.posts.some((p) => p.id === 'wide'), 'removed slot is gone');
+  const tease = k.posts.find((p) => p.id === 'tease');
+  assert.equal(tease.format, 'story', 'the requested format is kept');
+  assert.deepEqual(k.posts.slice(0, 2).map((p) => p.id), ['tease', 'offer']);
+  assert.ok(!/text-transform:uppercase/.test(k.html.match(/\.g-h\{[^}]*\}/)[0]), 'headlines are not forced into capitals');
+});
+
+test('wordmark keeps the brand name as the brand writes it', async () => {
+  const { wordmarkHtml } = await import('../src/brand.js');
+  const w = wordmarkHtml({ brand: 'Brightly', brandStyle: { wordmark: { text: 'brightly', case: 'lower', weight: 800, highlight: [{ from: 1, to: 3, color: '#8b72a8' }] } } });
+  assert.match(w, /text-transform:none/);
+  assert.match(w, /b<span style="color:#8b72a8">ri<\/span>ghtly/);
+  assert.ok(!/onload/.test(wordmarkHtml({ brand: 'x', brandStyle: { wordmark: { svg: '<svg onload="alert(1)"></svg>' } } })), 'unsafe SVG is not used');
+});
+
+test('illustration prompts follow the accepted recipe', async () => {
+  const { promptFor, handoff, SCENES } = await import('../src/illustrate.js');
+  const p = promptFor({ palette: { bg: '#F5EFE8', text: '#493A35', accent: '#8B72A8' }, style: 'flat-editorial', avoid: ['swipe cards'], audience: { region: 'West Africa', ageRange: '25-40' } }, SCENES.apps[0]);
+  assert.match(p, /Premium modern editorial illustration/);
+  assert.match(p, /Colour palette strictly: #F5EFE8 \(bg\), #493A35 \(text\), #8B72A8 \(accent\)/);
+  assert.match(p, /one flat solid plain #F5EFE8 colour filling the whole image/, 'flat background for a clean cut-out');
+  assert.match(p, /No text, no letters, no logos, no watermark, no hearts, no frames, no borders, no swipe cards/);
+  assert.match(p, /West Africa, aged 25-40/);
+  const list = handoff({ palette: {} }, null, 'apps');
+  assert.ok(list.length >= 3 && list.every((x) => x.prompt && x.size));
+  assert.ok(!/[—–]/.test(p));
+});
+
+test('brand_extract reads palette, fonts, wordmark and logo from the brand\'s own site', async () => {
+  const { analyse } = await import('../src/extract.js');
+  const html = '<html><head><title>brightly | Habits that last</title><meta name="description" content="A calm habit tracker for busy families."><link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400" rel="stylesheet"><style>:root{--bg:#F5EFE8;--text:#493A35;--accent:#8B72A8}h1{font-family:Fraunces,serif}body{font-family:Inter,sans-serif}</style></head><body><a class="logo" href="/"><img src="/logo.svg" alt="brightly"></a><h1>Small habits, kept all year.</h1></body></html>';
+  const r = analyse(html, '', 'https://brightly.example/');
+  assert.deepEqual(r.profile.brandStyle.palette, { bg: '#f5efe8', text: '#493a35', accent: '#8b72a8' });
+  assert.equal(r.profile.brandStyle.mode, 'light');
+  assert.equal(r.profile.brandStyle.fontDisplay, 'Fraunces');
+  assert.equal(r.profile.brandStyle.wordmark.case, 'lower');
+  assert.equal(r.profile.logoUrl, 'https://brightly.example/logo.svg');
+  assert.equal(r.samples.h1, 'Small habits, kept all year.');
+  assert.ok(r.evidence.length >= 2);
+});

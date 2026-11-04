@@ -10729,11 +10729,11 @@ function capSize(inst, size) {
   const caps = sizeCaps(inst._zod.def.checks);
   if (!caps.length)
     return;
-  const cap3 = Math.min(...caps.map((c) => c[0]));
+  const cap4 = Math.min(...caps.map((c) => c[0]));
   const parse4 = inst._zod.parse;
   inst._zod.parse = (payload, ctx) => {
     const n = size(payload.value);
-    if (n > cap3 && !ctx?.skipChecks && ctx?.direction !== "backward") {
+    if (n > cap4 && !ctx?.skipChecks && ctx?.direction !== "backward") {
       for (const [max, ch] of sizeCaps(inst._zod.def.checks)) {
         if (n > max && ch._zod.def.when(payload)) {
           const start = payload.issues.length;
@@ -10901,14 +10901,14 @@ var $ZodObject = /* @__PURE__ */ $constructor("$ZodObject", (inst, def) => {
   const desc = Object.getOwnPropertyDescriptor(def, "shape");
   const sh = desc?.get ? desc.get.raw : def.shape ?? {};
   if (sh) {
-    const get2 = () => {
+    const get3 = () => {
       const newSh = { ...sh };
       Object.defineProperty(def, "shape", { value: newSh });
-      get2.raw = newSh;
+      get3.raw = newSh;
       return newSh;
     };
-    get2.raw = sh;
-    Object.defineProperty(def, "shape", { get: get2 });
+    get3.raw = sh;
+    Object.defineProperty(def, "shape", { get: get3 });
   }
   const _normalized = cached(() => normalizeDef(def));
   defineLazyInternal(inst, "propValues", (zod) => {
@@ -22829,13 +22829,13 @@ function _promise(Class2, innerType) {
 }
 // @__NO_SIDE_EFFECTS__
 function _custom(Class2, fn, _params) {
-  const norm = normalizeParams(_params);
-  norm.abort ?? (norm.abort = true);
+  const norm2 = normalizeParams(_params);
+  norm2.abort ?? (norm2.abort = true);
   const schema = new Class2({
     type: "custom",
     check: "custom",
     fn,
-    ...norm
+    ...norm2
   });
   return schema;
 }
@@ -39434,7 +39434,7 @@ var Q4_EVENTS = [
     category: "shopping",
     impact: "high",
     leadDays: 21,
-    angles: ["biggest offer of the year", "doorbuster limited stock (state real quantities)", "gift guides by budget", "bundles", "waitlist/early access"],
+    angles: ["the offer explained clearly, with real prices and terms", "doorbuster limited stock (state real quantities)", "gift guides by budget", "bundles", "waitlist/early access"],
     hashtags: ["#BlackFriday", "#BlackFridayDeals", "#BlackFriday{year}"]
   },
   {
@@ -39985,7 +39985,7 @@ var NICHES = {
     label: "Consumer apps and subscriptions",
     kind: "digital",
     archetype: "editorial",
-    keywords: ["mobile app", "dating app", "relationship app", "marriage app", "couples app", "wellness app", "meditation app", "fitness app", "finance app", "budgeting app", "savings app", "premium plan", "yearly plan", "monthly plan", "subscription", "membership", "relationship", "marriage", "couples", "dating", "meditation", "budgeting"],
+    keywords: ["app", "apps", "habit", "tracker app", "mobile app", "dating app", "relationship app", "marriage app", "couples app", "wellness app", "meditation app", "fitness app", "finance app", "budgeting app", "savings app", "premium plan", "yearly plan", "monthly plan", "subscription", "membership", "relationship", "marriage", "couples", "dating", "meditation", "budgeting"],
     phases: {
       tease: ["One screen from the app, no words", "A question your users ask themselves (no answer yet)"],
       "warm-up": ["What changes in the first week of using it", "Free vs paid: what you actually get", "A real user story (with permission)"],
@@ -40691,11 +40691,12 @@ var NON_PHYSICAL = {
 };
 var NEAR = { tease: ["warm-up"], "warm-up": ["tease"], "early-access": ["launch"], "last-chance": ["launch"], launch: ["last-chance"], "thank-you": [] };
 var phaseOf = (p) => BY_PHASE[p] ? p : p === "observance" ? null : "evergreen";
-function hookDeck({ nicheHooks = [], product, discount = null, brand = "us", seed = 0, offerType = "physical" }) {
+function hookDeck({ nicheHooks = [], product, discount = null, brand = "us", seed = 0, offerType = "physical", avoid = [] }) {
+  const avoidRe = avoid.length ? new RegExp(`(^|[^a-z])(${avoid.map((w) => String(w).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "i") : null;
   const used = /* @__PURE__ */ new Set();
   let repeats = 0;
-  const usable = (t, event) => (!t.includes("{discount}") || discount) && (!t.includes("{event}") || event);
-  const fill = (t, event) => t.replaceAll("{product}", product).replaceAll("{discount}", discount ?? "").replaceAll("{event}", event ?? "").replaceAll("{brand}", brand).replaceAll("{date}", event ?? "this week");
+  const usable = (t, event) => (!t.includes("{discount}") || discount) && (!t.includes("{event}") || event) && !(avoidRe && avoidRe.test(t));
+  const fill2 = (t, event) => t.replaceAll("{product}", product).replaceAll("{discount}", discount ?? "").replaceAll("{event}", event ?? "").replaceAll("{brand}", brand).replaceAll("{date}", event ?? "this week");
   const pool = (phase) => {
     const own2 = ["tease", "warm-up", "evergreen"].includes(phase) ? nicheHooks.map((t, i) => ({ t, k: `n${i}` })) : [];
     const physical = offerType === "physical";
@@ -40718,12 +40719,12 @@ function hookDeck({ nicheHooks = [], product, discount = null, brand = "us", see
           const h = list2[(i + seed) % list2.length];
           if (!used.has(h.k) && usable(h.t, event)) {
             used.add(h.k);
-            return fill(h.t, event);
+            return fill2(h.t, event);
           }
         }
       }
       const any2 = pool(ph0).filter((h) => usable(h.t, event));
-      return any2.length ? fill(any2[(repeats++ + seed) % any2.length].t, event) : null;
+      return any2.length ? fill2(any2[(repeats++ + seed) % any2.length].t, event) : null;
     },
     size: () => used.size
   };
@@ -40821,6 +40822,16 @@ function buildBrief(o) {
   const niche = NICHES[nicheId];
   const product = o.product || cls.matched[0] || "the product";
   const offer = parseOffer(o.offer);
+  const offerType = o.offerType ?? offerTypeOf(nicheId, `${o.niche ?? ""} ${o.product ?? ""}`);
+  const name = displayNameOf({ brand: o.brand, displayName: o.displayName }, o.product ?? o.brand);
+  const verbs = VERBS[offerType] ?? VERBS.physical;
+  const RETAIL_ANGLE = /stock|doorbuster|gift guide|in-store|pickup|bundle|by budget|unboxing/i;
+  const evAngles = ev ? ev.angles.filter((x) => offerType === "physical" || !RETAIL_ANGLE.test(x)) : [];
+  const offerShort = offer?.type === "percent" ? `${offer.value}% off` : o.offer ?? null;
+  const ends = ev ? `ends ${ev.name}` : null;
+  const firstWords = (t, n) => String(t).replace(/[.!?]+$/, "").split(/\s+/).slice(0, n).join(" ");
+  const scriptAngles = () => brief.context.angles.length ? brief.context.angles : phaseAngles(nicheId, ev ? "launch" : "warm-up", name);
+  const up = (t) => t ? `${String(t)[0].toUpperCase()}${String(t).slice(1)}` : t;
   const brief = {
     platform: p.name,
     format: formatId,
@@ -40830,13 +40841,15 @@ function buildBrief(o) {
       product: o.product ?? null,
       offer: o.offer ?? null,
       tone: o.tone ?? "warm, confident, specific",
-      event: ev ? { name: ev.name, date: ev.date, daysUntil: ev.daysUntil, angles: ev.angles, hashtags: ev.hashtags } : null,
+      event: ev ? { name: ev.name, date: ev.date, daysUntil: ev.daysUntil, angles: evAngles, hashtags: ev.hashtags } : null,
+      offerType,
+      name,
       phase: o.phase ?? null,
       niche: niche.label,
       angles: o.phase ? phaseAngles(nicheId, o.phase, product) : []
     },
     copy: {
-      hooks: hooksFor({ offerType: offerTypeOf(nicheId, `${o.niche ?? ""} ${o.product ?? ""}`), nicheHooks: niche.hooks, phase: o.phase ?? (ev ? "launch" : "evergreen"), product, discount: offer?.type === "percent" ? `${offer.value}%` : null, event: ev?.name ?? null, brand: o.brand ?? "us", limit: 10 }),
+      hooks: hooksFor({ offerType: offerTypeOf(nicheId, `${o.niche ?? ""} ${o.product ?? ""}`), nicheHooks: niche.hooks, phase: o.phase ?? (ev ? "launch" : "evergreen"), product: displayNameOf({ brand: o.brand, displayName: o.displayName }, o.product ?? o.brand), discount: offer?.type === "percent" ? `${offer.value}%` : null, event: ev?.name ?? null, brand: o.brand ?? "us", limit: 10 }),
       structure: ["Hook (first line / first 2 seconds)", "Value or proof", "Offer with real terms", "One clear CTA"],
       captionLimit: p.caption
     },
@@ -40851,7 +40864,7 @@ function buildBrief(o) {
   };
   if (["image", "post", "carousel", "story"].includes(o.assetType) && format.aspect) {
     brief.imagePrompt = {
-      template: `${o.product ?? `${o.brand} product`}, ${ev ? `${ev.name} theme, ` : ""}[setting], [lighting: soft natural / studio], [style: clean editorial photography], negative space at the [top] for headline text, brand colours [hex], no text in image`,
+      template: `${name}, ${ev ? `${ev.name} mood, ` : ""}${(niche.shots[0] ?? "in everyday use").toLowerCase()}, soft natural light, clean editorial photography, negative space at the top for headline text, ${o.brandStyle?.palette ? `colour palette ${Object.values(o.brandStyle.palette).filter(Boolean).join(" ")}` : "brand colours"}, no text, no logos, no watermark`,
       sizeByTool: Object.fromEntries(Object.entries(IMAGE_TOOL_SIZES).map(([tool, fn]) => [tool, fn(format.aspect)])),
       tips: ["Add headline text in your design tool, not in the generated image (AI text is unreliable).", "Generate 4 variants and A/B test the top 2."]
     };
@@ -40863,14 +40876,39 @@ function buildBrief(o) {
     const secs = [15, 30, 60].includes(o.videoSeconds) ? o.videoSeconds : 30;
     brief.video = {
       seconds: secs,
-      beats: VIDEO_STRUCTURES[secs].map(([t, beat]) => ({ time: t, beat, shot: "[describe shot]", onScreenText: "[\u22646 words]", voiceover: "[line]" })),
+      beats: VIDEO_STRUCTURES[secs].map(([t, beat], i, all) => {
+        const hook = brief.copy.hooks[0] ?? `${name}.`;
+        const last = i === all.length - 1;
+        const proof = /^social proof/i.test(beat);
+        return {
+          time: t,
+          beat,
+          shot: last ? "End card: logo or wordmark, the offer and the link" : niche.shots[i % niche.shots.length],
+          onScreenText: i === 0 ? firstWords(hook, 6) : last ? up([offerShort, ends].filter(Boolean).join(" \xB7 ")) || verbs.cta : proof ? "From a real customer" : up(firstWords(scriptAngles()[i - 1] ?? evAngles[i - 1] ?? name, 6)),
+          voiceover: i === 0 ? hook : last ? `${offerShort ? `${up(offerShort)}${ev ? ` for ${ev.name}` : ""}. ` : ""}${verbs.ig}` : proof ? null : `${up(scriptAngles()[i - 1] ?? evAngles[i - 1] ?? `Here is what ${name} does for you`)}.`,
+          ...proof ? { note: "Use a real customer quote or result, with their permission. Never write one." } : {}
+        };
+      }),
+      voice: o.tone ?? "warm, confident, specific",
       shotList: [...niche.shots, "End card with the offer and deadline"],
       safeZone: format.safeZone ?? null,
       tips: ["Burn in captions; most people watch muted.", "Film vertical 4K so you can crop for 4:5 too."]
     };
   }
   if (o.assetType === "email") {
-    brief.email = { subject: "\u226450 chars, benefit or curiosity + deadline", preheader: "40-100 chars that extend the subject", sections: ["Hero image (live text headline)", "Offer and terms", "Top 3 products", "CTA button", "Footer with unsubscribe and address"] };
+    const items = (o.products ?? []).filter((x) => x?.name).slice(0, 3);
+    brief.email = {
+      subject: `${offerShort ? `${offerShort[0].toUpperCase()}${offerShort.slice(1)} ${name}` : name}${ev ? ` for ${ev.name}` : ""}`.slice(0, 50),
+      preheader: offerShort && ev ? `${up(evAngles[0] ?? "Our offer")}, until ${ev.name}.` : `What is new at ${o.brand}.`,
+      voice: o.tone ?? "warm, confident, specific",
+      sections: [
+        `Hero: ${name}${offerShort ? `, ${offerShort}` : ""} (live text headline, not text in an image)`,
+        offerShort ? "The offer and its real terms (renewal price and how to cancel for subscriptions)" : "One clear story or update",
+        items.length ? `${offerType === "subscription" ? "Plans" : "Products"}: ${items.map((x) => x.name).join(", ")}` : offerType === "subscription" ? "What is included, plan by plan (only the plans you sell)" : "The products in this offer (only real ones)",
+        `Button: ${verbs.cta}`,
+        "Footer with unsubscribe link and your business address"
+      ]
+    };
   }
   return brief;
 }
@@ -40926,6 +40964,13 @@ function createCloud({ persist = false, client: initialClient = "AI app" } = {})
     return { ...data, httpStatus: res.status };
   }
   const strip2 = ({ httpStatus, ...d }) => d;
+  async function soft(path, { method = "GET", body, timeout = 2e4 } = {}) {
+    const k = key();
+    if (!k) throw new Error(NO_KEY);
+    const res = await fetch(`${base()}${path}`, { method, headers: { "content-type": "application/json", "user-agent": "quarter4-mcp", authorization: `Bearer ${k}` }, body: body ? JSON.stringify(body) : void 0, signal: AbortSignal.timeout(timeout) });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, ...data };
+  }
   const call = async (...a) => strip2(await api(...a));
   async function pollOnce() {
     if (!pending) return null;
@@ -40996,6 +41041,20 @@ function createCloud({ persist = false, client: initialClient = "AI app" } = {})
       return true;
     },
     brand: () => call("/v1/brand"),
+    reportIssues: (b) => call("/v1/issues", { method: "POST", body: b }),
+    countRun: (tool, passed) => call("/v1/metrics", { method: "POST", body: { tool, passed } }),
+    getKit: (id) => call(`/v1/kits/${id}`),
+    async uploadAsset(buf, type, name) {
+      const res = await fetch(`${base()}/v1/assets${name ? `?name=${encodeURIComponent(name)}` : ""}`, { method: "POST", headers: { authorization: `Bearer ${keyOf()}`, "content-type": type, "user-agent": "quarter4-mcp" }, body: buf, signal: AbortSignal.timeout(6e4) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? `upload ${res.status}`);
+      return data;
+    },
+    deleteKit: (id) => call(`/v1/kits/${id}`, { method: "DELETE" }),
+    genImage: (b) => soft("/v1/generate/image", { method: "POST", body: b, timeout: 18e4 }),
+    videoStart: (b) => soft("/v1/generate/video", { method: "POST", body: b, timeout: 6e4 }),
+    videoStatus: (id) => soft(`/v1/generate/video/${encodeURIComponent(id)}`, { timeout: 12e4 }),
+    usage: () => call("/v1/usage"),
     images: (q, o = {}) => call(`/v1/images?q=${encodeURIComponent(q)}&count=${o.count ?? 15}${o.orientation ? `&orientation=${o.orientation === "squarish" ? "square" : o.orientation}` : ""}`),
     saveBrand: (profile) => call("/v1/brand", { method: "PUT", body: { profile } }),
     pages: () => call("/v1/pages"),
@@ -41014,7 +41073,11 @@ function createCloud({ persist = false, client: initialClient = "AI app" } = {})
 var UA = "quarter4-mcp (https://github.com/phestplus/quarter4-mcp)";
 var TRADEMARKS = ["nike", "adidas", "converse", "vans", "puma", "reebok", "yeezy", "jordan", "new balance", "asics", "fila", "gucci", "louis vuitton", "chanel", "prada", "dior", "hermes", "rolex", "apple", "iphone", "macbook", "samsung", "sony", "playstation", "xbox", "nintendo", "toyota", "mercedes", "bmw", "audi", "ferrari", "lamborghini", "porsche", "tesla", "ford", "honda", "lexus", "range rover", "kia", "chevrolet", "corvette", "hyundai", "nissan", "volkswagen", "volvo", "jaguar", "bentley", "rolls-royce", "maserati", "mazda", "subaru", "jeep", "peugeot", "renault", "fiat", "mclaren", "bugatti", "aston martin", "coca-cola", "pepsi", "starbucks", "mcdonald", "ikea", "zara", "h&m", "supreme", "balenciaga", "off-white", "lego", "disney", "barbie", "marvel"];
 var brandRisk = (text) => TRADEMARKS.find((t) => String(text ?? "").toLowerCase().includes(t)) ?? null;
-var strip = (html) => String(html ?? "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+var strip = (html) => String(html ?? "").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+var short = (t, n = 60) => {
+  const x = String(t ?? "").trim();
+  return x.length > n ? `${x.slice(0, n - 1).replace(/\s+\S*$/, "")}\u2026` : x;
+};
 async function getJson(url2, headers = {}, ms = 12e3) {
   const res = await fetch(url2, { headers: { "user-agent": UA, ...headers }, signal: AbortSignal.timeout(ms) });
   if (!res.ok) throw new Error(`${new URL(url2).host} ${res.status}`);
@@ -41076,8 +41139,8 @@ async function commons(q, { perPage, minWidth }) {
     const lic = m.LicenseShortName?.value ?? "";
     if (!/^(cc0|public domain|cc by(-sa)? \d)/i.test(lic)) return null;
     if (i.width < minWidth) return null;
-    const author = strip(m.Artist?.value) || "Unknown";
-    const title = p.title.replace(/^File:/, "").replace(/\.[a-z]+$/i, "");
+    const author = short(strip(m.Artist?.value), 40) || "Unknown";
+    const title = short(strip(p.title.replace(/^File:/, "").replace(/\.[a-z]+$/i, "")));
     return {
       provider: "wikimedia",
       url: i.thumburl ?? i.url,
@@ -41135,6 +41198,12 @@ async function findImages(query, o = {}) {
     }
   }
   images = images.map((im) => ({ ...im, brandRisk: brandRisk(`${im.alt} ${im.page}`) }));
+  const STOP = /* @__PURE__ */ new Set(["with", "from", "that", "this", "into", "over", "their", "your", "some", "very", "warm", "light", "soft", "bright", "dark", "home", "together", "photo", "image", "picture", "happy", "smiling", "young", "black", "white", "african", "nigerian", "person", "people"]);
+  const terms = String(query).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3 && !STOP.has(w)).map((w) => w.replace(/(ies)$/, "y").replace(/(es|s)$/, ""));
+  const relevant = (im) => !terms.length || terms.some((t) => new RegExp(`(^|[^a-z])${t}`, "i").test(`${im.alt ?? ""}`));
+  const before = images.length;
+  images = images.filter(relevant);
+  const dropped = before - images.length;
   if (o.photosOnly !== false) images = images.filter((im) => !/drawing|engraving|lithograph|etching|fashion plate|illustration|painting|museum|(^|[^a-z])met([^a-z]|$)|lacma|scan|poster|diagram|logo|icon|\bmap\b/i.test(`${im.alt} ${im.page}`));
   images = images.filter((im) => !/rust|abandon|wreck|crash|damaged|broken|ruin|dirty|trash/i.test(im.alt));
   if (!o.allowBrands) images = images.filter((im) => !im.brandRisk);
@@ -41144,6 +41213,8 @@ async function findImages(query, o = {}) {
   const premium = providersTried.some((p) => p === "pexels" || p === "unsplash");
   return {
     images: images.slice(0, count),
+    ...dropped ? { droppedAsUnrelated: dropped } : {},
+    ...images.length ? {} : { nothingFits: `Nothing found matches "${query}"${terms.length ? ` (looked for: ${terms.join(", ")})` : ""}. Try simpler words, use the seller's own photos, or connect Quarter4 Cloud for studio photo search.` },
     providersTried,
     errors,
     note: [
@@ -41215,7 +41286,8 @@ function questionsFor(task, o) {
     assumed.push("No product photos given, so offer posts use matching licensed photos or bold type. Add product photos to feature specific items.");
   }
   const hasPrice = o.price || o.discountPercent || /\d/.test(o.offer ?? "") || products.some((p) => p.price);
-  if (!hasPrice) q.push({ field: "price", question: 'What is the offer and the real prices? (e.g. "30% off, now \u20A663,000, was \u20A690,000"). Say "no discount" if there is none.', why: "Prices and discounts are never made up." });
+  const contentOnly = o.mode === "content" || /^\s*(none|no|no offer|no discount)\s*$/i.test(String(o.offer ?? ""));
+  if (!hasPrice && !contentOnly) q.push({ field: "price", question: 'What is the offer and the real prices? (e.g. "30% off, now \u20A663,000, was \u20A690,000"). Say "no discount" if there is none.', why: "Prices and discounts are never made up." });
   if (!o.ctaUrl && !o.pageUrl) q.push({ field: "link", question: "Where should buyers order? Your WhatsApp number or a checkout link.", why: "Every post and button needs a real place to buy." });
   if (!o.deadline && (o.discountPercent || /off|%|sale/i.test(o.offer ?? ""))) assumed.push('No end date given, so there is no countdown and no "ends" line. Tell me the end date to add one.');
   if (o.price && !/[₦$€£¥₹]|ngn|usd|ghs|kes|zar|eur|gbp|cedi|naira|rand|shilling/i.test(String(o.price))) q.push({ field: "currency", question: "Which currency are these prices in?", why: "Prices must show the right currency." });
@@ -41327,7 +41399,10 @@ async function whatsOn(o) {
   return {
     fetchedAt: (/* @__PURE__ */ new Date()).toISOString(),
     trending: trending.slice(0, 15 * countries.length),
-    safeToUse: trending.filter((t) => !t.sensitive).slice(0, 10).map((t) => t.topic),
+    // "Use" means safe AND relevant to this business; safe-but-unrelated topics are listed separately.
+    use: kw.length ? trending.filter((t) => !t.sensitive && t.fitsNiche).slice(0, 10).map((t) => t.topic) : [],
+    safeButUnrelated: trending.filter((t) => !t.sensitive && !(kw.length && t.fitsNiche)).slice(0, 10).map((t) => t.topic),
+    ...kw.length && !trending.some((t) => !t.sensitive && t.fitsNiche) ? { nothingFitsToday: "None of the trends today fit this business. Skip trend posts today and use the content plan instead." } : {},
     avoid: trending.filter((t) => t.sensitive).map((t) => t.topic),
     publicHolidays: hol.holidays,
     worldReading: wiki.filter((w) => !w.sensitive).slice(0, 10),
@@ -41343,6 +41418,53 @@ async function whatsOn(o) {
 
 // src/start.js
 var THEME_BY_EVENT = { "black-friday": "black-friday", "cyber-monday": "cyber-monday", christmas: "christmas", "christmas-eve": "christmas", "super-saturday": "christmas", "shipping-cutoff": "christmas", diwali: "diwali", dhanteras: "diwali", hanukkah: "hanukkah", halloween: "halloween", "us-thanksgiving": "thanksgiving", "boxing-day": "boxing-day", "new-year": "new-year", "new-years-eve": "new-year" };
+var OFFSETS = {
+  NG: "+01:00",
+  GH: "+00:00",
+  KE: "+03:00",
+  ZA: "+02:00",
+  EG: "+02:00",
+  MA: "+01:00",
+  CM: "+01:00",
+  SN: "+00:00",
+  CI: "+00:00",
+  UG: "+03:00",
+  TZ: "+03:00",
+  RW: "+02:00",
+  ET: "+03:00",
+  GB: "+00:00",
+  IE: "+00:00",
+  FR: "+01:00",
+  DE: "+01:00",
+  ES: "+01:00",
+  IT: "+01:00",
+  NL: "+01:00",
+  AE: "+04:00",
+  SA: "+03:00",
+  QA: "+03:00",
+  KW: "+03:00",
+  IN: "+05:30",
+  PK: "+05:00",
+  BD: "+06:00",
+  SG: "+08:00",
+  MY: "+08:00",
+  PH: "+08:00",
+  ID: "+07:00",
+  CN: "+08:00",
+  JP: "+09:00",
+  AU: "+10:00",
+  NZ: "+12:00",
+  US: "-05:00",
+  CA: "-05:00",
+  MX: "-06:00",
+  BR: "-03:00",
+  JM: "-05:00",
+  TT: "-04:00"
+};
+function offsetFor(regions = [], countries = []) {
+  const code = [...countries, ...regions].map((c) => String(c?.code ?? c).toUpperCase()).find((c) => OFFSETS[c]);
+  return OFFSETS[code] ?? "Z";
+}
 var MOOD_QUERIES = {
   footwear: ["sneakers on concrete", "street style shoes close up", "urban night city lights"],
   fashion: ["fashion editorial model", "runway fabric movement", "boutique interior warm light"],
@@ -41370,7 +41492,7 @@ function startCampaign(o) {
   const cls = classifyNiche(`${o.description ?? ""} ${o.product ?? ""}`);
   const niche = NICHES[cls.id];
   const product = o.product || cls.matched[0] || null;
-  if (cls.confidence !== "high") questions.push({ field: "product", question: `What exactly do you sell, and how do people buy it? (a product they order, an app or subscription, a course, a booked service)`, blocking: true, defaultUsed: `${NICHES[cls.id]?.label ?? "general"} (a guess; the plan, posts and page depend on this)` });
+  if (cls.confidence !== "high") questions.push({ field: "product", question: `What exactly do you sell, and how do people buy it? (a product they order, an app or subscription, a course, a booked service)`, blocking: cls.confidence === "low", defaultUsed: `${NICHES[cls.id]?.label ?? "general"} (a guess; the plan, posts and page depend on this)` });
   let platforms = o.platforms ? normalizePlatforms(o.platforms).values : findPlatformsInText(text);
   const placeInfo = o.regions ? normalizeRegions(o.regions) : null;
   let regions = placeInfo ? placeInfo.values : findRegionInText(text);
@@ -41428,7 +41550,7 @@ function startCampaign(o) {
     nextCalls: [
       { tool: "content_plan", args: planArgs },
       { tool: "find_images", args: { query: (MOOD_QUERIES[cls.id] ?? MOOD_QUERIES.general)[0], orientation: "landscape" } },
-      { tool: "landing_page", args: { brand: brand ?? "<brand>", ...product ? { product } : {}, theme, ...offer?.type === "percent" ? { discountPercent: offer.value } : offer ? { offer: offer.text } : {}, ...deadline ? { deadline: `${deadline}T23:59:00Z` } : {} } }
+      { tool: "landing_page", args: { brand: brand ?? "<brand>", ...product ? { product } : {}, theme, ...offer?.type === "percent" ? { discountPercent: offer.value } : offer ? { offer: offer.text } : {}, ...deadline ? { deadline: `${deadline}T23:59:00${offsetFor(regions, countries)}` } : {} } }
     ]
   };
 }
@@ -41492,6 +41614,90 @@ function toMarkdown(plan) {
   ].join("\n");
 }
 
+// src/brand.js
+var HEX = /^#[0-9a-f]{6}$/i;
+var FONT = /^[A-Za-z0-9 ]{2,40}$/;
+var hex3 = (c) => typeof c === "string" && HEX.test(c) ? c.toLowerCase() : null;
+var luminance = (c) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255).map((v) => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+var isLight = (c) => luminance(c) > 0.45;
+var contrast = (a, b) => {
+  const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m);
+  return (x + 0.05) / (y + 0.05);
+};
+var mix = (a, b, t) => `#${[1, 3, 5].map((i) => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, "0")).join("")}`;
+var BASES = {
+  light: { bg: "#faf8f5", surface: "#ffffff", text: "#1c1917", muted: "#6b6560", border: "rgba(28,25,23,.12)" },
+  dark: { bg: "#0b0b0c", surface: "#161618", text: "#f5f5f4", muted: "#a8a29e", border: "rgba(255,255,255,.12)" }
+};
+function hasBrandLook(b) {
+  return Boolean(b && (b.mode || b.fontDisplay || b.fontBody || Object.values(b.palette ?? {}).some(hex3)));
+}
+function brandTheme(t, b = {}) {
+  const p = b.palette ?? {};
+  const bg0 = hex3(p.bg);
+  const mode = b.mode === "light" || b.mode === "dark" ? b.mode : bg0 ? isLight(bg0) ? "light" : "dark" : t.bg && isLight(t.bg) ? "light" : "dark";
+  const base2 = BASES[mode];
+  const bg = bg0 ?? base2.bg;
+  let text = hex3(p.text) ?? base2.text;
+  if (contrast(text, bg) < 4.5) text = isLight(bg) ? "#1c1917" : "#f5f5f4";
+  const surface = hex3(p.surface) ?? (mode === "light" ? bg === "#ffffff" ? "#f6f4f1" : "#ffffff" : mix(bg, "#ffffff", 0.06));
+  let muted = hex3(p.muted) ?? mix(text, bg, 0.42);
+  if (contrast(muted, bg) < 3) muted = mix(text, bg, 0.3);
+  const accent = hex3(p.accent) ?? hex3(b.brandColor) ?? t.accent;
+  const accent2 = hex3(p.accent2) ?? mix(accent, bg, 0.55);
+  const out = {
+    ...t,
+    mode,
+    bg,
+    surface,
+    text,
+    muted,
+    accent,
+    accent2,
+    accentText: readableOn(accent),
+    border: typeof p.border === "string" && p.border.length < 40 ? p.border : mode === "light" ? "rgba(28,25,23,.12)" : "rgba(255,255,255,.12)",
+    glow: [accent, accent2, mix(accent, bg, 0.8)]
+  };
+  if (FONT.test(b.fontDisplay ?? "") || FONT.test(b.fontBody ?? "")) out.fontsFromBrand = true;
+  if (FONT.test(b.fontDisplay ?? "")) out.display = b.fontDisplay;
+  if (FONT.test(b.fontBody ?? "")) out.body = b.fontBody;
+  if (out.display && !FONT.test(b.fontDisplay ?? "") && FONT.test(b.fontBody ?? "")) out.display = b.fontBody;
+  return out;
+}
+function brandTokens(o = {}) {
+  const b = o.brandStyle ?? {};
+  return {
+    mode: b.mode ?? o.mode,
+    palette: { ...o.palette ?? {}, ...b.palette ?? {} },
+    fontDisplay: b.fontDisplay ?? o.fontDisplay,
+    fontBody: b.fontBody ?? o.fontBody,
+    brandColor: o.brandColor
+  };
+}
+var escHtml = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+function wordmarkHtml(o = {}) {
+  const w = o.brandStyle?.wordmark ?? o.wordmark ?? null;
+  if (w?.svg && /^\s*<svg[\s>]/i.test(w.svg) && !/<script|on\w+=/i.test(w.svg)) return `<span class="wm wm-svg" role="img" aria-label="${escHtml(o.brand)}">${w.svg}</span>`;
+  let text = String(w?.text ?? o.brand ?? "");
+  if (w?.case === "lower") text = text.toLowerCase();
+  else if (w?.case === "upper") text = text.toUpperCase();
+  const style = [w?.weight ? `font-weight:${Number(w.weight) || 700}` : "", w?.letterSpacing ? `letter-spacing:${String(w.letterSpacing).replace(/[^0-9.\-a-z]/gi, "")}` : ""].filter(Boolean).join(";");
+  const marks = (Array.isArray(w?.highlight) ? w.highlight : []).filter((h) => Number.isInteger(h.from) && Number.isInteger(h.to) && h.to > h.from).sort((a, b) => a.from - b.from);
+  let html = "";
+  let at = 0;
+  for (const h of marks) {
+    if (h.from < at) continue;
+    const color = /^#[0-9a-f]{6}$/i.test(h.color ?? "") ? h.color : "var(--ac)";
+    html += escHtml(text.slice(at, h.from)) + `<span style="color:${color}">${escHtml(text.slice(h.from, h.to))}</span>`;
+    at = h.to;
+  }
+  html += escHtml(text.slice(at));
+  return `<span class="wm" style="text-transform:none${style ? `;${style}` : ""}">${html}</span>`;
+}
+
 // src/director.js
 var PAIRINGS = {
   cinematic: [["Anton", "Inter"], ["Bebas Neue", "Inter"], ["Oswald", "Inter"], ["Archivo Black", "Archivo"], ["Syne", "Inter"]],
@@ -41543,7 +41749,8 @@ function archetypeFor(nicheId) {
 }
 function renderDirector(x) {
   let { c } = x;
-  const { esc: esc4, o, t, discount, deadlineMs, deadlineLabel, cta, terms, year, title, jsonLd, hash: hash3, nicheId, eventName } = x;
+  const { esc: esc5, o, t, discount, deadlineMs, deadlineLabel, cta, terms, year, title, jsonLd, hash: hash3, nicheId, eventName } = x;
+  const isArt2 = (u) => /\.svg(\?|$)|\.png(\?|$)|^data:image\/(svg|png)/i.test(String(u ?? ""));
   const arch = ["cinematic", "split", "stage", "editorial"].includes(o.archetype) ? o.archetype : archetypeFor(nicheId);
   const seed = hash3(`${o.brand}|${c.product}|${o.variant ?? 0}`);
   const pick2 = (arr, salt) => arr[(seed >> salt) % arr.length];
@@ -41557,19 +41764,19 @@ function renderDirector(x) {
   const headline = o.headline ? c.headline : heads[seed % heads.length].replace("{off}", off ? off.charAt(0).toUpperCase() + off.slice(1) : "Now on").replace("{event}", eventName ?? "this season").replace(/\.\s*\./, ".");
   const typeLed = !hero && !o.modelUrl && !o.videoUrl;
   const heroHeadline = typeLed && discount && !o.headline ? `${eventName ?? "The sale"} is here.` : headline;
-  const words = (s) => esc4(s).split(/\s+/);
-  const bg = (im) => im ? `background-image:url('${esc4(im.url).replace(/'/g, "%27")}')` : "";
-  const credits = [...hero ? [hero] : [], ...gallery].filter((im) => im.credit || im.attribution).map((im) => esc4(im.credit ?? im.attribution));
+  const words = (s) => esc5(s).split(/\s+/);
+  const bg = (im) => im ? `background-image:url('${esc5(im.url).replace(/'/g, "%27")}')` : "";
+  const credits = [...hero ? [hero] : [], ...gallery].filter((im) => im.credit || im.attribution).map((im) => esc5(im.credit ?? im.attribution));
   c = { ...c, ctaText: o.ctaText ? c.ctaText : NICHE_CTA[nicheId] ?? c.ctaText };
   const eyebrow = eventName ?? o.brand;
   const eyebrowWithBrand = eventName ? `${eventName} \xB7 ${o.brand}` : o.brand;
-  const btn = (label, cls = "") => `<a class="b b-${button} ${cls}" href="${esc4(cta)}" data-cta><span>${esc4(label)}</span><i aria-hidden="true">\u2192</i></a>`;
+  const btn = (label, cls = "") => `<a class="b b-${button} ${cls}" href="${esc5(cta)}" data-cta><span>${esc5(label)}</span><i aria-hidden="true">\u2192</i></a>`;
   const clockHtml = !deadlineMs ? "" : clock === "inline" ? `<p class="ck ck-inline" data-cd>Ends in <b data-u="d">00</b>d <b data-u="h">00</b>h <b data-u="m">00</b>m <b data-u="s">00</b>s</p>` : clock === "bar" ? `<div class="ck ck-bar" data-cd><div class="bt"><span>Time left</span><b><b data-u="d">00</b>d <b data-u="h">00</b>h <b data-u="m">00</b>m <b data-u="s">00</b>s</b></div><div class="bw"><i data-bar></i></div></div>` : clock === "giant" ? `<div class="ck ck-giant" data-cd><b data-u="d">00</b><div><span>days left</span><small><b data-u="h">00</b>:<b data-u="m">00</b>:<b data-u="s">00</b></small></div></div>` : `<div class="ck ck-${clock}" data-cd>${["d", "h", "m", "s"].map((u, i) => `<div><b data-u="${u}">00</b><span>${["Days", "Hrs", "Min", "Sec"][i]}</span></div>`).join("")}</div>`;
-  const priceHtml = o.price ? `<p class="pr"><b>${esc4(o.price)}</b>${o.originalPrice ? `<s><span class="sr">Was </span>${esc4(o.originalPrice)}</s>` : ""}${off ? `<em>${esc4(off)}</em>` : ""}</p>` : off ? `<p class="pr"><em>${esc4(off)}</em></p>` : "";
-  const navHtml = nav === "center" ? `<nav class="nv nv-center"><a href="#" class="lg">${esc4(o.brand)}</a></nav>` : nav === "pill" ? `<nav class="nv nv-pill"><a href="#" class="lg">${esc4(o.brand)}</a><a href="${esc4(cta)}" data-cta class="nv-cta">${esc4(c.ctaText)}</a></nav>` : nav === "side" ? `<nav class="nv nv-side"><a href="#" class="lg">${esc4(o.brand)}</a><span>${esc4(eventName ? `${eventName} ${year}` : c.product)}</span></nav>` : `<nav class="nv nv-split"><a href="#" class="lg">${esc4(o.brand)}</a><a href="${esc4(cta)}" data-cta class="nv-cta">${esc4(c.ctaText)} \u2192</a></nav>`;
+  const priceHtml = o.price ? `<p class="pr"><b>${esc5(o.price)}</b>${o.originalPrice ? `<s><span class="sr">Was </span>${esc5(o.originalPrice)}</s>` : ""}${off ? `<em>${esc5(off)}</em>` : ""}</p>` : off ? `<p class="pr"><em>${esc5(off)}</em></p>` : "";
+  const navHtml = nav === "center" ? `<nav class="nv nv-center"><a href="#" class="lg">${wordmarkHtml(o)}</a></nav>` : nav === "pill" ? `<nav class="nv nv-pill"><a href="#" class="lg">${wordmarkHtml(o)}</a><a href="${esc5(cta)}" data-cta class="nv-cta">${esc5(c.ctaText)}</a></nav>` : nav === "side" ? `<nav class="nv nv-side"><a href="#" class="lg">${wordmarkHtml(o)}</a><span>${esc5(eventName ? `${eventName} ${year}` : c.product)}</span></nav>` : `<nav class="nv nv-split"><a href="#" class="lg">${wordmarkHtml(o)}</a><a href="${esc5(cta)}" data-cta class="nv-cta">${esc5(c.ctaText)} \u2192</a></nav>`;
   const fallback = o.productImage ? { url: o.productImage, alt: o.imageAlt } : images[0] ?? null;
-  const productVisual = (cls = "") => o.modelUrl ? `<model-viewer class="pv ${cls}" src="${esc4(o.modelUrl)}" alt="${esc4(o.imageAlt ?? c.product)}" camera-controls disable-zoom interaction-prompt="none" shadow-intensity="1.2" exposure="1.05" environment-image="neutral" data-orbit${fallback ? ` data-fallback="${esc4(fallback.url)}"` : ""}>${fallback ? `<img slot="poster" src="${esc4(fallback.url)}" alt="${esc4(fallback.alt ?? c.product)}" style="width:100%;height:100%;object-fit:contain">` : ""}</model-viewer>` : o.videoUrl ? `<video class="pv ${cls}" src="${esc4(o.videoUrl)}" muted playsinline preload="auto" data-scrub aria-label="${esc4(c.product)}"></video>` : hero ? `<img class="pv ${cls}" src="${esc4(hero.url)}" alt="${esc4(hero.alt ?? c.product)}">` : `<div class="pv pv-stmt ${cls}" aria-hidden="true"><span>${esc4(discount ? `${discount}%` : (c.product.split(" ").pop() || o.brand).toUpperCase())}</span>${discount ? "<em>off</em>" : ""}</div>`;
-  const fill = `<section class="fillsec" data-scene style="--h:220vh"><div class="pin"><p class="fill" data-fill>${words(off && !c.subheadline.toLowerCase().includes(off.toLowerCase()) ? `${c.subheadline} ${off.charAt(0).toUpperCase()}${off.slice(1)} on ${c.product}.` : c.subheadline).map((w) => `<span>${w}</span>`).join(" ")}</p></div></section>`;
+  const productVisual = (cls = "") => o.modelUrl ? `<model-viewer class="pv ${cls}" src="${esc5(o.modelUrl)}" alt="${esc5(o.imageAlt ?? c.product)}" camera-controls disable-zoom interaction-prompt="none" shadow-intensity="1.2" exposure="1.05" environment-image="neutral" data-orbit${fallback ? ` data-fallback="${esc5(fallback.url)}"` : ""}>${fallback ? `<img slot="poster" src="${esc5(fallback.url)}" alt="${esc5(fallback.alt ?? c.product)}" style="width:100%;height:100%;object-fit:contain">` : ""}</model-viewer>` : o.videoUrl ? `<video class="pv ${cls}" src="${esc5(o.videoUrl)}" muted playsinline preload="auto" data-scrub aria-label="${esc5(c.product)}"></video>` : hero ? `<img class="pv ${cls}" src="${esc5(hero.url)}" alt="${esc5(hero.alt ?? c.product)}">` : `<div class="pv pv-stmt ${cls}" aria-hidden="true"><span>${esc5(discount ? `${discount}%` : (c.product.split(" ").pop() || o.brand).toUpperCase())}</span>${discount ? "<em>off</em>" : ""}</div>`;
+  const fill2 = o.statement ? `<section class="fillsec" data-scene style="--h:200vh"><div class="pin"><p class="fill" data-fill>${words(String(o.statement).slice(0, 160)).map((w) => `<span>${w}</span>`).join(" ")}</p></div></section>` : "";
   const products = (o.products ?? []).filter((it) => it && it.name).slice(0, 12);
   const sizeHint = ["footwear", "fashion"].includes(nicheId) ? ", size __" : "";
   const itemLink = (it) => /wa\.me/i.test(cta) ? `${cta.split("?")[0]}?text=${encodeURIComponent(`Hi ${o.brand}, I want the ${it.name}${sizeHint}`)}` : it.url ?? cta;
@@ -41578,19 +41785,19 @@ function renderDirector(x) {
     const a = n(it.price), b = n(it.originalPrice);
     return a && b > a ? Math.round((1 - a / b) * 100) : null;
   };
-  const productsHtml = products.length ? `<section class="pg"><div class="pg-head"><p class="ey">${esc4(eyebrow)}</p><h2>${esc4(nicheId === "footwear" ? "Pick your pair" : nicheId === "fashion" ? "Pick your look" : `Shop ${c.product}`)}</h2></div><div class="pg-grid">${products.map((it, i) => `<article class="pc" style="--i:${i}">
-${it.image ? `<a class="pc-img" href="${esc4(itemLink(it))}" data-cta><img src="${esc4(it.image)}" alt="${esc4(it.name)}" loading="lazy">${pct(it) ? `<em>-${pct(it)}%</em>` : ""}</a>` : ""}
-<div class="pc-body"><h3>${esc4(it.name)}</h3>${it.note ? `<p>${esc4(it.note)}</p>` : ""}<p class="pc-pr">${it.price ? `<b>${esc4(it.price)}</b>` : ""}${it.originalPrice ? `<s>${esc4(it.originalPrice)}</s>` : ""}</p><a class="pc-cta" href="${esc4(itemLink(it))}" data-cta>${/wa\.me/i.test(cta) ? "Order on WhatsApp" : esc4(c.ctaText)} \u2192</a></div></article>`).join("")}</div></section>` : "";
-  const features = c.features.map((f, i) => `<article class="ft" data-depth="${(0.04 * (i % 3 - 1)).toFixed(2)}"><span class="ftn">${String(i + 1).padStart(2, "0")}</span><h3>${esc4(f.title)}</h3><p>${esc4(f.text)}</p></article>`).join("");
-  const galleryHtml = gallery.length >= 2 ? `<section class="hz" data-scene style="--h:${120 + gallery.length * 60}vh"><div class="pin"><h2 class="hz-h">${esc4(c.product)}</h2><div class="track" data-track>${gallery.map((im, i) => `<figure class="card" style="${bg(im)}"><figcaption>${esc4(c.features[i % c.features.length]?.title ?? im.alt ?? "")}</figcaption></figure>`).join("")}</div></div></section>` : "";
+  const productsHtml = products.length ? `<section class="pg"><div class="pg-head"><p class="ey">${esc5(eyebrow)}</p><h2>${esc5(o.gridTitle ?? (c.offerType && c.offerType !== "physical" ? VERBS[c.offerType].grid : nicheId === "footwear" ? "Pick your pair" : nicheId === "fashion" ? "Pick your look" : VERBS.physical.grid))}</h2></div><div class="pg-grid">${products.map((it, i) => `<article class="pc" style="--i:${i}">
+${it.image ? `<a class="pc-img" href="${esc5(itemLink(it))}" data-cta><img src="${esc5(it.image)}" alt="${esc5(it.name)}" loading="lazy">${pct(it) ? `<em>-${pct(it)}%</em>` : ""}</a>` : ""}
+<div class="pc-body"><h3>${esc5(it.name)}</h3>${it.note ? `<p>${esc5(it.note)}</p>` : ""}<p class="pc-pr">${it.price ? `<b>${esc5(it.price)}</b>` : ""}${it.originalPrice ? `<s>${esc5(it.originalPrice)}</s>` : ""}</p><a class="pc-cta" href="${esc5(itemLink(it))}" data-cta>${/wa\.me/i.test(cta) ? c.offerType && c.offerType !== "physical" ? "Message us on WhatsApp" : "Order on WhatsApp" : esc5(c.ctaText)} \u2192</a></div></article>`).join("")}</div></section>` : "";
+  const features = c.features.map((f, i) => `<article class="ft" data-depth="${(0.04 * (i % 3 - 1)).toFixed(2)}"><span class="ftn">${String(i + 1).padStart(2, "0")}</span><h3>${esc5(f.title)}</h3><p>${esc5(f.text)}</p></article>`).join("");
+  const galleryHtml = gallery.length >= 2 ? `<section class="hz" data-scene style="--h:${120 + gallery.length * 60}vh"><div class="pin">${o.galleryTitle ? `<h2 class="hz-h">${esc5(o.galleryTitle)}</h2>` : ""}<div class="track" data-track>${gallery.map((im, i) => `<figure class="card${isArt2(im.url) ? " art" : ""}" style="${bg(im)}">${im.caption ? `<figcaption>${esc5(im.caption)}</figcaption>` : ""}</figure>`).join("")}</div></div></section>` : "";
   const viaWhatsApp = /wa\.me|whatsapp/i.test(cta);
   const orderAnswer = viaWhatsApp ? "Tap the button and chat with us on WhatsApp. Send the item and your size or option, and we confirm price and delivery in the chat." : /instagram\.com|ig\.me/i.test(cta) ? "Tap the button to message us on Instagram and we will take your order there." : cta !== "#" ? "Tap the button to go straight to checkout." : null;
   const faqs = [...c.faq.filter((q) => !/how do i (order|buy)/i.test(q.q)), ...orderAnswer ? [{ q: viaWhatsApp ? "How do I order on WhatsApp?" : "How do I order?", a: orderAnswer }] : []];
   const finStyle = pick2(["poster", "ticket", "marquee"], 13);
   const bigOff = off ? `${off.charAt(0).toUpperCase()}${off.slice(1)}` : headline;
-  const finalHtml = finStyle === "ticket" ? `<section class="fin fin-ticket"><div class="tk"><div class="tk-l"><p class="ey">${esc4(eyebrow)}</p><h2>${esc4(bigOff)}</h2><p class="lead">${esc4(c.product)}${deadlineLabel ? ` \xB7 until ${esc4(deadlineLabel)}` : ""}</p></div><div class="tk-r">${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>` : finStyle === "marquee" ? `<section class="fin fin-mq" data-scene style="--h:170vh"><div class="pin"><div class="mq-line" data-fx="x:10vw>-120vw" data-range="0,1">${esc4(`${bigOff} \xB7 ${c.product} \xB7 ${bigOff} \xB7 ${c.product} \xB7`)}</div><div class="fin-in">${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>` : `<section class="fin" data-scene style="--h:160vh"><div class="pin">${hero ? `<div class="fin-bg" style="${bg(hero)}" data-fx="scale:1.3>1;opacity:0.2>0.55" data-range="0,1"></div>` : ""}<div class="fin-in"><p class="ey">${esc4(eyebrow)}</p><h2 data-fx="scale:0.8>1;opacity:0>1" data-range="0,0.6" data-rest="end">${esc4(bigOff)}</h2>${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>`;
+  const finalHtml = finStyle === "ticket" ? `<section class="fin fin-ticket"><div class="tk"><div class="tk-l"><p class="ey">${esc5(eyebrow)}</p><h2>${esc5(bigOff)}</h2><p class="lead">${esc5(c.product)}${deadlineLabel ? ` \xB7 until ${esc5(deadlineLabel)}` : ""}</p></div><div class="tk-r">${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>` : finStyle === "marquee" ? `<section class="fin fin-mq" data-scene style="--h:170vh"><div class="pin"><div class="mq-line" data-fx="x:10vw>-120vw" data-range="0,1">${esc5(`${bigOff} \xB7 ${c.product} \xB7 ${bigOff} \xB7 ${c.product} \xB7`)}</div><div class="fin-in">${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>` : `<section class="fin" data-scene style="--h:160vh"><div class="pin">${hero ? `<div class="fin-bg" style="${bg(hero)}" data-fx="scale:1.3>1;opacity:0.2>0.55" data-range="0,1"></div>` : ""}<div class="fin-in"><p class="ey">${esc5(eyebrow)}</p><h2 data-fx="scale:0.8>1;opacity:0>1" data-range="0,0.6" data-rest="end">${esc5(bigOff)}</h2>${clockHtml}${btn(c.ctaText, "big")}<p class="ended" data-ended hidden>This offer has ended. Thank you.</p></div></div></section>`;
   const faqStyle = viaWhatsApp ? "chat" : pick2(["columns", "cards", "accordion"], 16);
-  const faqHtml = !faqs.length ? "" : faqStyle === "chat" ? `<section class="faq-chat" aria-label="Questions"><div class="chat"><div class="chat-top"><span class="av">${esc4(o.brand.slice(0, 1))}</span><div><b>${esc4(o.brand)}</b><small>usually replies fast</small></div></div>${faqs.map((q) => `<p class="bub me">${esc4(q.q)}</p><p class="bub them">${esc4(q.a)}</p>`).join("")}</div></section>` : faqStyle === "columns" ? `<section class="faq-cols"><h2>Good to know</h2><dl>${faqs.map((q) => `<div><dt>${esc4(q.q)}</dt><dd>${esc4(q.a)}</dd></div>`).join("")}</dl></section>` : faqStyle === "cards" ? `<section class="faq-cards"><h2>Questions</h2><div class="qc-row">${faqs.map((q, i) => `<article class="qc"><span>Q${i + 1}</span><h3>${esc4(q.q)}</h3><p>${esc4(q.a)}</p></article>`).join("")}</div></section>` : `<section class="faq">${faqs.map((q) => `<details><summary>${esc4(q.q)}</summary><p>${esc4(q.a)}</p></details>`).join("")}</section>`;
+  const faqHtml = !faqs.length ? "" : faqStyle === "chat" ? `<section class="faq-chat" aria-label="Questions"><div class="chat"><div class="chat-top"><span class="av">${esc5(o.brand.slice(0, 1))}</span><div><b>${esc5(o.brand)}</b><small>usually replies fast</small></div></div>${faqs.map((q) => `<p class="bub me">${esc5(q.q)}</p><p class="bub them">${esc5(q.a)}</p>`).join("")}</div></section>` : faqStyle === "columns" ? `<section class="faq-cols"><h2>Good to know</h2><dl>${faqs.map((q) => `<div><dt>${esc5(q.q)}</dt><dd>${esc5(q.a)}</dd></div>`).join("")}</dl></section>` : faqStyle === "cards" ? `<section class="faq-cards"><h2>Questions</h2><div class="qc-row">${faqs.map((q, i) => `<article class="qc"><span>Q${i + 1}</span><h3>${esc5(q.q)}</h3><p>${esc5(q.a)}</p></article>`).join("")}</div></section>` : `<section class="faq">${faqs.map((q) => `<details><summary>${esc5(q.q)}</summary><p>${esc5(q.a)}</p></details>`).join("")}</section>`;
   let main;
   if (arch === "cinematic") {
     main = `
@@ -41598,14 +41805,14 @@ ${it.image ? `<a class="pc-img" href="${esc4(itemLink(it))}" data-cta><img src="
   <div class="hc-bg" style="${bg(hero)}" data-fx="scale:1.35>1;y:0>-6vh" data-range="0,1"></div>
   <div class="hc-sweep" data-fx="x:-60vw>60vw;opacity:0.9>0" data-range="0,0.7"></div>
   <div class="hc-shade" data-fx="opacity:0.9>0.6" data-range="0,0.6"></div>
-  <h1 class="hc-h" aria-label="${esc4(headline)}">${words(headline).map((w, i) => `<span data-fx="scale:1>${(2.6 + i % 3 * 0.6).toFixed(1)};opacity:1>0;y:0>${i % 2 ? -18 : 14}vh;blur:0>10" data-range="0.05,0.55">${w}</span>`).join(" ")}</h1>
-  <div class="hc-deal" data-fx="opacity:0>1;y:12vh>0" data-range="0.45,0.85" data-rest="end"><p class="ey">${esc4(eyebrowWithBrand)}</p>${priceHtml}${clockHtml}${btn(c.ctaText)}</div>
+  <h1 class="hc-h" aria-label="${esc5(headline)}">${words(headline).map((w, i) => `<span data-fx="scale:1>${(2.6 + i % 3 * 0.6).toFixed(1)};opacity:1>0;y:0>${i % 2 ? -18 : 14}vh;blur:0>10" data-range="0.05,0.55">${w}</span>`).join(" ")}</h1>
+  <div class="hc-deal" data-fx="opacity:0>1;y:12vh>0" data-range="0.45,0.85" data-rest="end"><p class="ey">${esc5(eyebrowWithBrand)}</p>${priceHtml}${clockHtml}${btn(c.ctaText)}</div>
   <div class="hc-scroll" data-fx="opacity:1>0" data-range="0,0.1">Scroll</div>
 </div></section>
 ${productsHtml}
-${fill}
+${fill2}
 ${galleryHtml}
-<section class="fts fts-c">${features}</section>
+${features ? `<section class="fts fts-c">${features}</section>` : ""}
 ${finalHtml}
 ${faqHtml}`;
   } else if (arch === "split") {
@@ -41616,41 +41823,41 @@ ${faqHtml}`;
     const shots = [hero, ...gallery].filter(Boolean);
     main = `
 <section class="sp">
-  <div class="sp-l">${chapters.map((ch, i) => `<div class="chap" data-chap="${i}"><p class="ey">${i === 0 ? esc4(eventName ?? t.eyebrow) : String(i).padStart(2, "0")}</p>${i === 0 ? `<h1>${esc4(ch.h)}</h1>` : `<h2>${esc4(ch.h)}</h2>`}<p class="lead">${esc4(ch.p)}</p>${ch.extra}</div>`).join("")}</div>
-  <div class="sp-r"><div class="sp-frame">${shots.length ? shots.map((im, i) => `<div class="shot" data-shot="${i}" style="${bg(im)}" role="img" aria-label="${esc4(im.alt ?? c.product)}"></div>`).join("") : productVisual("sp-pv")}<div class="sp-tag">${esc4(off || c.product)}</div></div></div>
+  <div class="sp-l">${chapters.map((ch, i) => `<div class="chap" data-chap="${i}"><p class="ey">${i === 0 ? esc5(eventName ?? t.eyebrow) : String(i).padStart(2, "0")}</p>${i === 0 ? `<h1>${esc5(ch.h)}</h1>` : `<h2>${esc5(ch.h)}</h2>`}<p class="lead">${esc5(ch.p)}</p>${ch.extra}</div>`).join("")}</div>
+  <div class="sp-r"><div class="sp-frame">${shots.length ? shots.map((im, i) => `<div class="shot" data-shot="${i}" style="${bg(im)}" role="img" aria-label="${esc5(im.alt ?? c.product)}"></div>`).join("") : productVisual("sp-pv")}<div class="sp-tag">${esc5(off || c.product)}</div></div></div>
 </section>
 ${productsHtml}
-${fill}
+${fill2}
 ${finalHtml}
 ${faqHtml}`;
   } else if (arch === "stage") {
     main = `
 <section class="st${typeLed ? " typeled" : ""}" data-scene data-hero style="--h:300vh"><div class="pin">
-  <div class="st-word" aria-hidden="true" data-fx="x:30vw>-80vw" data-range="0,1">${esc4(c.product.toUpperCase())} \xB7 ${esc4(c.product.toUpperCase())} \xB7</div>
+  <div class="st-word" aria-hidden="true" data-fx="x:30vw>-80vw" data-range="0,1">${esc5(c.product.toUpperCase())} \xB7 ${esc5(c.product.toUpperCase())} \xB7</div>
   <div class="st-spot" data-fx="scale:0.9>1.4;opacity:0.7>1" data-range="0,0.6"></div>
   <div class="st-stage"><div class="st-prod" data-fx="${typeLed ? "y:4vh>-2vh;scale:0.94>1.06" : "y:4vh>-2vh;rotate:-8>10;scale:0.92>1.12"}" data-range="0,0.7">${productVisual("st-pv")}<div class="st-shadow"></div></div>
-  ${typeLed ? "" : ["NEW", off ? off.toUpperCase() : "LIMITED", eventName ? eventName.toUpperCase() : "DROP"].map((s, i) => `<span class="stk stk${i}" data-fx="scale:0>1;rotate:${-30 + i * 20}>${-8 + i * 9}" data-range="${(0.1 + i * 0.08).toFixed(2)},${(0.3 + i * 0.08).toFixed(2)}" data-rest="end">${esc4(s)}</span>`).join("")}</div>
-  <h1 class="st-h" data-fx="y:0>-4vh;scale:1>0.9" data-range="0,0.6">${esc4(heroHeadline)}</h1>
+  ${typeLed ? "" : ["NEW", off ? off.toUpperCase() : "LIMITED", eventName ? eventName.toUpperCase() : "DROP"].map((s, i) => `<span class="stk stk${i}" data-fx="scale:0>1;rotate:${-30 + i * 20}>${-8 + i * 9}" data-range="${(0.1 + i * 0.08).toFixed(2)},${(0.3 + i * 0.08).toFixed(2)}" data-rest="end">${esc5(s)}</span>`).join("")}</div>
+  <h1 class="st-h" data-fx="y:0>-4vh;scale:1>0.9" data-range="0,0.6">${esc5(heroHeadline)}</h1>
   <div class="st-deal" data-fx="opacity:0.0>1;y:8vh>0" data-range="0.15,0.5" data-rest="end">${priceHtml}${clockHtml}${btn(c.ctaText)}</div>
 </div></section>
 ${productsHtml}
 ${galleryHtml}
-${products.length ? "" : `<section class="rows">${c.features.map((f, i) => `<div class="row" data-depth="${(0.03 * (i % 2 ? 1 : -1)).toFixed(2)}"><span>${String(i + 1).padStart(2, "0")}</span><h3>${esc4(f.title)}</h3><p>${esc4(f.text)}</p></div>`).join("")}</section>`}
-${fill}
+${products.length || !c.features.length ? "" : `<section class="rows">${c.features.map((f, i) => `<div class="row" data-depth="${(0.03 * (i % 2 ? 1 : -1)).toFixed(2)}"><span>${String(i + 1).padStart(2, "0")}</span><h3>${esc5(f.title)}</h3><p>${esc5(f.text)}</p></div>`).join("")}</section>`}
+${fill2}
 ${finalHtml}
 ${faqHtml}`;
   } else {
     main = `
 <section class="ed">
-  <p class="ey">${esc4(eyebrowWithBrand)}</p>
+  <p class="ey">${esc5(eyebrowWithBrand)}</p>
   <h1 class="ed-h">${words(headline).map((w, i) => `<span style="--i:${i}">${w}</span>`).join(" ")}</h1>
-  <div class="ed-row"><p class="lead">${esc4(c.subheadline)}</p><div>${priceHtml}${clockHtml}${btn(c.ctaText)}</div></div>
-  ${hero ? `<div class="ed-img" data-depth="-0.08" style="${bg(hero)}" role="img" aria-label="${esc4(hero.alt ?? c.product)}"></div>` : ""}
+  <div class="ed-row"><p class="lead">${esc5(c.subheadline)}</p><div>${priceHtml}${clockHtml}${btn(c.ctaText)}</div></div>
+  ${hero ? isArt2(hero.url) ? `<img class="ed-art" src="${esc5(hero.url)}" alt="${esc5(hero.alt ?? "")}">` : `<div class="ed-img" data-depth="-0.08" style="${bg(hero)}" role="img" aria-label="${esc5(hero.alt ?? c.product)}"></div>` : ""}
 </section>
 ${productsHtml}
-${fill}
+${fill2}
 ${galleryHtml}
-<section class="fts fts-e">${features}</section>
+${features ? `<section class="fts fts-e">${features}</section>` : ""}
 ${finalHtml}
 ${faqHtml}`;
   }
@@ -41668,17 +41875,17 @@ ${faqHtml}`;
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>${esc4(seoTitle)}</title>
-<meta name="description" content="${esc4(c.subheadline)}">
+<title>${esc5(seoTitle)}</title>
+<meta name="description" content="${esc5(c.subheadline)}">
 <meta name="theme-color" content="${t.bg}">
-<meta property="og:title" content="${esc4(seoTitle)}">
+<meta property="og:title" content="${esc5(seoTitle)}">
 <meta name="robots" content="index,follow,max-image-preview:large">
-<meta property="og:description" content="${esc4(c.subheadline)}">
+<meta property="og:description" content="${esc5(c.subheadline)}">
 <meta property="og:type" content="website">
-${hero ? `<meta property="og:image" content="${esc4(hero.url)}">
+${hero ? `<meta property="og:image" content="${esc5(hero.url)}">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preload" as="image" href="${esc4(hero.url)}">` : '<meta name="twitter:card" content="summary">'}
-${o.pageUrl ? `<link rel="canonical" href="${esc4(o.pageUrl)}">` : ""}
+<link rel="preload" as="image" href="${esc5(hero.url)}">` : '<meta name="twitter:card" content="summary">'}
+${o.pageUrl ? `<link rel="canonical" href="${esc5(o.pageUrl)}">` : ""}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?${fontsHref}&display=swap" rel="stylesheet">
@@ -41692,9 +41899,10 @@ ${navHtml}
 <main>
 ${main}
 </main>
-<footer class="ft-legal">${terms ? `<p id="terms"><b>Offer terms.</b> ${esc4(terms)}</p>` : ""}${credits.length ? `<p class="credits">Photos: ${credits.join(" \xB7 ")}</p>` : ""}<p>\xA9 ${(/* @__PURE__ */ new Date()).getFullYear()} ${esc4(o.brand)}</p></footer>
-<div class="sticky" data-sticky><span>${esc4(off || o.brand)}</span>${btn(c.ctaText)}</div>
-${paletteSrc ? `<img src="${esc4(paletteSrc)}" alt="" crossorigin="anonymous" data-palette hidden>` : ""}
+<div class="ft-mark" aria-hidden="true">${wordmarkHtml(o)}</div>
+<footer class="ft-legal">${terms ? `<p id="terms"><b>Offer terms.</b> ${esc5(terms)}</p>` : ""}${credits.length ? `<p class="credits">Photos: ${credits.join(" \xB7 ")}</p>` : ""}<p>\xA9 ${(/* @__PURE__ */ new Date()).getFullYear()} ${esc5(o.brand)}</p></footer>
+<div class="sticky" data-sticky><span>${esc5(off || o.brand)}</span>${btn(c.ctaText)}</div>
+${paletteSrc ? `<img src="${esc5(paletteSrc)}" alt="" crossorigin="anonymous" data-palette hidden>` : ""}
 <script>${js}</script>
 </body>
 </html>
@@ -41754,7 +41962,7 @@ body.n-side main,body.n-side .ft-legal{margin-left:56px}
 .hc-sweep{position:absolute;top:-20%;bottom:-20%;width:38vw;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);mix-blend-mode:overlay;rotate:12deg}
 .hc-h{position:absolute;inset:0;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:0 .25em;padding:0 5vw;text-align:center;font-size:clamp(56px,11vw,190px);line-height:.88;text-transform:uppercase;color:#fff;text-shadow:0 10px 60px rgba(0,0,0,.4)}
 .hc-h span{display:inline-block}
-.hc-deal{position:absolute;left:clamp(18px,6vw,90px);bottom:clamp(30px,10vh,110px);max-width:560px;opacity:0;color:#fff}
+.hc-deal{position:absolute;left:0;right:0;margin-inline:auto;bottom:clamp(30px,10vh,110px);max-width:620px;opacity:0;color:#fff;text-align:center;display:flex;flex-direction:column;align-items:center}.hc-deal .pr,.hc-deal .ck,.hc-deal .ck-boxes,.hc-deal .ck-flip{justify-content:center}
 .hc-deal::before{content:'';position:absolute;inset:-28% -40% -30% -30%;z-index:-1;background:radial-gradient(closest-side,rgba(0,0,0,.72),rgba(0,0,0,.4) 60%,transparent);filter:blur(10px)}
 .hc-deal .ey{color:#fff}
 .hc-scroll{position:absolute;bottom:26px;left:50%;translate:-50% 0;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#fff;opacity:.8}
@@ -41821,9 +42029,19 @@ model-viewer.pv{--poster-color:transparent;background:transparent}
 .st-h{position:absolute;top:max(13vh,92px);left:0;right:0;text-align:center;font-size:clamp(40px,6vw,96px);line-height:.95;padding:0 5vw}
 .st-deal{position:absolute;bottom:7vh;left:0;right:0;display:flex;flex-direction:column;align-items:center;text-align:center}
 .st-deal .pr,.st-deal .ck{justify-content:center}
-@media(min-width:1000px){.st-deal{left:auto;right:6vw;bottom:9vh;max-width:380px;align-items:flex-end;text-align:right}.st-deal .pr,.st-deal .ck{justify-content:flex-end}}
+/* focal group stays centred on every screen: no offer block alone in a corner */
+.st-deal{margin-inline:auto;max-width:560px}
 /* editorial */
-.ed{padding:clamp(110px,16vh,180px) clamp(18px,6vw,90px) 60px}
+.ed{padding:clamp(110px,16vh,180px) clamp(18px,6vw,90px) 60px;text-align:center}
+.ed .ey{margin-inline:auto}.ed-h{margin-inline:auto!important;max-width:16ch!important}.ed .lead{margin:0 auto 26px}
+.ed-row{display:flex!important;flex-direction:column;align-items:center;gap:22px}.ed-row>div{display:flex;flex-direction:column;align-items:center}
+.ed .pr,.ed .ck{justify-content:center}.ed-art{display:block;width:min(100%,960px);height:auto;margin:56px auto 0;background:transparent}
+.card.art{background-size:contain;background-repeat:no-repeat;background-color:transparent}
+.pg-head{text-align:center}.pg-head .ey{margin-inline:auto}.pg-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),360px))!important;justify-content:center}
+.hz-h,.faq h2,.fts-head{text-align:center}
+/* light brands: a calm button (accent, readable text, soft shadow), never a hard offset shadow */
+.m-light .b-block{box-shadow:0 12px 28px -14px color-mix(in srgb,var(--ac) 70%,transparent);text-transform:none;letter-spacing:0}
+.m-light .b-block:hover{transform:translateY(-2px);box-shadow:0 16px 34px -14px color-mix(in srgb,var(--ac) 75%,transparent)}
 .ed-h{font-size:clamp(56px,9vw,150px);line-height:.92;max-width:12ch;margin-bottom:40px}
 .ed-h span{display:inline-block;animation:edin 1s var(--e) both;animation-delay:calc(var(--i)*80ms)}
 @keyframes edin{from{transform:translateY(40%);opacity:0}}
@@ -41864,7 +42082,8 @@ model-viewer.pv{--poster-color:transparent;background:transparent}
 .qc span{font-weight:800;color:var(--ac);letter-spacing:.12em;font-size:13px}.qc h3{font-size:24px;margin:12px 0 10px;line-height:1.15}.qc p{margin:0;color:var(--mu)}
 .faq{max-width:820px;margin:0 auto;padding:60px clamp(18px,6vw,40px) 40px}
 .faq details{border-bottom:1px solid var(--bd);padding:20px 0}.faq summary{cursor:pointer;font-weight:600;font-size:19px;list-style:none}.faq summary::after{content:'+';float:right;color:var(--ac)}.faq details[open] summary::after{content:'\u2212'}.faq p{color:var(--mu)}
-.ft-legal{padding:40px clamp(18px,6vw,90px) 130px;font-size:13px;color:var(--mu)}.credits{opacity:.8}
+.ft-mark{padding:clamp(60px,10vw,140px) clamp(18px,4vw,60px) 0;text-align:center;font:400 clamp(72px,17vw,260px)/.85 var(--d);letter-spacing:-.04em;color:color-mix(in srgb,var(--tx) 88%,var(--bg));overflow:hidden;white-space:nowrap}.ft-mark .wm{display:inline-block}.ft-mark svg{height:clamp(72px,17vw,260px);width:auto;display:inline-block}
+.ft-legal{padding:40px clamp(18px,6vw,90px) 130px;font-size:13px;color:var(--mu);text-align:center}.credits{opacity:.8}
 .sticky{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 8px 8px 18px;border-radius:999px;background:color-mix(in srgb,var(--sf) 88%,transparent);backdrop-filter:blur(14px);border:1px solid var(--bd);transform:translateY(150%);transition:transform .4s var(--e)}
 .sticky.show{transform:none}.sticky .b{padding:12px 18px;font-size:14px;width:auto;height:auto;border-radius:999px;box-shadow:none;flex-direction:row}.sticky span{font-weight:600;font-size:14px}
 body.n-pill .sticky{display:none}
@@ -41978,48 +42197,48 @@ addEventListener('scroll',function(){v+=(o.scroll||.0004)*(Math.random()-.5)*8},
 setInterval(function(){v+=(Math.random()-.5)*(o.idle||.006)},2600)}`;
 var SCENES = {
   // ---------------------------------------------------------------- Black Friday
-  "black-friday": ({ esc: esc4, c, o, t, discount, deadlineMs, deadlineLabel, btn, year, terms }) => {
+  "black-friday": ({ esc: esc5, c, o, t, discount, deadlineMs, deadlineLabel, btn, year, terms }) => {
     const save2 = money(o.price, o.originalPrice);
-    const rows = c.features.slice(0, 4).map((f) => `<div class="r"><span>${esc4(f.title)}</span><i></i><span>\u2713</span></div>`).join("");
-    const priceRows = o.price ? `${o.originalPrice ? `<div class="r"><span>Regular price</span><i></i><span>${esc4(o.originalPrice)}</span></div>` : ""}${save2 ? `<div class="r hi"><span>Black Friday</span><i></i><span>-${esc4(save2)}</span></div>` : ""}<div class="r total"><span>Total</span><i></i><span>${esc4(o.price)}</span></div>` : `<div class="r total"><span>Discount</span><i></i><span>${discount ? `${discount}% off` : esc4(c.offer ?? "Applied")}</span></div>`;
+    const rows = c.features.slice(0, 4).map((f) => `<div class="r"><span>${esc5(f.title)}</span><i></i><span>\u2713</span></div>`).join("");
+    const priceRows = o.price ? `${o.originalPrice ? `<div class="r"><span>Regular price</span><i></i><span>${esc5(o.originalPrice)}</span></div>` : ""}${save2 ? `<div class="r hi"><span>Black Friday</span><i></i><span>-${esc5(save2)}</span></div>` : ""}<div class="r total"><span>Total</span><i></i><span>${esc5(o.price)}</span></div>` : `<div class="r total"><span>Discount</span><i></i><span>${discount ? `${discount}% off` : esc5(c.offer ?? "Applied")}</span></div>`;
     return {
       fonts: ["Anton", "IBM Plex Mono", "Inter"],
       particles: "none",
       body: `
 <header class="bf">
   <div class="wrap bf-grid">
-    <h1 class="bf-type" aria-label="${esc4(c.headline)}"><span class="l1">Black</span><span class="l2">Friday</span><span class="l3">${year}</span></h1>
+    <h1 class="bf-type" aria-label="${esc5(c.headline)}"><span class="l1">Black</span><span class="l2">Friday</span><span class="l3">${year}</span></h1>
     <div class="hang" aria-hidden="true"><svg class="string" viewBox="0 0 10 120"><path d="M5 0 V120"/></svg>
-      <div class="tag" data-swing><span class="hole"></span><span class="t-brand">${esc4(o.brand)}</span><span class="t-big">${discount ? `-${discount}<small>%</small>` : esc4(c.offer ?? "SALE")}</span><span class="t-sm">${deadlineLabel ? `Ends ${esc4(deadlineLabel.split(",")[0])}` : "Limited time"}</span></div>
+      <div class="tag" data-swing><span class="hole"></span><span class="t-brand">${esc5(o.brand)}</span><span class="t-big">${discount ? `-${discount}<small>%</small>` : esc5(c.offer ?? "SALE")}</span><span class="t-sm">${deadlineLabel ? `Ends ${esc5(deadlineLabel.split(",")[0])}` : "Limited time"}</span></div>
     </div>
   </div>
   <div class="wrap bf-deal">
     <div>
-      <p class="kick">${esc4(c.headline)}</p>
-      <p class="lede">${esc4(c.subheadline)}</p>
+      <p class="kick">${esc5(c.headline)}</p>
+      <p class="lede">${esc5(c.subheadline)}</p>
     </div>
     <div class="deal">
-      ${o.price ? `<div class="prices"><span class="now">${esc4(o.price)}<svg class="circle" viewBox="0 0 200 90" preserveAspectRatio="none" aria-hidden="true"><path d="M20 50 C 15 15, 175 5, 185 40 S 60 95, 25 60"/></svg></span>${o.originalPrice ? `<span class="was"><span class="sr">Was </span>${esc4(o.originalPrice)}<svg class="strike" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 14 C 30 6, 60 16, 98 4"/></svg></span>` : ""}</div>` : ""}
+      ${o.price ? `<div class="prices"><span class="now">${esc5(o.price)}<svg class="circle" viewBox="0 0 200 90" preserveAspectRatio="none" aria-hidden="true"><path d="M20 50 C 15 15, 175 5, 185 40 S 60 95, 25 60"/></svg></span>${o.originalPrice ? `<span class="was"><span class="sr">Was </span>${esc5(o.originalPrice)}<svg class="strike" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 14 C 30 6, 60 16, 98 4"/></svg></span>` : ""}</div>` : ""}
       ${deadlineMs ? `<p class="mono-cd" data-cd>Ends in <b data-u="d">00</b>d <b data-u="h">00</b>h <b data-u="m">00</b>m <b data-u="s">00</b>s</p>` : ""}
       ${btn(c.ctaText, "bf-btn")}
     </div>
   </div>
-  <div class="bf-tape" aria-hidden="true"><div class="track">${Array(8).fill(`<span>${esc4((c.offer ?? "Black Friday").toUpperCase())}</span><span>\u2715</span><span>BLACK FRIDAY ${year}</span><span>\u2715</span>`).join("")}</div></div>
+  <div class="bf-tape" aria-hidden="true"><div class="track">${Array(8).fill(`<span>${esc5((c.offer ?? "Black Friday").toUpperCase())}</span><span>\u2715</span><span>BLACK FRIDAY ${year}</span><span>\u2715</span>`).join("")}</div></div>
 </header>
 <section class="bf-receipt wrap">
   <div class="rc-copy">
     <h2>Your receipt,<br>before you even check out.</h2>
-    <p>${esc4(save2 ? `That is ${save2} back in your pocket.` : c.subheadline)}</p>
-    ${c.faq.map((x) => `<details><summary>${esc4(x.q)}</summary><p>${esc4(x.a)}</p></details>`).join("")}
+    <p>${esc5(save2 ? `That is ${save2} back in your pocket.` : c.subheadline)}</p>
+    ${c.faq.map((x) => `<details><summary>${esc5(x.q)}</summary><p>${esc5(x.a)}</p></details>`).join("")}
   </div>
   <div class="receipt" data-print>
-    <div class="rc-head"><b>${esc4(o.brand.toUpperCase())}</b><span>BLACK FRIDAY ${year}</span><span>${esc4(c.product.toUpperCase())}</span></div>
+    <div class="rc-head"><b>${esc5(o.brand.toUpperCase())}</b><span>BLACK FRIDAY ${year}</span><span>${esc5(c.product.toUpperCase())}</span></div>
     <div class="cut"></div>
     ${rows}
     <div class="cut"></div>
     ${priceRows}
     <div class="cut"></div>
-    ${deadlineLabel ? `<div class="r"><span>Valid until</span><i></i><span>${esc4(deadlineLabel)}</span></div>` : ""}
+    ${deadlineLabel ? `<div class="r"><span>Valid until</span><i></i><span>${esc5(deadlineLabel)}</span></div>` : ""}
     ${barcode(o.brand.length * 7919 + year)}
     <p class="thanks">*** THANK YOU ***</p>
   </div>
@@ -42087,7 +42306,7 @@ var rc=document.querySelector('[data-print]');if(rc){if(reduce||!('IntersectionO
     };
   },
   // ---------------------------------------------------------------- Christmas
-  christmas: ({ esc: esc4, c, o, discount, deadlineMs, deadlineLabel, btn }) => {
+  christmas: ({ esc: esc5, c, o, discount, deadlineMs, deadlineLabel, btn }) => {
     const palette = [["#b91c1c", "#7f1d1d"], ["#e8b04b", "#a16207"], ["#f5f5f4", "#a8a29e"], ["#166534", "#052e16"], ["#be123c", "#4c0519"]];
     const orn = [
       { x: 6, len: 120, r: 46, p: 0 },
@@ -42102,7 +42321,7 @@ var rc=document.querySelector('[data-print]');if(rc){if(reduce||!('IntersectionO
 <rect x="-10" y="-62" width="20" height="14" rx="3" fill="#d4a94a"/><circle cx="0" cy="-66" r="6" fill="none" stroke="#d4a94a" stroke-width="2"/>
 <circle r="50" fill="url(#g${id})"/><ellipse cx="-18" cy="-22" rx="12" ry="7" fill="#fff" opacity=".45" transform="rotate(-35 -18 -22)"/>${inner}</svg>`;
     const hanging = orn.map((b, i) => `<div class="orn" style="left:${b.x}%;--len:${b.len}px" data-orn><span class="str"></span>${bauble(i, b.r, palette[b.p])}</div>`).join("");
-    const hero = `<div class="orn hero-orn" data-orn><span class="str"></span>${bauble("h", 120, ["#c81e1e", "#5c0a0a"], `<text y="6" text-anchor="middle" font-family="Fraunces,serif" font-size="${discount ? 34 : 18}" font-style="italic" fill="#f8e7c0">${discount ? `${discount}%` : esc4((c.offer ?? "Gift").slice(0, 10))}</text><text y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" letter-spacing="3" fill="#f8e7c0">${discount ? "OFF" : ""}</text>`)}</div>`;
+    const hero = `<div class="orn hero-orn" data-orn><span class="str"></span>${bauble("h", 120, ["#c81e1e", "#5c0a0a"], `<text y="6" text-anchor="middle" font-family="Fraunces,serif" font-size="${discount ? 34 : 18}" font-style="italic" fill="#f8e7c0">${discount ? `${discount}%` : esc5((c.offer ?? "Gift").slice(0, 10))}</text><text y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" letter-spacing="3" fill="#f8e7c0">${discount ? "OFF" : ""}</text>`)}</div>`;
     return {
       fonts: ["Fraunces", "Inter", "Caveat"],
       particles: "snow",
@@ -42111,24 +42330,24 @@ var rc=document.querySelector('[data-print]');if(rc){if(reduce||!('IntersectionO
   <div class="ceiling" aria-hidden="true">${hanging}</div>
   <div class="wrap xm-in">
     ${hero}
-    <p class="xm-eyebrow" data-reveal>${esc4(o.brand)} \xB7 Holiday ${(/* @__PURE__ */ new Date()).getFullYear()}</p>
-    <h1 class="kin">${c.headline.split(/\s+/).map((w, i) => `<span class="w" style="--i:${i}"><span>${esc4(w)}</span></span>`).join(" ")}</h1>
-    <p class="sub" data-reveal>${esc4(c.subheadline)}</p>
-    ${o.price ? `<p class="xm-price" data-reveal><span>${esc4(o.price)}</span>${o.originalPrice ? `<s><span class="sr">Was </span>${esc4(o.originalPrice)}</s>` : ""}</p>` : ""}
+    <p class="xm-eyebrow" data-reveal>${esc5(o.brand)} \xB7 Holiday ${(/* @__PURE__ */ new Date()).getFullYear()}</p>
+    <h1 class="kin">${c.headline.split(/\s+/).map((w, i) => `<span class="w" style="--i:${i}"><span>${esc5(w)}</span></span>`).join(" ")}</h1>
+    <p class="sub" data-reveal>${esc5(c.subheadline)}</p>
+    ${o.price ? `<p class="xm-price" data-reveal><span>${esc5(o.price)}</span>${o.originalPrice ? `<s><span class="sr">Was </span>${esc5(o.originalPrice)}</s>` : ""}</p>` : ""}
     ${deadlineMs ? `<div class="xm-cd" data-cd data-reveal>${["Days", "Hours", "Minutes", "Seconds"].map((u) => `<div><b data-u="${u[0].toLowerCase()}">00</b><span>${u}</span></div>`).join("<i></i>")}</div>` : ""}
     <div data-reveal>${btn(c.ctaText, "foil")}</div>
-    ${deadlineLabel ? `<p class="fine" data-reveal>Order before <time data-deadline-label>${esc4(deadlineLabel)}</time>.</p>` : ""}
+    ${deadlineLabel ? `<p class="fine" data-reveal>Order before <time data-deadline-label>${esc5(deadlineLabel)}</time>.</p>` : ""}
   </div>
 </header>
 <section class="xm-gift wrap">
   <div class="gtag" data-reveal>
     <span class="ghole" aria-hidden="true"></span>
-    <p class="hand">To: someone special<br>From: ${esc4(o.brand)}</p>
-    <ul>${c.features.map((f) => `<li><b>${esc4(f.title)}</b><span>${esc4(f.text)}</span></li>`).join("")}</ul>
+    <p class="hand">To: someone special<br>From: ${esc5(o.brand)}</p>
+    <ul>${c.features.map((f) => `<li><b>${esc5(f.title)}</b><span>${esc5(f.text)}</span></li>`).join("")}</ul>
   </div>
   <div class="xm-faq">
     <h2 data-reveal>Good to know</h2>
-    ${c.faq.map((x) => `<details data-reveal><summary>${esc4(x.q)}</summary><p>${esc4(x.a)}</p></details>`).join("")}
+    ${c.faq.map((x) => `<details data-reveal><summary>${esc5(x.q)}</summary><p>${esc5(x.a)}</p></details>`).join("")}
     <div data-reveal style="margin-top:36px">${btn(c.ctaText, "foil")}</div>
     <p class="ended" data-ended hidden>This offer has ended. Merry Christmas from all of us.</p>
   </div>
@@ -42169,15 +42388,15 @@ if(fx)Array.prototype.forEach.call(document.querySelectorAll('[data-orn]'),funct
     };
   },
   // ---------------------------------------------------------------- Cyber Monday
-  "cyber-monday": ({ esc: esc4, c, o, discount, deadlineMs, deadlineLabel, btn }) => {
+  "cyber-monday": ({ esc: esc5, c, o, discount, deadlineMs, deadlineLabel, btn }) => {
     const big = discount ? `${discount}% OFF` : (c.offer ?? "CYBER DEAL").toUpperCase();
     const lines = [
-      `<span class="pr">$</span> ./cyber-monday --brand "${esc4(o.brand)}"`,
+      `<span class="pr">$</span> ./cyber-monday --brand "${esc5(o.brand)}"`,
       `<span class="ok">&gt;</span> loading deals.......... <span class="ok">done</span>`,
-      `<span class="ok">&gt;</span> product: <span class="hl">${esc4(c.product)}</span>`,
-      discount ? `<span class="ok">&gt;</span> discount: <span class="hl">${discount}%</span>` : `<span class="ok">&gt;</span> offer: <span class="hl">${esc4(c.offer ?? "online only")}</span>`,
-      o.price ? `<span class="ok">&gt;</span> price: <span class="hl">${esc4(o.price)}</span>${o.originalPrice ? ` <span class="dim">(was ${esc4(o.originalPrice)})</span>` : ""}` : null,
-      deadlineLabel ? `<span class="ok">&gt;</span> valid_until: <span class="hl">${esc4(deadlineLabel)}</span>` : null,
+      `<span class="ok">&gt;</span> product: <span class="hl">${esc5(c.product)}</span>`,
+      discount ? `<span class="ok">&gt;</span> discount: <span class="hl">${discount}%</span>` : `<span class="ok">&gt;</span> offer: <span class="hl">${esc5(c.offer ?? "online only")}</span>`,
+      o.price ? `<span class="ok">&gt;</span> price: <span class="hl">${esc5(o.price)}</span>${o.originalPrice ? ` <span class="dim">(was ${esc5(o.originalPrice)})</span>` : ""}` : null,
+      deadlineLabel ? `<span class="ok">&gt;</span> valid_until: <span class="hl">${esc5(deadlineLabel)}</span>` : null,
       `<span class="pr">$</span> <span class="cursor"></span>`
     ].filter(Boolean);
     return {
@@ -42190,16 +42409,16 @@ if(fx)Array.prototype.forEach.call(document.querySelectorAll('[data-orn]'),funct
       <div class="bar3"><i></i><i></i><i></i><span>cyber_monday.sh</span></div>
       <pre class="screen">${lines.map((l, i) => `<span class="ln" style="--n:${i}">${l}</span>`).join("")}</pre>
     </div>
-    <h1 class="glitch" data-text="${esc4(big)}">${esc4(big)}</h1>
-    <p class="cy-sub" data-reveal>${esc4(c.headline)} ${esc4(c.subheadline)}</p>
+    <h1 class="glitch" data-text="${esc5(big)}">${esc5(big)}</h1>
+    <p class="cy-sub" data-reveal>${esc5(c.headline)} ${esc5(c.subheadline)}</p>
     ${deadlineMs ? `<div class="flaps" data-cd data-reveal>${["d", "h", "m", "s"].map((u) => `<div><b data-u="${u}">00</b><span>${u}</span></div>`).join("<em>:</em>")}</div>` : ""}
     <div data-reveal>${btn(`${c.ctaText}`, "cy-btn")}</div>
   </div>
 </header>
 <section class="wrap cy-log">
-  <h2 data-reveal>&gt; why_${esc4(o.brand.toLowerCase().replace(/[^a-z0-9]+/g, "_"))}</h2>
-  <ul>${c.features.map((f, i) => `<li data-reveal style="--d:${i}"><span class="okb">[ OK ]</span><b>${esc4(f.title)}</b><span class="dim">${esc4(f.text)}</span></li>`).join("")}</ul>
-  ${c.faq.length ? `<h2 data-reveal style="margin-top:72px">&gt; faq</h2>${c.faq.map((x) => `<details data-reveal><summary>? ${esc4(x.q)}</summary><p>&gt; ${esc4(x.a)}</p></details>`).join("")}` : ""}
+  <h2 data-reveal>&gt; why_${esc5(o.brand.toLowerCase().replace(/[^a-z0-9]+/g, "_"))}</h2>
+  <ul>${c.features.map((f, i) => `<li data-reveal style="--d:${i}"><span class="okb">[ OK ]</span><b>${esc5(f.title)}</b><span class="dim">${esc5(f.text)}</span></li>`).join("")}</ul>
+  ${c.faq.length ? `<h2 data-reveal style="margin-top:72px">&gt; faq</h2>${c.faq.map((x) => `<details data-reveal><summary>? ${esc5(x.q)}</summary><p>&gt; ${esc5(x.a)}</p></details>`).join("")}` : ""}
   <div class="cy-final" data-reveal>${btn(c.ctaText, "cy-btn lg")}<p class="ended" data-ended hidden>&gt; offer expired. thanks for shopping.</p></div>
 </section>`,
       css: `
@@ -42246,25 +42465,25 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:50;bac
     };
   },
   // ---------------------------------------------------------------- New Year
-  "new-year": ({ esc: esc4, c, o, discount, deadlineMs, deadlineLabel, btn, year }) => ({
+  "new-year": ({ esc: esc5, c, o, discount, deadlineMs, deadlineLabel, btn, year }) => ({
     fonts: ["Playfair Display", "Inter"],
     particles: "fireworks",
     body: `
 <header class="ny">
   <div class="yr" aria-hidden="true">${year + 1}</div>
   <div class="wrap ny-in">
-    <p class="ny-eyebrow" data-reveal>${esc4(o.brand)} presents</p>
-    <h1 class="kin">${c.headline.split(/\s+/).map((w, i) => `<span class="w" style="--i:${i}"><span>${esc4(w)}</span></span>`).join(" ")}</h1>
+    <p class="ny-eyebrow" data-reveal>${esc5(o.brand)} presents</p>
+    <h1 class="kin">${c.headline.split(/\s+/).map((w, i) => `<span class="w" style="--i:${i}"><span>${esc5(w)}</span></span>`).join(" ")}</h1>
     ${deadlineMs ? `<div class="clock" data-cd data-reveal aria-label="Time left">${["d", "h", "m", "s"].map((u, i) => `<div class="fl"><b data-u="${u}">00</b><span>${["Days", "Hours", "Min", "Sec"][i]}</span></div>`).join("")}</div>` : ""}
-    <p class="sub" data-reveal>${esc4(c.subheadline)}</p>
+    <p class="sub" data-reveal>${esc5(c.subheadline)}</p>
     <div data-reveal>${btn(c.ctaText, "gold")}</div>
-    ${deadlineLabel ? `<p class="fine" data-reveal>Ends <time data-deadline-label>${esc4(deadlineLabel)}</time></p>` : ""}
+    ${deadlineLabel ? `<p class="fine" data-reveal>Ends <time data-deadline-label>${esc5(deadlineLabel)}</time></p>` : ""}
   </div>
 </header>
 <section class="wrap ny-res">
   <h2 data-reveal>Your ${year + 1} resolutions,<br><em>sorted.</em></h2>
-  <ol>${c.features.map((f, i) => `<li data-reveal style="--d:${i}"><span class="no">No. ${i + 1}</span><div><b>${esc4(f.title)}</b><p>${esc4(f.text)}</p></div></li>`).join("")}</ol>
-  ${c.faq.map((x) => `<details data-reveal><summary>${esc4(x.q)}</summary><p>${esc4(x.a)}</p></details>`).join("")}
+  <ol>${c.features.map((f, i) => `<li data-reveal style="--d:${i}"><span class="no">No. ${i + 1}</span><div><b>${esc5(f.title)}</b><p>${esc5(f.text)}</p></div></li>`).join("")}</ol>
+  ${c.faq.map((x) => `<details data-reveal><summary>${esc5(x.q)}</summary><p>${esc5(x.a)}</p></details>`).join("")}
   <div class="ny-final" data-reveal>${btn(c.ctaText, "gold lg")}<p class="ended" data-ended hidden>This offer has ended. Happy New Year!</p></div>
 </section>`,
     css: `
@@ -42301,68 +42520,145 @@ var cta=document.querySelectorAll('[data-cta]');Array.prototype.forEach.call(cta
 };
 var SCENE_THEMES = Object.keys(SCENES);
 
-// src/brand.js
-var HEX = /^#[0-9a-f]{6}$/i;
-var FONT = /^[A-Za-z0-9 ]{2,40}$/;
-var hex3 = (c) => typeof c === "string" && HEX.test(c) ? c.toLowerCase() : null;
-var luminance = (c) => {
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255).map((v) => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+// src/motifs.js
+var S = (cls, vb, body) => `<svg class="deco ${cls}" viewBox="${vb}" aria-hidden="true">${body}</svg>`;
+var stroke = (w = 3, o = 0.45) => `style="fill:none;stroke:var(--ac);stroke-opacity:${o};stroke-width:${w};stroke-linecap:round;stroke-linejoin:round"`;
+var fill = (o = 0.14) => `style="fill:var(--ac);fill-opacity:${o}"`;
+var M = {
+  "joining-lines": S("m-corner", "0 0 600 600", `<path d="M40 520 C 180 420, 260 300, 300 300 S 420 180, 560 80" ${stroke(3)}/><path d="M40 560 C 200 480, 280 340, 300 300" ${stroke(2, 0.3)}/><circle cx="300" cy="300" r="10" ${fill(0.7)}/>`),
+  "paired-circles": S("m-corner", "0 0 600 600", `<circle cx="250" cy="300" r="150" ${stroke(3)}/><circle cx="370" cy="300" r="150" ${stroke(3, 0.3)}/>`),
+  arch: S("m-corner", "0 0 600 600", `<path d="M120 560 V 300 a 180 180 0 0 1 360 0 V 560" ${stroke(3)}/><path d="M180 560 V 310 a 120 120 0 0 1 240 0 V 560" ${stroke(2, 0.28)}/>`),
+  steam: S("m-corner", "0 0 600 600", [140, 260, 380].map((x, i) => `<path d="M${x} 540 c -40 -60, 40 -120, 0 -180 s 40 -120, 0 -180" ${stroke(3, 0.4 - i * 0.06)}/>`).join("")),
+  "motion-lines": S("m-corner", "0 0 600 600", [120, 200, 280, 360, 440].map((y, i) => `<path d="M${120 + i * 30} ${y} H 560" ${stroke(4, 0.42 - i * 0.05)}/>`).join("")),
+  "rhythm-bars": S("m-corner", "0 0 600 600", [90, 180, 130, 240, 160, 210].map((h, i) => `<rect x="${110 + i * 70}" y="${420 - h}" width="34" height="${h}" rx="17" ${fill(0.16 + i % 2 * 0.08)}/>`).join("")),
+  stitching: S("m-corner", "0 0 600 600", `<path d="M60 500 C 200 300, 380 520, 560 120" style="fill:none;stroke:var(--ac);stroke-opacity:.5;stroke-width:4;stroke-dasharray:14 12;stroke-linecap:round"/>`),
+  blobs: S("m-corner", "0 0 600 600", `<path d="M360 120c80 10 160 80 150 170s-90 150-180 140-150-80-130-170 80-150 160-140z" ${fill(0.16)}/><path d="M170 420l14 30 32 4-24 22 6 32-28-16-28 16 6-32-24-22 32-4z" ${fill(0.4)}/>`),
+  "ui-fragments": S("m-corner", "0 0 600 600", `<rect x="200" y="120" width="320" height="200" rx="28" ${stroke(3)}/><rect x="240" y="170" width="150" height="16" rx="8" ${fill(0.3)}/><rect x="240" y="210" width="220" height="16" rx="8" ${fill(0.18)}/><rect x="120" y="360" width="240" height="120" rx="24" ${stroke(3, 0.3)}/>`),
+  "rising-line": S("m-corner", "0 0 600 600", `<path d="M80 480 L 220 400 L 320 430 L 520 180" ${stroke(4)}/><path d="M470 180 H 520 V 230" ${stroke(4)}/>` + [0, 1, 2, 3].map((i) => `<path d="M80 ${200 + i * 80} H 540" ${stroke(1, 0.15)}/>`).join("")),
+  droplets: S("m-corner", "0 0 600 600", `<path d="M380 120c50 80 90 130 90 180a90 90 0 0 1-180 0c0-50 40-100 90-180z" ${fill(0.16)}/><path d="M220 330c-60 0-110 60-110 130 70 0 120-50 120-120z" ${stroke(3)}/>`),
+  "ruled-lines": S("m-corner", "0 0 600 600", [0, 1, 2, 3, 4, 5].map((i) => `<path d="M140 ${160 + i * 60} H 540" ${stroke(2, 0.3)}/>`).join("") + `<path d="M180 120 V 520" style="fill:none;stroke:var(--ac);stroke-opacity:.5;stroke-width:3"/>`),
+  rings: S("m-corner", "0 0 600 600", [110, 170, 230, 290].map((r) => `<circle cx="300" cy="300" r="${r}" ${stroke(2, 0.38)}/>`).join("")),
+  dots: S("m-corner", "0 0 420 420", `<defs><pattern id="q4dots" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="4" ${fill(0.4)}/></pattern></defs><rect width="420" height="420" style="fill:url(#q4dots)"/>`)
 };
-var isLight = (c) => luminance(c) > 0.45;
-var contrast = (a, b) => {
-  const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m);
-  return (x + 0.05) / (y + 0.05);
+var FAMILIES = {
+  apps: ["joining-lines", "paired-circles", "arch"],
+  services: ["arch", "paired-circles"],
+  food: ["steam"],
+  fitness: ["motion-lines", "rhythm-bars"],
+  footwear: ["motion-lines"],
+  fashion: ["stitching"],
+  kids: ["blobs"],
+  software: ["ui-fragments", "rising-line"],
+  digital: ["ui-fragments"],
+  beauty: ["droplets"],
+  jewelry: ["droplets", "rings"],
+  courses: ["ruled-lines"],
+  general: ["rings", "dots"]
 };
-var mix = (a, b, t) => `#${[1, 3, 5].map((i) => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, "0")).join("")}`;
-var BASES = {
-  light: { bg: "#faf8f5", surface: "#ffffff", text: "#1c1917", muted: "#6b6560", border: "rgba(28,25,23,.12)" },
-  dark: { bg: "#0b0b0c", surface: "#161618", text: "#f5f5f4", muted: "#a8a29e", border: "rgba(255,255,255,.12)" }
-};
-function hasBrandLook(b) {
-  return Boolean(b && (b.mode || b.fontDisplay || b.fontBody || Object.values(b.palette ?? {}).some(hex3)));
+function motifFor(nicheId, brand = "", preferred = []) {
+  const fam = (preferred ?? []).filter((m) => M[m]);
+  const list2 = fam.length ? fam : FAMILIES[nicheId] ?? FAMILIES.general;
+  const seed = [...String(brand)].reduce((h, ch) => h * 31 + ch.charCodeAt(0) >>> 0, 7);
+  return { name: list2[seed % list2.length], svg: M[list2[seed % list2.length]] };
 }
-function brandTheme(t, b = {}) {
-  const p = b.palette ?? {};
-  const bg0 = hex3(p.bg);
-  const mode = b.mode === "light" || b.mode === "dark" ? b.mode : bg0 ? isLight(bg0) ? "light" : "dark" : t.bg && isLight(t.bg) ? "light" : "dark";
-  const base2 = BASES[mode];
-  const bg = bg0 ?? base2.bg;
-  let text = hex3(p.text) ?? base2.text;
-  if (contrast(text, bg) < 4.5) text = isLight(bg) ? "#1c1917" : "#f5f5f4";
-  const surface = hex3(p.surface) ?? (mode === "light" ? bg === "#ffffff" ? "#f6f4f1" : "#ffffff" : mix(bg, "#ffffff", 0.06));
-  let muted = hex3(p.muted) ?? mix(text, bg, 0.42);
-  if (contrast(muted, bg) < 3) muted = mix(text, bg, 0.3);
-  const accent = hex3(p.accent) ?? hex3(b.brandColor) ?? t.accent;
-  const accent2 = hex3(p.accent2) ?? mix(accent, bg, 0.55);
-  const out = {
-    ...t,
-    mode,
-    bg,
-    surface,
-    text,
-    muted,
-    accent,
-    accent2,
-    accentText: readableOn(accent),
-    border: typeof p.border === "string" && p.border.length < 40 ? p.border : mode === "light" ? "rgba(28,25,23,.12)" : "rgba(255,255,255,.12)",
-    glow: [accent, accent2, mix(accent, bg, 0.8)]
+var MOTIF_CSS = ".m-corner{width:640px;height:640px;top:-200px;right:-200px}.g-story .m-corner{top:-120px}.g-wide .m-corner{width:560px;height:560px;top:-200px;right:-160px}";
+
+// src/story.js
+var seedOf = (s) => [...String(s)].reduce((h, ch) => h * 31 + ch.charCodeAt(0) >>> 0, 7);
+var isArt = (u) => /\.svg(\?|$)|\.png(\?|$)|^data:image\/(svg|png)/i.test(String(u ?? ""));
+function renderStory(x) {
+  const { esc: esc5, o, t, c, cta } = x;
+  const seed = seedOf(o.brand);
+  const art = (o.images ?? []).filter((im) => im?.url);
+  const heroArt = o.heroImage ? { url: o.heroImage, alt: o.heroAlt } : art[0] ?? null;
+  const moments = (o.moments ?? []).filter((m) => m?.title).slice(0, 3);
+  const steps = (o.steps ?? []).filter((m) => m?.title).slice(0, 5);
+  const products = (o.products ?? []).filter((p) => p?.name).slice(0, 4);
+  const motif = motifFor(x.nicheId, o.brand, o.illustration?.motifs ?? o.motifs);
+  const heroSplit = Boolean(heroArt) && seed % 2 === 1;
+  const img = (im, cls) => im ? `<img class="${cls}${isArt(im.url) ? " art" : " photo"}" src="${esc5(im.url)}" alt="${esc5(im.alt ?? "")}" loading="lazy">` : "";
+  const btn = `<a class="sb" href="${esc5(cta)}" data-cta>${esc5(c.ctaText)}</a>`;
+  const sections = {
+    hero: `<header class="s-hero${heroSplit ? " split" : ""}"><div class="s-hero-in">
+      <p class="s-ey">${esc5(x.eyebrow ?? o.brand)}</p><h1>${esc5(c.headline)}</h1>${c.subheadline ? `<p class="s-lead">${esc5(c.subheadline)}</p>` : ""}
+      ${x.priceHtml ?? ""}${x.clockHtml ?? ""}<div class="s-cta">${btn}</div></div>
+      ${heroArt ? `<div class="s-hero-art">${img(heroArt, "s-art float")}</div>` : `<div class="s-hero-motif" aria-hidden="true">${motif.svg}</div>`}</header>`,
+    statement: o.statement ? `<section class="s-statement" data-thread><svg class="s-thread" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true"><path d="M0 250 C 260 250, 380 60, 600 60 S 940 250, 1200 250" pathLength="1"/><path d="M0 50 C 260 50, 380 240, 600 240 S 940 50, 1200 50" pathLength="1" class="b"/></svg><p>${esc5(o.statement)}</p></section>` : "",
+    moments: moments.length ? `<section class="s-moments">${o.momentsTitle ? `<h2 class="s-h2">${esc5(o.momentsTitle)}</h2>` : ""}<div class="s-mgrid n${moments.length}">${moments.map((m, i) => `<article class="s-moment">${m.image ? img({ url: m.image, alt: m.alt ?? m.title }, `s-art${i % 2 ? " float d" : " float"}`) : ""}<h3>${esc5(m.title)}</h3>${m.text ? `<p>${esc5(m.text)}</p>` : ""}</article>`).join("")}</div></section>` : "",
+    band: o.promise ? `<section class="s-band"><p>${esc5(o.promise)}</p></section>` : "",
+    journey: steps.length ? `<section class="s-journey" data-journey>${o.stepsTitle ? `<h2 class="s-h2">${esc5(o.stepsTitle)}</h2>` : ""}<ol><span class="s-line" aria-hidden="true"><i></i></span>${steps.map((s2, i) => `<li><b>${String(i + 1).padStart(2, "0")}</b><h3>${esc5(s2.title)}</h3>${s2.text ? `<p>${esc5(s2.text)}</p>` : ""}</li>`).join("")}</ol></section>` : "",
+    offer: products.length ? `<section class="s-offer">${o.gridTitle ? `<h2 class="s-h2">${esc5(o.gridTitle)}</h2>` : ""}<div class="s-cards">${products.map((p) => `<article class="s-card">${p.image ? img({ url: p.image, alt: p.name }, "s-card-img") : ""}<h3>${esc5(p.name)}</h3>${p.note ? `<p>${esc5(p.note)}</p>` : ""}${p.price ? `<p class="s-price"><b>${esc5(p.price)}</b>${p.originalPrice ? ` <s>${esc5(p.originalPrice)}</s>` : ""}</p>` : ""}<a class="sb ghost" href="${esc5(p.url ?? cta)}" data-cta>${esc5(c.ctaText)}</a></article>`).join("")}</div></section>` : "",
+    faq: x.faqHtml ?? ""
   };
-  if (FONT.test(b.fontDisplay ?? "") || FONT.test(b.fontBody ?? "")) out.fontsFromBrand = true;
-  if (FONT.test(b.fontDisplay ?? "")) out.display = b.fontDisplay;
-  if (FONT.test(b.fontBody ?? "")) out.body = b.fontBody;
-  if (out.display && !FONT.test(b.fontDisplay ?? "") && FONT.test(b.fontBody ?? "")) out.display = b.fontBody;
-  return out;
-}
-function brandTokens(o = {}) {
-  const b = o.brandStyle ?? {};
-  return {
-    mode: b.mode ?? o.mode,
-    palette: { ...o.palette ?? {}, ...b.palette ?? {} },
-    fontDisplay: b.fontDisplay ?? o.fontDisplay,
-    fontBody: b.fontBody ?? o.fontBody,
-    brandColor: o.brandColor
-  };
+  const middles = [["statement", "moments", "band", "journey"], ["moments", "statement", "journey", "band"], ["band", "moments", "journey", "statement"], ["journey", "moments", "statement", "band"]];
+  const order = ["hero", ...middles[seed % middles.length], "offer", "faq"];
+  const main = order.map((k) => sections[k]).filter(Boolean).join("\n");
+  const lightText = t.mode === "light";
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>${esc5(x.title)}</title><meta name="description" content="${esc5(c.subheadline || c.headline)}"><meta name="theme-color" content="${t.bg}">
+<meta property="og:title" content="${esc5(x.title)}"><meta property="og:description" content="${esc5(c.subheadline || c.headline)}">${heroArt ? `<meta property="og:image" content="${esc5(heroArt.url)}">` : ""}
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?${x.fontsHref}&display=swap" rel="stylesheet">
+${x.jsonLd ?? ""}
+<style>
+:root{--bg:${t.bg};--sf:${t.surface};--tx:${t.text};--mu:${t.muted};--ac:${t.accent};--ac2:${t.accent2};--at:${t.accentText};--bd:${t.border};--d:'${t.display}',Georgia,serif;--b:'${t.body}',system-ui,sans-serif;--e:cubic-bezier(.2,.7,.2,1)}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--tx);font:400 17px/1.65 var(--b);-webkit-font-smoothing:antialiased;overflow-x:clip}
+img{max-width:100%;display:block}h1,h2,h3{font-family:var(--d);font-weight:600;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.nav{display:flex;justify-content:center;padding:26px 20px}.nav .wm{font:700 24px/1 var(--d)}
+.s-ey{display:inline-flex;margin:0 0 18px;padding:7px 14px;border-radius:999px;background:color-mix(in srgb,var(--ac) 12%,transparent);font:600 13px/1 var(--b);letter-spacing:.04em;color:var(--tx)}
+.s-hero{max-width:1180px;margin:0 auto;padding:clamp(40px,8vw,96px) 20px clamp(48px,8vw,96px);text-align:center;display:grid;gap:clamp(32px,5vw,64px);justify-items:center;position:relative}
+.s-hero-in{max-width:760px;display:flex;flex-direction:column;align-items:center}
+.s-hero h1{font-size:clamp(40px,6.4vw,84px);line-height:1.02}.s-lead{margin:18px 0 0;font-size:clamp(18px,1.6vw,21px);color:var(--mu);max-width:34em}
+@media(min-width:960px){.s-hero.split{grid-template-columns:1.05fr .95fr;text-align:left;align-items:center}.s-hero.split .s-hero-in{align-items:flex-start}}
+.s-hero-art{width:min(100%,640px)}.s-hero-motif{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:-1}.s-hero-motif .deco{position:absolute;width:520px;height:520px;top:-60px;right:-120px;opacity:.9}
+.s-cta{margin-top:30px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.sb{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:0 28px;border-radius:999px;background:var(--ac);color:var(--at);font:600 16px var(--b);text-decoration:none;box-shadow:0 14px 30px -16px color-mix(in srgb,var(--ac) 80%,transparent);transition:transform .2s var(--e)}.sb:hover{transform:translateY(-2px)}
+.sb.ghost{background:transparent;color:var(--tx);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--tx) 30%,transparent)}
+.s-art{width:100%;height:auto;background:transparent}.s-art.photo{border-radius:28px}
+.pr{display:flex;justify-content:center;align-items:baseline;gap:12px;margin:22px 0 0}.pr b{font:600 clamp(30px,3vw,40px)/1 var(--d)}.pr s{color:var(--mu)}.pr em{font-style:normal;font-size:13px;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--ac);color:var(--at)}
+.ck{margin:14px 0 0;color:var(--mu)}.ck b{color:var(--tx);font-variant-numeric:tabular-nums}
+.s-h2{font-size:clamp(30px,4vw,52px);text-align:center;max-width:22ch;margin:0 auto 40px}
+.s-statement{position:relative;max-width:1200px;margin:0 auto;padding:clamp(60px,10vw,120px) 20px;text-align:center}
+.s-statement p{position:relative;font:600 clamp(28px,4.4vw,58px)/1.15 var(--d);letter-spacing:-.02em;max-width:20ch;margin:0 auto}
+.s-thread{position:absolute;left:0;right:0;top:50%;width:100%;height:clamp(160px,22vw,300px);transform:translateY(-50%);overflow:visible}
+.s-thread path{fill:none;stroke:var(--ac);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:calc(1 - var(--p,1));vector-effect:non-scaling-stroke}.s-thread .b{stroke:var(--ac2)}
+.s-moments{max-width:1180px;margin:0 auto;padding:clamp(48px,8vw,96px) 20px}
+.s-mgrid{display:grid;gap:clamp(28px,4vw,56px);justify-content:center}@media(min-width:860px){.s-mgrid.n2{grid-template-columns:repeat(2,minmax(0,440px))}.s-mgrid.n3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.s-moment{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}.s-moment .s-art{max-width:360px}.s-moment h3{font-size:clamp(22px,2vw,28px)}.s-moment p{margin:0;color:var(--mu);max-width:28em}
+.s-band{background:var(--tx);color:var(--bg);padding:clamp(64px,10vw,128px) 20px;text-align:center}.s-band p{font:600 clamp(28px,4.2vw,56px)/1.15 var(--d);letter-spacing:-.02em;max-width:22ch;margin:0 auto}
+.s-journey{max-width:860px;margin:0 auto;padding:clamp(56px,9vw,112px) 20px}
+.s-journey ol{position:relative;list-style:none;margin:0;padding:0 0 0 56px;display:grid;gap:36px}
+.s-line{position:absolute;left:18px;top:6px;bottom:6px;width:3px;border-radius:3px;background:color-mix(in srgb,var(--tx) 12%,transparent)}.s-line i{position:absolute;inset:0;border-radius:3px;background:var(--ac);transform-origin:top;transform:scaleY(var(--p,1))}
+.s-journey li{position:relative}.s-journey li b{position:absolute;left:-56px;top:0;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:2px solid var(--ac);font:700 13px/1 var(--b)}.s-journey h3{font-size:24px}.s-journey p{margin:6px 0 0;color:var(--mu)}
+.s-offer{max-width:1180px;margin:0 auto;padding:clamp(48px,8vw,96px) 20px}
+.s-cards{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),340px));justify-content:center}
+.s-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:30px 24px;border-radius:24px;background:var(--sf);border:1px solid var(--bd)}.s-card h3{font-size:24px}.s-card p{margin:0;color:var(--mu)}.s-price b{color:var(--tx);font:600 30px/1 var(--d)}.s-card-img{max-width:200px}
+.faq{max-width:760px;margin:0 auto;padding:clamp(48px,8vw,96px) 20px}.faq h2{text-align:center;font-size:clamp(30px,4vw,48px);margin-bottom:28px}.faq details{border-bottom:1px solid var(--bd);padding:18px 0}.faq summary{cursor:pointer;font-weight:600;font-size:18px;list-style:none}.faq summary::after{content:'+';float:right;color:var(--ac)}.faq details[open] summary::after{content:'\u2212'}.faq p{color:var(--mu)}
+.ft-mark{padding:clamp(60px,10vw,140px) 16px 0;text-align:center;font:600 clamp(72px,17vw,260px)/.85 var(--d);letter-spacing:-.04em;color:color-mix(in srgb,var(--tx) 90%,var(--bg));overflow:hidden;white-space:nowrap}.ft-mark svg{height:clamp(72px,17vw,260px);width:auto;display:inline-block}
+.ft{padding:36px 20px 120px;text-align:center;color:var(--mu);font-size:13px}
+.float{animation:q4f 7s ease-in-out infinite}.float.d{animation-delay:-3.5s}@keyframes q4f{50%{transform:translateY(-10px)}}
+@media(prefers-reduced-motion:reduce){.float{animation:none}.s-thread path{stroke-dashoffset:0}.s-line i{transform:none}}
+</style></head>
+<body${lightText ? ' class="m-light"' : ""}>
+<nav class="nav">${wordmarkHtml(o)}</nav>
+<main>
+${main}
+</main>
+<div class="ft-mark" aria-hidden="true">${wordmarkHtml(o)}</div>
+<footer class="ft">${x.terms ? `<p id="terms"><b>Offer terms.</b> ${esc5(x.terms)}</p>` : ""}${x.credits ? `<p>${x.credits}</p>` : ""}<p>\xA9 ${(/* @__PURE__ */ new Date()).getFullYear()} ${esc5(o.brand)}</p></footer>
+<script>
+(function(){
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;if(reduce)return;
+var th=[].slice.call(document.querySelectorAll('[data-thread],[data-journey]'));
+function prog(el){var r=el.getBoundingClientRect(),h=innerHeight;return Math.max(0,Math.min(1,(h-r.top)/(h*.6+r.height*.5)))}
+var ticking=false;function run(){ticking=false;th.forEach(function(el){el.style.setProperty('--p',prog(el).toFixed(3))})}
+th.forEach(function(el){el.style.setProperty('--p','0')});
+addEventListener('scroll',function(){if(!ticking){ticking=true;requestAnimationFrame(run)}},{passive:true});addEventListener('resize',run);run();
+${x.deadlineMs ? `var end=${x.deadlineMs};function tick(){var d=Math.max(0,end-Date.now()),s=Math.floor(d/1e3);var el=document.querySelector('[data-clock]');if(el)el.innerHTML=s?('Ends in <b>'+Math.floor(s/86400)+'d '+Math.floor(s%86400/3600)+'h '+Math.floor(s%3600/60)+'m</b>'):'This offer has ended.'}tick();setInterval(tick,30000);` : ""}
+})();
+</script>
+</body></html>`;
 }
 
 // src/landing.js
@@ -42393,7 +42689,6 @@ var HEADLINES = {
   "new-year": ["New year. Best price.", "Start the year with {product}.", "Ring in the new year with our best offer."],
   default: ["Our best offer of the season.", "{Product}, at a special price.", "Limited time. Real savings."]
 };
-var GIFT_THEMES = /* @__PURE__ */ new Set(["christmas", "diwali", "hanukkah", "thanksgiving"]);
 var esc2 = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var tidy = (s) => s == null ? s : String(s).replace(/\s*[\u2014\u2013]\s*/g, ", ").replace(/,\s*,/g, ",");
 function safeUrl(u, fallback = "#") {
@@ -42405,7 +42700,7 @@ var hex4 = (c) => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c) ? c : null;
 function readableOn(bgHex) {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(bgHex.slice(i, i + 2), 16) / 255).map((v) => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
   const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return (L + 0.05) / 0.05 > 1.05 / (L + 0.05) ? "#111111" : "#ffffff";
+  return 1.05 / (L + 0.05) >= 4 ? "#ffffff" : "#111111";
 }
 function hash2(s) {
   let h = 2166136261;
@@ -42429,27 +42724,31 @@ function fmtDeadline(ms, tz) {
   }
 }
 function writeCopy(o, themeKey, t, discount, deadlineLabel) {
-  const product = tidy(o.product) || "everything";
+  const nicheId = classifyNiche(`${o.niche ?? ""} ${o.product ?? ""}`).id;
+  const offerType = o.offerType ?? offerTypeOf(nicheId, `${o.niche ?? ""} ${o.product ?? ""}`);
+  const product = displayNameOf(o, tidy(o.product) || o.brand);
+  const calm = offerType !== "physical" || /calm|no hype|understated|quiet|minimal|premium/i.test(String(o.voice ?? ""));
   const pick2 = (arr) => arr[hash2(`${o.brand}|${product}|${themeKey}`) % arr.length];
-  const fill = (s) => s.replace("{Product}", cap(product)).replace("{product}", product);
-  const offer = tidy(o.offer) || (discount ? `${discount}% off ${product === "everything" ? "everything" : product}` : null);
-  const headline = tidy(o.headline) || fill(pick2(HEADLINES[themeKey] ?? HEADLINES.default));
+  const fill2 = (s) => s.replace("{Product}", cap(product)).replace("{product}", product);
+  const offer = tidy(o.offer) || (discount ? `${discount}% off ${product}` : null);
+  const eventName = THEMES[o.theme] && o.theme !== "default" ? EVENT_NAMES2[o.theme] : null;
+  const headline = tidy(o.headline) || (calm || !THEMES[themeKey] ? offer ? `${cap(offer)}${eventName ? `, this ${eventName}` : ""}.` : `${cap(product)}.` : fill2(pick2(HEADLINES[themeKey] ?? HEADLINES.default)));
   const subheadline = tidy(o.subheadline) || [
-    offer ? `${cap(offer)}${o.price ? `, now ${o.price}` : ""}.` : `${cap(product)} from ${o.brand}.`,
-    deadlineLabel ? `Ends ${deadlineLabel}.` : "For a limited time only.",
-    GIFT_THEMES.has(themeKey) ? "Made for gifting, and for treating yourself." : ""
+    offer && o.price ? `Now ${o.price}${o.originalPrice ? `, was ${o.originalPrice}` : ""}.` : null,
+    !offer && o.positioning?.is ? tidy(o.positioning.is) : null,
+    deadlineLabel ? `Ends ${deadlineLabel}.` : null
   ].filter(Boolean).join(" ");
-  const features = (o.features?.length ? o.features : [
-    offer ? { title: cap(offer), text: `Our best saving on ${product} this season.` } : { title: cap(product), text: `The ${product} people come back to ${o.brand} for.` },
-    deadlineLabel ? { title: "Ends on time, every time", text: `The countdown is live. When it hits zero on ${deadlineLabel}, the offer is gone.` } : { title: "While it lasts", text: "This offer is only here for the season." },
-    GIFT_THEMES.has(themeKey) ? { title: "Ready to gift", text: `An easy win for everyone on your list.` } : { title: `Made by ${o.brand}`, text: "Built with care, down to the details." }
+  const features = (o.features?.length ? o.features.map((f) => typeof f === "string" ? { title: f, text: "" } : f) : [
+    ...deadlineLabel ? [{ title: "An honest countdown", text: `The offer ends ${deadlineLabel}. The timer shows the time left in your time zone.` }] : []
   ]).slice(0, 6).map((f) => ({ title: tidy(f.title), text: tidy(f.text) }));
   const faq = (o.faq?.length ? o.faq : [
     ...deadlineLabel ? [{ q: "When does the offer end?", a: `${deadlineLabel}. The countdown on this page shows the exact time left in your time zone.` }] : [],
     ...o.terms ? [{ q: "What is included?", a: o.terms }] : []
   ]).map((x) => ({ q: tidy(x.q), a: tidy(x.a) }));
-  const marquee = [offer ?? t.eyebrow, t.eyebrow, deadlineLabel ? `Ends ${deadlineLabel.split(",").slice(0, 2).join(",")}` : "Limited time", cap(product)].map(tidy);
-  return { product, offer, headline, subheadline, features, faq, marquee, ctaText: tidy(o.ctaText) || t.cta };
+  const marquee = [offer, eventName, deadlineLabel ? `Ends ${deadlineLabel.split(",").slice(0, 2).join(",")}` : null, cap(product)].filter(Boolean).map(tidy);
+  const ctaText = tidy(o.ctaText) || (VERBS[offerType] ?? VERBS.physical).cta;
+  const used = { headline: !tidy(o.headline), subheadline: !tidy(o.subheadline), features: !o.features?.length, ctaText: !tidy(o.ctaText) };
+  return { product, offer, headline, subheadline, features, faq, marquee, ctaText, offerType, fallbacks: Object.keys(used).filter((k) => used[k]) };
 }
 var kinetic = (text) => esc2(text).split(/\s+/).map((w, i) => `<span class="w" style="--i:${i}"><span>${w}</span></span>`).join(" ");
 function buildLanding(o) {
@@ -42501,6 +42800,30 @@ function buildLanding(o) {
     }
   } : null;
   const jsonLdTag = jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>` : "";
+  if (o.design === "story" || o.design !== "classic" && (o.moments?.length || o.promise || o.steps?.length)) {
+    const fontsHref2 = [.../* @__PURE__ */ new Set([t.display, t.body])].map((f) => `family=${f.replace(/ /g, "+")}:wght@400;500;600;700`).join("&");
+    const priceHtml = o.price ? `<div class="pr"><b>${esc2(o.price)}</b>${o.originalPrice ? `<s>${esc2(o.originalPrice)}</s>` : ""}${discount ? `<em>${discount}% off</em>` : ""}</div>` : "";
+    const clockHtml = deadlineMs ? `<p class="ck" data-clock>Ends ${esc2(deadlineLabel)}</p>` : "";
+    const faqHtml = c.faq.length ? `<section class="faq"><h2>Questions</h2>${c.faq.map((f) => `<details><summary>${esc2(f.q)}</summary><p>${esc2(f.a)}</p></details>`).join("")}</section>` : "";
+    return renderStory({
+      esc: esc2,
+      o,
+      t,
+      c,
+      cta,
+      deadlineMs,
+      deadlineLabel,
+      priceHtml,
+      clockHtml,
+      faqHtml,
+      title,
+      jsonLd: jsonLdTag,
+      nicheId: classifyNiche(`${o.niche ?? ""} ${o.product ?? ""}`).id,
+      fontsHref: fontsHref2,
+      terms,
+      eyebrow: THEMES[o.theme] && o.theme !== "default" ? EVENT_NAMES2[o.theme] : o.brand
+    });
+  }
   const cls = classifyNiche(`${o.niche ?? ""} ${o.product ?? ""}`);
   const legacy = ["signature", "aurora", "editorial", "poster", "bento"].includes(o.layout);
   const hasMedia = Boolean(o.images?.length || o.productImage || o.videoUrl || o.modelUrl);
@@ -42907,13 +43230,13 @@ function buildPlan(o) {
     const week = Math.floor(diffDays(start, d) / 7);
     platforms.forEach((platformId, pi) => {
       const p = PLATFORMS[platformId];
-      const cap3 = Math.min(perWeek, p.cadencePerWeek ?? 7);
-      const regular = DAY_SETS[cap3].includes(weekday(d));
+      const cap4 = Math.min(perWeek, p.cadencePerWeek ?? 7);
+      const regular = DAY_SETS[cap4].includes(weekday(d));
       const keySend = mustPost || top?.phase === "early-access" && (platformId === "email" || platformId === "whatsapp");
       const key = `${platformId}:${week}`;
       if (!regular && !keySend && !observance) return;
       const inbox = platformId === "email" || platformId === "whatsapp";
-      if ((weekCount[key] ?? 0) >= (keySend ? inbox ? cap3 + 1 : Infinity : cap3)) return;
+      if ((weekCount[key] ?? 0) >= (keySend ? inbox ? cap4 + 1 : Infinity : cap4)) return;
       weekCount[key] = (weekCount[key] ?? 0) + 1;
       const formatIds = Object.keys(p.formats).filter((f2) => !["thumbnail", "event-cover", "catalog"].includes(f2));
       const format = formatIds[(slots.length + pi) % formatIds.length];
@@ -43009,6 +43332,13 @@ var LINK_LEN = 23;
 var xLength = (s) => s.replace(/https?:\/\/\S+/g, "x".repeat(LINK_LEN)).length;
 var sentence = (s) => s && !/[.!?]$/.test(s.trim()) ? `${s.trim()}.` : s?.trim();
 function captionsFor(c) {
+  if (c.kind === "content") {
+    const tagLine = (c.tags ?? []).slice(0, 3).join(" ");
+    const ig = [c.hook, c.link ? "More through the link in our bio." : null, tagLine || null].filter(Boolean).join("\n\n");
+    let xs = [c.hook, c.link].filter(Boolean).join(" ");
+    while (xLength(xs) > X_LIMIT) xs = xs.replace(/\s*\S+(?=\s+https?:\/\/|$)/, "");
+    return { instagram: ig, whatsapp: [c.hook, c.link ? `More: ${c.link}` : null].filter(Boolean).join("\n"), x: xs, linkedin: [c.hook, c.link].filter(Boolean).join("\n\n") };
+  }
   const item = c.items?.[0];
   const priceOf = (p) => p?.price ? `${p.price}${p.originalPrice ? ` (was ${p.originalPrice})` : ""}` : null;
   const offerLine = c.offTxt ? `${cap2(c.offTxt)}${c.kind === "product" && item ? "" : ` ${c.product}`}${c.event ? ` this ${c.event}` : ""}.` : c.event ? `${c.event} at ${c.brand}.` : null;
@@ -43037,6 +43367,7 @@ var cap2 = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // src/kit.js
 var esc3 = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+var cap3 = (s) => String(s).charAt(0).toUpperCase() + String(s).slice(1);
 var hex5 = (c) => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c) ? c : null;
 var KIT_FORMATS = {
   post: { w: 1080, h: 1350, label: "Instagram / Facebook post (4:5)", platforms: ["instagram", "facebook"] },
@@ -43064,13 +43395,16 @@ function buildKit(o) {
     t.accent = brandColor;
     t.accentText = readableOn(brandColor);
   }
-  const off = discountOf(o);
+  const noOffer = o.mode === "content" || /^\s*(none|no|no offer|no discount)\s*$/i.test(String(o.offer ?? ""));
+  const off = noOffer ? null : discountOf(o);
+  const hasOffer = !noOffer && Boolean(off || o.offer && /\S/.test(o.offer) || o.price && o.originalPrice);
+  const contentOnly = !hasOffer;
   const offTxt = off ? `${off}% off` : null;
-  const ends = deadlineText(o.deadline, o.timeZone);
-  const event = THEMES[o.theme] ? t.eyebrow : null;
+  const ends = hasOffer ? deadlineText(o.deadline, o.timeZone) : null;
+  const event = THEMES[o.theme] && o.theme !== "default" ? t.eyebrow : null;
   const link = o.pageUrl || o.ctaUrl || "";
-  const deck = hookDeck({ nicheHooks: niche.hooks, product, discount: off ? `${off}%` : null, brand: o.brand, seed: o.brand.length, offerType });
-  const products = (o.products ?? []).filter((p) => p?.name).slice(0, 6);
+  const deck = hookDeck({ nicheHooks: niche.hooks, product, discount: off ? `${off}%` : null, brand: o.brand, seed: o.brand.length, offerType, avoid: [...o.avoidWords ?? [], ...o.positioning?.isNot ?? []] });
+  const products = (o.products ?? []).filter((p) => p?.name).slice(0, 6).map((p) => hasOffer ? p : { ...p, price: void 0, originalPrice: void 0 });
   const photos = (o.images ?? []).filter((im) => im?.url);
   const imgs = [];
   const img = (url2) => {
@@ -43082,7 +43416,7 @@ function buildKit(o) {
     const h = String(t2 ?? "").replace(/[^a-z0-9]/gi, "");
     return h.length > 2 && h.length <= 20 ? `#${h}` : null;
   };
-  const tags = [tag(o.brand), event ? tag(event) : null, product.split(/\s+/).length <= 2 ? tag(product) : null].filter(Boolean);
+  const tags = [tag(o.brand), event ? tag(event) : null, o.product && product.split(/\s+/).length <= 2 ? tag(product) : null].filter(Boolean);
   const isWhatsApp = /wa\.me|whatsapp/i.test(link);
   const caps = (hook, kind, items, apps) => {
     const all = captionsFor({ hook, brand: o.brand, product, event, offTxt, ends, link, isWhatsApp, items, tags, kind, offerType });
@@ -43090,27 +43424,20 @@ function buildKit(o) {
   };
   const posts = [];
   const pIdx = (p) => products.indexOf(p);
-  const photo = (url2, alt, cls, key, representative = false) => `<div class="ph ${cls}${representative ? " rep" : ""}" data-p="${key}"><img src="${esc3(img(url2))}" alt="${esc3(alt ?? product)}" crossorigin="anonymous" onerror="this.parentNode.classList.add('need');this.remove()"><span class="need-l">Add a photo</span>${representative ? '<span class="rep-l">Representative image</span>' : ""}</div>`;
+  const isArt2 = (u) => /\.svg(\?|$)|\.png(\?|$)|^data:image\/(svg|png)/i.test(String(u));
+  const photo = (url2, alt, cls, key, representative = false) => `<div class="ph ${cls}${representative ? " rep" : ""}${isArt2(url2) ? " art" : " photo"}" data-p="${key}"><img src="${esc3(img(url2))}" alt="${esc3(alt ?? product)}" crossorigin="anonymous" onerror="this.parentNode.classList.add('need');this.remove()"><span class="need-l">Add a photo</span>${representative ? '<span class="rep-l">Representative image</span>' : ""}</div>`;
   const need = (p, cls) => `<div class="np ${cls}" aria-hidden="true"><span>${esc3(p.name)}</span></div>`;
-  const bigWord = off ? `${off}%` : (product.split(" ").pop() || o.brand).toUpperCase();
+  const bigWord = off ? `${off}%` : product.split(" ").pop() || o.brand;
   const typo = (cls, frameW) => `<div class="ty ${cls}" aria-hidden="true" style="font-size:${Math.min(560, Math.floor(frameW / (bigWord.length * 0.52)))}px"><span>${esc3(bigWord)}</span>${off ? "<em>off</em>" : ""}</div>`;
   const typeLed = !photos.length;
   let moodN = 0;
   const visual = (p, cls = "", frameW = 936) => p ? p.image ? photo(p.image, p.name, cls, pIdx(p), p.representative) : need(p, cls) : photos.length ? photo(photos[moodN % photos.length].url, photos[moodN++ % photos.length].alt, cls, `m${moodN}`) : typo(cls, frameW);
-  const priceRow = o.price ? `<p class="g-pr"><b>${esc3(o.price)}</b>${o.originalPrice ? `<s>${esc3(o.originalPrice)}</s>` : ""}</p>` : "";
-  const offerHead = (fallback) => typeLed && off ? "" : `<h2 class="g-h">${esc3(offTxt ? offTxt.toUpperCase() : fallback)}</h2>`;
-  const head = (h) => `${deco}<div class="g-top"><span class="g-brand">${o.logoUrl ? `<img src="${esc3(img(o.logoUrl))}" alt="">` : esc3(o.brand)}</span>${event ? `<span class="g-ev">${esc3(event)}</span>` : ""}</div>${h}`;
+  const priceRow = hasOffer && o.price ? `<p class="g-pr"><b>${esc3(o.price)}</b>${o.originalPrice ? `<s>${esc3(o.originalPrice)}</s>` : ""}</p>` : "";
+  const offerHead = (fallback, own3) => own3 ? `<h2 class="g-h">${esc3(own3)}</h2>` : typeLed && off ? "" : `<h2 class="g-h">${esc3(offTxt ? cap3(offTxt) : fallback)}</h2>`;
+  const head = (h) => `${deco}<div class="g-top"><span class="g-brand">${o.logoUrl ? `<img src="${esc3(img(o.logoUrl))}" alt="">` : wordmarkHtml(o)}</span>${event ? `<span class="g-ev">${esc3(event)}</span>` : ""}</div>${h}`;
   const wm = '<div class="q4wm">Made with Quarter4</div>';
   const verbs = VERBS[offerType] ?? VERBS.physical;
-  const seedOf = (str) => [...String(str)].reduce((h, ch) => h * 31 + ch.charCodeAt(0) >>> 0, 7);
-  const decoStyle = seedOf(o.brand) % 4;
-  const DECO = [
-    '<svg class="deco d-rings" viewBox="0 0 600 600" aria-hidden="true"><g style="fill:none;stroke:var(--ac);stroke-opacity:.38;stroke-width:2"><circle cx="300" cy="300" r="110"/><circle cx="300" cy="300" r="170"/><circle cx="300" cy="300" r="230"/><circle cx="300" cy="300" r="290"/></g></svg>',
-    '<svg class="deco d-dots" viewBox="0 0 420 420" aria-hidden="true"><defs><pattern id="q4dots" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="4" style="fill:var(--ac);fill-opacity:.4"/></pattern></defs><rect width="420" height="420" style="fill:url(#q4dots)"/></svg>',
-    '<svg class="deco d-arc" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="50" style="fill:var(--ac);fill-opacity:.13"/><circle cx="50" cy="50" r="36" style="fill:none;stroke:var(--ac);stroke-opacity:.35;stroke-width:.4"/></svg>',
-    '<svg class="deco d-lines" viewBox="0 0 400 400" aria-hidden="true"><g style="stroke:var(--ac);stroke-opacity:.42;stroke-width:3">' + Array.from({ length: 12 }, (_, i) => `<line x1="${-100 + i * 40}" y1="400" x2="${300 + i * 40}" y2="0"/>`).join("") + "</g></svg>"
-  ];
-  const deco = DECO[decoStyle];
+  const deco = motifFor(nicheId, o.brand, o.illustration?.motifs ?? o.motifs).svg;
   const ICON = {
     clock: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" style="fill:none;stroke:currentColor;stroke-width:2"/><path d="M12 7v5l3 2" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"/></svg>',
     check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" style="fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"/></svg>'
@@ -43123,88 +43450,90 @@ function buildKit(o) {
     const a = n(it.price), b = n(it.originalPrice);
     return a && b > a ? Math.round((1 - a / b) * 100) : null;
   };
-  const h1 = deck.next("launch", event);
-  posts.push({
-    id: "offer",
-    format: "post",
-    title: "Offer announcement",
-    hook: h1,
-    html: head(`<div class="g-mid">${visual(null, "big", 936)}</div><div class="g-bot">${offerHead(h1)}${priceRow}${feats(o.features)}${endsChip}</div>`),
-    caption: caps(h1, "offer", o.price ? [{ name: product, price: o.price, originalPrice: o.originalPrice }] : products, ["instagram", "whatsapp", "x"])
-  });
+  const byId2 = Object.fromEntries((o.posts ?? []).filter((x) => x.id).map((x) => [x.id, x]));
+  const removed = /* @__PURE__ */ new Set([...o.remove ?? [], ...(o.posts ?? []).filter((x) => x.remove).map((x) => x.id)]);
+  const ov = (id) => byId2[id] ?? {};
+  const own2 = (id) => ov(id).hook ?? ov(id).headline;
+  const fmtOf = (id, def) => KIT_FORMATS[ov(id).format] ? ov(id).format : def;
+  const add = (id, def, build) => {
+    if (removed.has(id)) return;
+    const o2 = ov(id);
+    const hook = own2(id) ?? def.hook;
+    const post = build(hook, fmtOf(id, def.format));
+    posts.push({ id, title: o2.title ?? def.title, format: fmtOf(id, def.format), hook, ...post });
+  };
+  if (hasOffer) {
+    add("offer", { format: "post", title: "Offer announcement", hook: deck.next("launch", event) }, (h) => ({
+      html: head(`<div class="g-mid">${visual(null, "big", 936)}</div><div class="g-bot">${offerHead(h, own2("offer"))}${priceRow}${feats(o.features)}${endsChip}</div>`),
+      caption: caps(h, "offer", o.price ? [{ name: product, price: o.price, originalPrice: o.originalPrice }] : products, ["instagram", "whatsapp", "x"])
+    }));
+  }
   products.slice(0, 3).forEach((p, i) => {
-    const h = deck.next("launch", event);
-    posts.push({
-      id: `product-${i + 1}`,
-      format: "square",
-      title: `Spotlight: ${p.name}`,
-      hook: h,
-      html: head(`${p.image ? sticker(pctOf(p)) : ""}<div class="g-mid">${visual(p)}</div><div class="g-bot"><h2 class="g-h sm">${esc3(p.name)}</h2><p class="g-pr"><b>${esc3(p.price ?? "")}</b>${p.originalPrice ? `<s>${esc3(p.originalPrice)}</s>` : ""}</p>${p.note ? feats([p.note]) : ""}</div>`),
-      caption: caps(h, "product", [p], ["instagram", "whatsapp", "x"])
-    });
+    const id = `product-${i + 1}`;
+    add(id, { format: "square", title: hasOffer ? `Spotlight: ${p.name}` : p.name, hook: deck.next(hasOffer ? "launch" : "evergreen", event) }, (h) => ({
+      html: head(`${hasOffer && p.image ? sticker(pctOf(p)) : ""}<div class="g-mid">${visual(p)}</div><div class="g-bot"><h2 class="g-h sm">${esc3(own2(id) ?? p.name)}</h2>${hasOffer && p.price ? `<p class="g-pr"><b>${esc3(p.price)}</b>${p.originalPrice ? `<s>${esc3(p.originalPrice)}</s>` : ""}</p>` : ""}${p.note ? feats([p.note]) : ""}</div>`),
+      caption: caps(h, hasOffer ? "product" : "content", [p], ["instagram", "whatsapp", "x"])
+    }));
   });
   if (products.length >= 2) {
-    const h = deck.next("warm-up", event);
-    const slides = [
-      head(`<div class="g-mid"><h2 class="g-h xl">${esc3(h)}</h2></div><div class="g-bot"><p class="g-cta">Swipe \u2192</p></div>`),
-      ...products.slice(0, 4).map((p, i) => head(`<div class="g-mid">${visual(p)}</div><div class="g-bot"><p class="g-n">${String(i + 1).padStart(2, "0")}</p><h2 class="g-h sm">${esc3(p.name)}</h2><p class="g-pr"><b>${esc3(p.price ?? "")}</b>${p.originalPrice ? `<s>${esc3(p.originalPrice)}</s>` : ""}</p></div>`)),
-      head(`<div class="g-mid"><h2 class="g-h xl">${esc3(offTxt ? `${offTxt}. ${ends ?? ""}` : "Which one is yours?")}</h2></div><div class="g-bot"><p class="g-cta">${esc3(link ? "Link in bio" : "Send us a message")}</p></div>`)
-    ];
-    posts.push({ id: "carousel", format: "post", title: "Carousel", hook: h, slides, caption: caps(h, "list", products, ["instagram", "whatsapp"]) });
+    add("carousel", { format: "post", title: "Carousel", hook: deck.next(hasOffer ? "warm-up" : "evergreen", event) }, (h) => ({
+      slides: [
+        head(`<div class="g-mid"><h2 class="g-h xl">${esc3(h)}</h2></div><div class="g-bot"><p class="g-cta">Swipe \u2192</p></div>`),
+        ...products.slice(0, 4).map((p, i) => head(`<div class="g-mid">${visual(p)}</div><div class="g-bot"><p class="g-n">${String(i + 1).padStart(2, "0")}</p><h2 class="g-h sm">${esc3(p.name)}</h2>${hasOffer && p.price ? `<p class="g-pr"><b>${esc3(p.price)}</b>${p.originalPrice ? `<s>${esc3(p.originalPrice)}</s>` : ""}</p>` : ""}</div>`)),
+        head(`<div class="g-mid"><h2 class="g-h xl">${esc3(offTxt ? `${cap3(offTxt)}. ${ends ?? ""}`.trim() : "Which one is for you?")}</h2></div><div class="g-bot"><p class="g-cta">${esc3(link ? "Link in bio" : "Send us a message")}</p></div>`)
+      ],
+      caption: caps(h, hasOffer ? "list" : "content", products, ["instagram", "whatsapp"])
+    }));
   }
-  const hs = deck.next("launch", event);
-  posts.push({
-    id: "story",
-    format: "story",
-    title: "Story / WhatsApp Status",
-    hook: hs,
-    html: head(`<div class="g-mid">${visual(null, "big", 936)}</div><div class="g-bot">${offerHead(hs)}${priceRow}${feats(o.features)}<p class="g-pill">${esc3(link && /wa\.me/.test(link) ? offerType === "physical" ? "Tap to order on WhatsApp" : "Tap to message us on WhatsApp" : `Tap the link to ${verbs.cta.replace(/ now$/i, "").toLowerCase()}`)}</p></div>`),
-    caption: caps(hs, "offer", products.length ? products : [{ name: product, price: o.price }], ["whatsapp", "instagram"])
-  });
-  if (ends) {
-    const hl = deck.next("last-chance", event);
-    posts.push({
-      id: "last-call",
-      format: "story",
-      title: "Last call",
-      hook: hl,
-      html: head(`<div class="g-mid"><h2 class="g-h xl">${esc3(hl)}</h2></div><div class="g-bot"><p class="g-pill g-pill-ic">${ICON.clock}<span>${esc3(ends)}</span></p></div>`),
-      caption: caps(hl, "last-call", products, ["whatsapp", "instagram"])
+  if (hasOffer) {
+    add("story", { format: "story", title: "Story / WhatsApp Status", hook: deck.next("launch", event) }, (h) => ({
+      html: head(`<div class="g-mid">${visual(null, "big", 936)}</div><div class="g-bot">${offerHead(h, own2("story"))}${priceRow}${feats(o.features)}<p class="g-pill">${esc3(link && /wa\.me/.test(link) ? offerType === "physical" ? "Tap to order on WhatsApp" : "Tap to message us on WhatsApp" : `Tap the link to ${verbs.cta.replace(/ now$/i, "").toLowerCase()}`)}</p></div>`),
+      caption: caps(h, "offer", products.length ? products : [{ name: product, price: o.price }], ["whatsapp", "instagram"])
+    }));
+    if (ends) {
+      add("last-call", { format: "story", title: "Last call", hook: deck.next("last-chance", event) }, (h) => ({
+        html: head(`<div class="g-mid"><h2 class="g-h xl">${esc3(h)}</h2></div><div class="g-bot"><p class="g-pill g-pill-ic">${ICON.clock}<span>${esc3(ends)}</span></p></div>`),
+        caption: caps(h, "last-call", products, ["whatsapp", "instagram"])
+      }));
+    }
+    add("wide", { format: "wide", title: "X / LinkedIn card", hook: deck.next("launch", event) }, (h) => ({
+      html: head(`<div class="g-row"><div class="g-col"><h2 class="g-h">${esc3(own2("wide") ?? (offTxt ? `${cap3(offTxt)} ${product}` : h))}</h2>${priceRow}${endsChip}</div>${visual(null, "side", 620)}</div>`),
+      caption: caps(h, "offer", products, ["x", "linkedin"])
+    }));
+  } else if (!(o.posts ?? []).some((x) => x.headline || x.hook)) {
+    [["everyday-1", "post"], ["everyday-2", "square"], ["everyday-3", "story"]].forEach(([id, format]) => {
+      add(id, { format, title: "Everyday post", hook: deck.next("evergreen", event) }, (h, f) => ({
+        html: head(`<div class="g-mid"><h2 class="g-h xl">${esc3(h)}</h2></div><div class="g-bot">${feats(o.features)}<p class="g-cta">${esc3(o.brand)}</p></div>`),
+        caption: caps(h, "content", [], f === "story" ? ["whatsapp", "instagram"] : ["instagram", "whatsapp", "x"])
+      }));
     });
   }
-  const hw = deck.next("launch", event);
-  posts.push({
-    id: "wide",
-    format: "wide",
-    title: "X / LinkedIn card",
-    hook: hw,
-    html: head(`<div class="g-row"><div class="g-col"><h2 class="g-h">${esc3(offTxt ? `${offTxt} ${product}` : hw)}</h2>${priceRow}${endsChip}</div>${visual(null, "side", 620)}</div>`),
-    caption: caps(hw, "offer", products, ["x", "linkedin"])
-  });
-  for (const ov of o.posts ?? []) {
-    const target = posts.find((p) => p.id === ov.id);
+  const SLOT_FORMAT = { offer: "post", story: "story", "last-call": "story", wide: "wide", carousel: "post" };
+  for (const x of o.posts ?? []) {
+    if (x.remove) continue;
+    const target = posts.find((p) => p.id === x.id);
     if (target) {
-      const newHook = ov.hook ?? ov.headline;
-      if (newHook) {
-        target.hook = newHook;
-        for (const k of Object.keys(target.caption)) target.caption[k] = target.caption[k].replace(/^[^\n]*/, newHook);
-      }
-      if (ov.caption) target.caption = typeof ov.caption === "string" ? Object.fromEntries(Object.keys(target.caption).map((k) => [k, ov.caption])) : ov.caption;
+      const newHook = x.hook ?? x.headline;
+      if (newHook) for (const k of Object.keys(target.caption)) target.caption[k] = target.caption[k].replace(/^[^\n]*/, newHook);
+      if (x.caption) target.caption = typeof x.caption === "string" ? Object.fromEntries(Object.keys(target.caption).map((k) => [k, x.caption])) : x.caption;
       continue;
     }
-    if (!ov.headline) continue;
-    const fmt = KIT_FORMATS[ov.format] ? ov.format : "post";
+    const headline = x.hook ?? x.headline;
+    if (!headline) continue;
+    const fmt = KIT_FORMATS[x.format] ? x.format : SLOT_FORMAT[x.id] ?? "post";
+    const id = x.id && !posts.some((p) => p.id === x.id) ? x.id : `custom-${posts.length}`;
     posts.push({
-      id: `custom-${posts.length}`,
+      id,
       format: fmt,
-      title: ov.title ?? "Post",
-      hook: ov.headline,
-      html: head(`<div class="g-mid">${ov.image ? photo(ov.image, ov.headline, "big") : `<h2 class="g-h xl">${esc3(ov.headline)}</h2>`}</div><div class="g-bot">${ov.image ? `<h2 class="g-h sm">${esc3(ov.headline)}</h2>` : ""}${ov.sub ? `<p class="g-cta">${esc3(ov.sub)}</p>` : ""}</div>`),
-      caption: ov.caption ? { instagram: ov.caption, whatsapp: ov.caption } : caps(ov.headline, "offer", products, ["instagram", "whatsapp"])
+      title: x.title ?? "Post",
+      hook: headline,
+      html: head(`<div class="g-mid">${x.image ? photo(x.image, headline, "big", `m-${id}`) : `<h2 class="g-h xl">${esc3(headline)}</h2>`}</div><div class="g-bot">${x.image ? `<h2 class="g-h sm">${esc3(headline)}</h2>` : ""}${x.sub ? `<p class="g-cta">${esc3(x.sub)}</p>` : ""}</div>`),
+      caption: x.caption ? typeof x.caption === "string" ? { instagram: x.caption, whatsapp: x.caption } : x.caption : caps(headline, hasOffer ? "offer" : "content", hasOffer ? products : [], ["instagram", "whatsapp"])
     });
   }
+  if (Array.isArray(o.order) && o.order.length) posts.sort((a, b) => (o.order.indexOf(a.id) + 1 || 999) - (o.order.indexOf(b.id) + 1 || 999));
   const html = page({ o, t, posts, wm, link, product });
-  return { html, posts: posts.map(({ id, format, title, hook, caption: c, slides }) => ({ id, format, size: `${KIT_FORMATS[format].w}x${KIT_FORMATS[format].h}`, title, hook, slides: slides?.length ?? 1, caption: c })), images: imgs };
+  return { html, contentOnly, hasOffer, posts: posts.map(({ id, format, title, hook, caption: c, slides }) => ({ id, format, size: `${KIT_FORMATS[format].w}x${KIT_FORMATS[format].h}`, title, hook, slides: slides?.length ?? 1, caption: c })), images: imgs };
 }
 function graphic(fmt, inner, wm, key) {
   const f = KIT_FORMATS[fmt];
@@ -43223,6 +43552,9 @@ var UI = {
   x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.68l7.73-8.84L1.25 2.25h6.83l4.71 6.23zm-1.16 17.52h1.83L7.08 4.13H5.12z"/></svg>',
   facebook: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07"/></svg>',
   linkedin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>',
+  flag: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4m0 0h11l-2 4 2 4H5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>',
+  video: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 10.5 5-3v9l-5-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
   telegram: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9.78 15.27l-.4 5.6c.57 0 .82-.25 1.12-.54l2.68-2.56 5.56 4.07c1.02.56 1.74.27 2.02-.94l3.65-17.12c.33-1.51-.54-2.1-1.53-1.73L1.4 9.86c-1.48.57-1.46 1.4-.25 1.78l5.48 1.71L19.36 5.3c.6-.4 1.15-.18.7.22z"/></svg>'
 };
 var APP = { instagram: "Instagram", whatsapp: "WhatsApp", x: "X", linkedin: "LinkedIn", facebook: "Facebook" };
@@ -43239,9 +43571,10 @@ function page({ o, t, posts, wm, link, product }) {
 <div class="tabs" role="tablist" aria-label="Caption for">${caps.map(([k], j) => `<button type="button" role="tab" aria-selected="${j === 0}" data-tab="${k}">${UI[k] ?? ""}<span>${esc3(APP[k] ?? k)}</span></button>`).join("")}</div>
 ${caps.map(([k, v], j) => `<textarea data-cap="${k}" rows="6" aria-label="${esc3(APP[k] ?? k)} caption"${j ? " hidden" : ""}>${esc3(v)}</textarea>`).join("")}
 <div class="actions">
-<div class="tools"><button type="button" class="ib" data-dl aria-label="Download${p.slides ? ` ${p.slides.length} slides` : ""}" title="Download${p.slides ? ` ${p.slides.length} slides` : ""}">${UI.download}</button><button type="button" class="ib" data-copy aria-label="Copy caption" title="Copy caption">${UI.copy}</button><span class="sep" aria-hidden="true"></span><a class="ib" data-l="wa" target="_blank" rel="noopener" aria-label="Post to WhatsApp" title="WhatsApp">${UI.whatsapp}</a><a class="ib" data-l="x" target="_blank" rel="noopener" aria-label="Post to X" title="X">${UI.x}</a><a class="ib" data-l="fb" target="_blank" rel="noopener" aria-label="Share on Facebook" title="Facebook">${UI.facebook}</a><a class="ib" data-l="li" target="_blank" rel="noopener" aria-label="Share on LinkedIn" title="LinkedIn">${UI.linkedin}</a><a class="ib" data-l="tg" target="_blank" rel="noopener" aria-label="Share on Telegram" title="Telegram">${UI.telegram}</a></div>
+<div class="tools"><button type="button" class="ib" data-dl aria-label="Download${p.slides ? ` ${p.slides.length} slides` : ""}" title="Download${p.slides ? ` ${p.slides.length} slides` : ""}">${UI.download}</button><button type="button" class="ib" data-copy aria-label="Copy caption" title="Copy caption">${UI.copy}</button>${p.slides ? "" : `<button type="button" class="ib" data-play aria-label="Preview motion" title="Preview motion">${UI.play}</button><button type="button" class="ib" data-video aria-label="Download video" title="Download video (Reels, TikTok, Status)">${UI.video}</button>`}<button type="button" class="ib" data-flag aria-label="Something's wrong with this post" title="Something's wrong">${UI.flag}</button><span class="sep" aria-hidden="true"></span><a class="ib" data-l="wa" target="_blank" rel="noopener" aria-label="Post to WhatsApp" title="WhatsApp">${UI.whatsapp}</a><a class="ib" data-l="x" target="_blank" rel="noopener" aria-label="Post to X" title="X">${UI.x}</a><a class="ib" data-l="fb" target="_blank" rel="noopener" aria-label="Share on Facebook" title="Facebook">${UI.facebook}</a><a class="ib" data-l="li" target="_blank" rel="noopener" aria-label="Share on LinkedIn" title="LinkedIn">${UI.linkedin}</a><a class="ib" data-l="tg" target="_blank" rel="noopener" aria-label="Share on Telegram" title="Telegram">${UI.telegram}</a></div>
 <button type="button" class="share" data-share>${UI.share}<span>Share</span></button>
 </div>
+<div class="fb" data-fb hidden><span>What is wrong?</span>${["off-brand", "wrong-image", "copy-does-not-fit", "looks-generic", "wrong-brand-name"].map((c) => `<button type="button" data-chip="${c}">${c.replace(/-/g, " ")}</button>`).join("")}</div>
 <p class="msg" data-msg aria-live="polite"></p>
 </div>
 </article>`;
@@ -43288,6 +43621,8 @@ textarea:focus{outline:none;border-color:var(--kac);box-shadow:0 0 0 3px color-m
 .ib:hover{background:var(--kfield)}.ib[hidden]{display:none}.sep{width:1px;height:22px;background:var(--kline);margin:0 4px}
 .share{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 14px;border-radius:12px;border:0;background:var(--kac);color:var(--kact);font:600 14px var(--b);cursor:pointer;transition:transform .15s,filter .15s}.share svg{width:18px;height:18px}.share:hover{filter:brightness(1.06)}.share:active{transform:scale(.97)}
 .msg{margin:0;min-height:1.2em;font-size:12.5px;color:var(--kmu)}
+.fb{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:10px;border-radius:12px;background:var(--kfield);border:1px solid var(--kline);font-size:12.5px}.fb[hidden]{display:none}.fb span{color:var(--kmu);margin-right:4px}
+.fb button{height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--kline);background:var(--kcard);color:var(--kink);font:600 12px var(--b);cursor:pointer;text-transform:capitalize}
 button:focus-visible,a:focus-visible{outline:2px solid var(--kac);outline-offset:2px}
 @media(max-width:420px){.sep{display:none}.share span{display:none}.share{width:40px;padding:0;justify-content:center}}
 /* graphics */
@@ -43297,24 +43632,22 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--kac);outline-offset
 .g-ev{font:700 24px/1 var(--b);letter-spacing:.14em;text-transform:uppercase;padding:14px 22px;border-radius:999px;background:var(--ac);color:var(--at)}
 .g-mid{flex:1;display:grid;place-items:center;min-height:0}
 .g-bot{display:flex;flex-direction:column;gap:16px}
-.g-h{font:400 120px/.92 var(--d);margin:0;text-transform:uppercase;letter-spacing:-.01em}.g-h.sm{font-size:84px}.g-h.xl{font-size:110px;text-align:center;text-transform:none}
+.g-h{font:400 112px/.98 var(--d);margin:0;letter-spacing:-.02em}.g-h.sm{font-size:84px}.g-h.xl{font-size:110px;text-align:center;text-transform:none}
 .g-story .g-h{font-size:150px}.g-story .g-h.xl{font-size:120px}
 .g-pr{display:flex;align-items:baseline;gap:24px;margin:0}.g-pr b{font:400 96px/1 var(--d);color:var(--ac)}.g-pr s{font-size:44px;color:var(--mu)}
 .g-cta{margin:0;font:600 38px/1.2 var(--b);color:var(--mu)}.g-n{margin:0;font:700 30px var(--b);color:var(--ac)}
 .g-pill{align-self:flex-start;margin:6px 0 0;padding:26px 44px;border-radius:999px;background:var(--ac);color:var(--at);font:800 40px/1 var(--b)}
 .ph{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;display:grid;place-items:center;background:color-mix(in srgb,var(--tx) 6%,transparent)}.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .rep-l{position:absolute;left:24px;bottom:24px;padding:10px 16px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:600 22px/1 var(--b);letter-spacing:.02em}
-.np{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 24px;font:400 150px/.95 var(--d);text-transform:uppercase;color:var(--tx);letter-spacing:-.01em}.np span{max-width:100%;overflow-wrap:anywhere}
+.np{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 24px;font:400 130px/.98 var(--d);color:var(--tx);letter-spacing:-.01em}.np span{max-width:100%;overflow-wrap:anywhere}
 .g:has(.np) .g-bot .g-h{display:none}
 .need-l{display:none}.ph.need{border:4px dashed color-mix(in srgb,var(--tx) 35%,transparent);background:color-mix(in srgb,var(--tx) 4%,transparent)}.ph.need .need-l{display:block;text-align:center;font:500 40px/1.3 var(--b);color:var(--mu)}.ph.need .need-l b{color:var(--tx);font-weight:700}
 .ty{width:auto;max-width:100%;height:auto;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--d);line-height:.82;letter-spacing:-.02em;color:var(--ac);text-align:center}.ty span{display:block}.ty em{display:block;font-style:normal;font-size:.34em;letter-spacing:.06em;text-transform:uppercase;color:var(--tx);margin-top:.12em}
 .g-row{flex:1;display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;padding-top:30px}.g-col{display:flex;flex-direction:column;gap:18px}.g-wide .g-h{font-size:110px}
 .g-row .ph,.g-row .ty{height:100%;max-height:640px;width:100%}
 /* layers: decoration behind, content above */
+${MOTIF_CSS}
 .deco{position:absolute;z-index:0;pointer-events:none}
-.d-rings{width:760px;height:760px;top:-260px;right:-260px}.d-dots{width:420px;height:420px;top:40px;right:-60px}
-.d-arc{width:900px;height:900px;right:-380px;top:-380px}.d-lines{width:520px;height:520px;top:-120px;right:-140px}
-.g-story .d-rings,.g-story .d-lines{top:-160px}.g-wide .d-arc{width:760px;height:760px;top:-380px;right:-300px}
 .g-top,.g-mid,.g-bot,.g-row{position:relative;z-index:1}
 .g-chip{display:inline-flex;align-items:center;gap:14px;align-self:flex-start;margin:4px 0 0;padding:16px 26px;border-radius:999px;background:color-mix(in srgb,var(--tx) 9%,var(--bg));font:600 32px/1 var(--b);color:var(--tx)}
 .g-chip svg,.g-pill-ic svg{width:34px;height:34px;flex:none}.g-pill-ic{display:inline-flex;align-items:center;gap:14px}
@@ -43324,7 +43657,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--kac);outline-offset
 .g-story .g-stk{top:190px}
 /* full bleed: the photo is the canvas; a soft scrim keeps text readable */
 /* product photos show the whole product (no crop) on a clean panel */
-.ph:not([data-p^="m"]){background:#fff}.ph:not([data-p^="m"]) img{object-fit:contain;padding:24px}
+/* product images: whole product, no white card. Illustrations and cut-outs (SVG/PNG) float frameless. */
+.ph:not([data-p^="m"]){background:transparent}.ph:not([data-p^="m"]) img{object-fit:contain}
+.ph.photo:not([data-p^="m"]){background:color-mix(in srgb,var(--tx) 5%,var(--bg))}.ph.photo:not([data-p^="m"]) img{object-fit:cover}
 /* flex items with a z-index form their own layer, so the photo's container must not have one */
 .g.bleed .g-mid{position:static;z-index:auto}.g.bleed .g-top,.g.bleed .g-bot{z-index:2}.g.bleed .g-mid .ph{position:absolute;inset:0;border-radius:0;z-index:0;background:#111}
 .g.bleed::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,0) 24%,rgba(0,0,0,0) 46%,rgba(0,0,0,.82) 100%)}
@@ -43335,7 +43670,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--kac);outline-offset
 ${o.watermark ? ".q4wm{display:block}" : ""}
 </style></head><body>
 <div class="bar"><div class="bar-in"><span class="mark" aria-hidden="true">${esc3(o.brand.slice(0, 1).toUpperCase())}</span><b class="bar-b">${esc3(o.brand)}</b><span class="bar-c" data-count>${posts.length} posts</span><button type="button" class="bar-dl" data-dlall>${UI.download}<span>Download all</span></button></div></div>
-<header class="top"><p class="eyebrow"><i></i>Content kit${THEMES[o.theme] ? ` \xB7 ${esc3(t.eyebrow)}` : ""}</p><h1>${posts.length} posts, ready to share</h1><p>Captions are written for each app. Edit anything, then share straight from your phone.${link ? ` Every post links to <a href="${esc3(link)}">${esc3(link.replace(/^https?:\/\//, ""))}</a>.` : ""}</p>
+<header class="top"><p class="eyebrow"><i></i>Content kit${THEMES[o.theme] && o.theme !== "default" ? ` \xB7 ${esc3(t.eyebrow)}` : ""}</p><h1>${posts.length} posts, ready to share</h1><p>Captions are written for each app. Edit anything, then share straight from your phone.${link ? ` Every post links to <a href="${esc3(link)}">${esc3(link.replace(/^https?:\/\//, ""))}</a>.` : ""}</p>
 <ul class="how"><li>${UI.phone}Share on your phone posts the image to Instagram, TikTok or WhatsApp</li><li>${UI.download}Download PNGs on a computer</li><li>${UI.edit}Tap a caption to edit it</li></ul></header>
 <main class="grid">${cards}</main>
 <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
@@ -43350,6 +43685,34 @@ addEventListener('resize',fit);if(document.fonts)document.fonts.ready.then(fitAl
 function msg(card,s){card.querySelector('[data-msg]').textContent=s}
 function cap(card){var t=card.querySelector('textarea:not([hidden])');return t?t.value:''}
 function msg(card,s){card.querySelector('[data-msg]').textContent=s}
+/* Motion: one frame function drives the preview and the exported video, so they always match.
+   Text rises in, price and chips follow, stickers pop, photos slowly zoom, the motif drifts. 6 seconds. */
+var DUR=6,FPS=24;
+function ease(x){x=Math.max(0,Math.min(1,x));return 1-Math.pow(1-x,3)}
+function frame(g,t){
+  function rise(sel,at){g.querySelectorAll(sel).forEach(function(el){var p=ease((t-at)/0.9);el.style.opacity=p;el.style.transform='translateY('+((1-p)*36)+'px)'})}
+  rise('.g-h,.ty,.np',0.2);rise('.g-pr',0.55);rise('.g-feats,.g-chip,.g-pill,.g-cta',0.8);
+  g.querySelectorAll('.g-stk').forEach(function(el){var p=ease((t-1.1)/0.6);el.style.opacity=p;el.style.transform='rotate(-12deg) scale('+(0.6+0.4*p)+')'});
+  g.querySelectorAll('.ph img').forEach(function(el){el.style.transform='scale('+(1+0.06*Math.min(1,t/DUR))+')'});
+  g.querySelectorAll('.deco').forEach(function(el){el.style.transform='translate('+(-8*Math.sin(t/DUR*Math.PI))+'px,'+(10*Math.sin(t/DUR*Math.PI))+'px) rotate('+(t*1.5)+'deg)'})
+}
+function resetMotion(g){g.querySelectorAll('.g-h,.ty,.np,.g-pr,.g-feats,.g-chip,.g-pill,.g-cta,.g-stk,.ph img,.deco').forEach(function(el){el.style.opacity='';el.style.transform=''})}
+function preview(card){var g=card.querySelector('.g');if(!g||g._playing)return;g._playing=true;var t0=performance.now();(function loop(now){var t=(now-t0)/1000;frame(g,t);if(t<DUR)requestAnimationFrame(loop);else{resetMotion(g);g._playing=false}})(t0)}
+function video(card){
+  var g=card.querySelector('.g');if(!g||typeof MediaRecorder==='undefined'){msg(card,'Video export needs Chrome, Edge or Safari.');return}
+  var w=parseFloat(g.style.width),h=parseFloat(g.style.height),cv=document.createElement('canvas');cv.width=w;cv.height=h;var cx=cv.getContext('2d');
+  var mime=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm'].filter(function(m){return MediaRecorder.isTypeSupported(m)})[0];
+  if(!mime){msg(card,'This browser cannot record video.');return}
+  var rec=new MediaRecorder(cv.captureStream(FPS),{mimeType:mime,videoBitsPerSecond:8e6}),chunks=[];rec.ondataavailable=function(e){if(e.data.size)chunks.push(e.data)};
+  var n=Math.round(DUR*FPS),i=0;rec.start();rec.pause();
+  function step(){
+    if(i>n){resetMotion(g);rec.stop();return}
+    frame(g,i/FPS);msg(card,'Rendering video '+Math.round(i/n*100)+'%');
+    htmlToImage.toCanvas(g,{width:w,height:h,pixelRatio:1,cacheBust:false,style:{transform:'none'}}).then(function(c){cx.clearRect(0,0,w,h);cx.drawImage(c,0,0);rec.resume();setTimeout(function(){rec.pause();i++;step()},1000/FPS)},function(){resetMotion(g);rec.stop();msg(card,'Could not render the video. Try again.')})
+  }
+  rec.onstop=function(){if(!chunks.length)return;var ext=mime.indexOf('mp4')>-1?'mp4':'webm';save(new File([new Blob(chunks,{type:mime.split(';')[0]})],name(card,0).replace(/.png$/,'.'+ext),{type:mime.split(';')[0]}));msg(card,ext==='mp4'?'Video downloaded (MP4).':'Video downloaded (WebM). Instagram and TikTok accept it; convert to MP4 if an app asks.')};
+  step()
+}
 function png(g){var w=parseFloat(g.style.width),h=parseFloat(g.style.height);return htmlToImage.toBlob(g,{width:w,height:h,pixelRatio:1,cacheBust:true,style:{transform:'none'}})}
 function name(card,j){return (${JSON.stringify(o.brand.replace(/[^a-z0-9]+/gi, "-").toLowerCase())}+'-'+card.querySelector('h2').textContent.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+(j?'-'+(j+1):'')+'.png')}
 function files(card){return Promise.all(Array.prototype.map.call(card.querySelectorAll('.g'),function(g,j){return png(g).then(function(b){return new File([b],name(card,j),{type:'image/png'})})}))}
@@ -43367,13 +43730,263 @@ document.querySelectorAll('.card').forEach(function(card){
   card.querySelector('[data-share]').addEventListener('click',function(){msg(card,'Preparing...');files(card).then(function(fs){var data={files:fs,text:cap(card)};if(navigator.canShare&&navigator.canShare(data)){return navigator.share(data).then(function(){msg(card,'Shared.')},function(){msg(card,'')})}navigator.clipboard&&navigator.clipboard.writeText(cap(card)).catch(function(){});fs.forEach(save);msg(card,'Your browser cannot share images directly. Images downloaded and caption copied: open the app and post.')},function(){msg(card,'Could not create the image. Try again.')})});
 });
 if(KIT&&KIT.photos)Object.keys(KIT.photos).forEach(function(k){setPhoto(k,KIT.photos[k],document)});
+document.querySelectorAll('.card').forEach(function(card){var f=card.querySelector('[data-flag]'),box=card.querySelector('[data-fb]');if(!f)return;if(!KIT){f.hidden=true;return}
+  f.addEventListener('click',function(){box.hidden=!box.hidden});
+  box.querySelectorAll('[data-chip]').forEach(function(b){b.addEventListener('click',function(){fetch('/__q4/feedback/'+KIT.id,{method:'POST',body:JSON.stringify({post:card.getAttribute('data-post'),chip:b.getAttribute('data-chip')})}).then(function(){box.hidden=true;msg(card,'Thanks, the Quarter4 team will look at this post.')},function(){msg(card,'Could not send. Try again.')})})})});
+document.querySelectorAll('.card').forEach(function(card){var pl=card.querySelector('[data-play]'),vd=card.querySelector('[data-video]');if(pl)pl.addEventListener('click',function(){preview(card)});if(vd)vd.addEventListener('click',function(){video(card)})});
 refresh();
 })();
 </script></body></html>`;
 }
 
+// src/checks.js
+var decode3 = (s) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+function visibleText(html = "") {
+  return decode3(String(html).replace(/<(script|style|svg|noscript)[\s\S]*?<\/\1>/gi, " ").replace(/<!--[\s\S]*?-->/g, " ").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+}
+var RETAIL = /\b(add to (cart|bag)|in your cart|wishlist|shop now|shop the sale|in stock|reply to this message to order|order now|doorbuster)\b/i;
+var PLACEHOLDER = /\[(describe[^\]]*|line|≤\s*\d+ words|insert[^\]]*|your [^\]]*)\]|\blorem ipsum\b|\bTBD\b|\buse [^.]{2,40} instead\b/i;
+var MONEY = /(₦|\$|€|£|¥|₹|\bNGN\b|\bUSD\b|\bKES\b|\bGHS\b|\bZAR\b)\s?\d[\d,.]*/;
+var esc4 = (w) => String(w).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function checkOutput({ kind, html, args: args2 = {}, posts = [], contentOnly = false }) {
+  const issues = [];
+  const add = (rule, severity, message, sample) => issues.push({ rule, severity, message, ...sample ? { sample: String(sample).slice(0, 160) } : {} });
+  const text = visibleText(html);
+  const captions = posts.flatMap((p) => [p.hook ?? "", ...Object.values(p.caption ?? {})]).join(" \n ");
+  const all = `${text} 
+ ${captions}`;
+  const around = (re, s = all) => {
+    const m = re.exec(s);
+    return m ? s.slice(Math.max(0, m.index - 40), m.index + 60) : "";
+  };
+  const leak = /data-[a-z-]+=|\bvw"|<\/?[a-z]+[\s>]/i;
+  if (leak.test(text)) add("markup.leak", "error", "Markup is visible as text on the page.", around(leak, text));
+  if (/&(amp|lt|gt|quot|#39);/.test(text)) add("markup.entity", "error", "An HTML entity is shown as text (double-escaped).", around(/&(amp|lt|gt|quot|#39);/, text));
+  if (/\b(undefined|NaN)\b|\[object Object\]/.test(all)) add("markup.undefined", "error", 'An empty value ("undefined", "NaN") reached the output.', around(/\b(undefined|NaN)\b|\[object Object\]/));
+  const offerType = args2.offerType;
+  if (offerType && offerType !== "physical" && RETAIL.test(all)) add("copy.retail_in_nonphysical", "error", `Retail wording for a ${offerType} offer.`, around(RETAIL));
+  if (PLACEHOLDER.test(all)) add("copy.placeholder", "error", "A placeholder or instruction was left in the copy.", around(PLACEHOLDER));
+  const raw = String(args2.product ?? "").trim();
+  if (raw.split(/\s+/).length > 3) {
+    const headings = [...String(html).matchAll(/<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/gi)].map((m) => visibleText(m[1]));
+    const hit = headings.find((h) => h.toLowerCase().includes(raw.toLowerCase()));
+    if (hit) add("copy.raw_product_heading", "warn", "The raw product description is used as a heading; pass a short displayName.", hit);
+  }
+  if (args2.brand) {
+    const eyebrows = [...String(html).matchAll(/class="(?:ey|eyebrow)[^"]*"[^>]*>([\s\S]*?)<\/p>/gi)].map((m) => visibleText(m[1]));
+    const b = new RegExp(esc4(args2.brand), "gi");
+    const twice = eyebrows.find((e) => (e.match(b) ?? []).length > 1);
+    if (twice) add("copy.brand_repeated", "warn", "The brand name is repeated in a label.", twice);
+  }
+  if (contentOnly) {
+    if (MONEY.test(text)) add("pricing.no_offer_price", "error", "A price is shown although there is no offer.", around(MONEY, text));
+    if (/limited-time offer|\d+\s?% off|sale price/i.test(all)) add("pricing.no_offer_badge", "error", "Offer wording is shown although there is no offer.", around(/limited-time offer|\d+\s?% off|sale price/i));
+  }
+  const avoid = [...args2.avoidWords ?? [], ...args2.positioning?.isNot ?? []].filter(Boolean);
+  for (const w of avoid) {
+    const re = new RegExp(`(^|[^a-z])${esc4(String(w).toLowerCase())}`, "i");
+    if (re.test(all)) add("positioning.avoid_word", "error", `Uses "${w}", which the brand avoids.`, around(re));
+  }
+  const LOC = /\b[Mm]ade in [A-Z][a-z]+/;
+  if (args2.noLocationMentions !== false && LOC.test(all)) add("positioning.location", "warn", "Mentions a location the seller did not ask for.", around(LOC));
+  const bg = args2.brandStyle?.palette?.bg ?? args2.palette?.bg;
+  if (bg && kind === "page" && !new RegExp(`--bg:${esc4(bg)}`, "i").test(html)) add("brand.palette", "error", "The brand background colour was not applied.", bg);
+  if (args2.deadline && /Z$/.test(String(args2.deadline)) && args2.timeZone && args2.timeZone !== "UTC") add("consistency.deadline_utc", "warn", "The deadline is in UTC but the campaign has a local time zone; it may end an hour or more early or late.", args2.deadline);
+  return { passed: !issues.some((i) => i.severity === "error"), issues };
+}
+
+// src/extract.js
+var UA3 = "quarter4-mcp brand reader (+https://github.com/phestplus/quarter4-mcp)";
+var HEX6 = /#([0-9a-f]{6}|[0-9a-f]{3})\b/gi;
+async function get2(url2, ms = 12e3, max = 6e5) {
+  const r = await fetch(url2, { headers: { "user-agent": UA3, accept: "text/html,text/css,*/*" }, redirect: "follow", signal: AbortSignal.timeout(ms) });
+  if (!r.ok) throw new Error(`${new URL(url2).host} returned ${r.status}`);
+  const text = await r.text();
+  return { text: text.slice(0, max), url: r.url };
+}
+var norm = (h) => {
+  let x = h.toLowerCase();
+  if (x.length === 4) x = `#${x[1]}${x[1]}${x[2]}${x[2]}${x[3]}${x[3]}`;
+  return x;
+};
+var lum = (c) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255).map((v) => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+var sat = (c) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255);
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+  return mx === 0 ? 0 : (mx - mn) / mx;
+};
+var attr = (tag, name) => new RegExp(`${name}\\s*=\\s*["']([^"']*)["']`, "i").exec(tag)?.[1] ?? null;
+var decode4 = (s) => String(s ?? "").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+var textOf = (html) => decode4(String(html).replace(/<(script|style|svg)[\s\S]*?<\/\1>/gi, " ").replace(/<[^>]+>/g, " "));
+function analyse(html, css = "", baseUrl = "https://example.com/") {
+  const evidence = [];
+  const metas = [...html.matchAll(/<meta\b[^>]*>/gi)].map((m) => m[0]);
+  const meta3 = (key) => {
+    const t = metas.find((m) => new RegExp(`(name|property)\\s*=\\s*["']${key}["']`, "i").test(m));
+    return t ? decode4(attr(t, "content")) : null;
+  };
+  const title = decode4(/<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1] ?? "");
+  const siteName = meta3("og:site_name") ?? title.split(/\s+[|\-–—:·]\s+/)[0] ?? "";
+  const description = meta3("description") ?? meta3("og:description");
+  const allCss = `${css}
+${[...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]).join("\n")}
+${[...html.matchAll(/style\s*=\s*"([^"]*)"/gi)].map((m) => m[1]).join(";")}`;
+  const counts = {};
+  for (const m of allCss.matchAll(HEX6)) {
+    const c = norm(m[0]);
+    counts[c] = (counts[c] ?? 0) + 1;
+  }
+  const vars = {};
+  for (const m of allCss.matchAll(/--([a-z0-9-]+)\s*:\s*(#[0-9a-f]{3,6})\b/gi)) vars[m[1].toLowerCase()] = norm(m[2]);
+  const pickVar = (re) => Object.entries(vars).find(([k]) => re.test(k))?.[1] ?? null;
+  const bodyRule = /(?:^|[}\s,])(?:html|body)\s*\{([^}]*)\}/i.exec(allCss)?.[1] ?? "";
+  const bodyBg = norm(/background(?:-color)?\s*:\s*(#[0-9a-f]{3,6})/i.exec(bodyRule)?.[1] ?? "#000000");
+  const bodyText = /(?:^|;)\s*color\s*:\s*(#[0-9a-f]{3,6})/i.exec(bodyRule)?.[1];
+  const themeColor = meta3("theme-color");
+  const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([c]) => c);
+  const bg = pickVar(/^(bg|background|color-bg|surface-0|base|canvas)/) ?? (bodyRule && /background/i.test(bodyRule) ? bodyBg : null) ?? ranked.find((c) => lum(c) > 0.85) ?? null;
+  const text = pickVar(/^(text|fg|foreground|ink|color-text)/) ?? (bodyText ? norm(bodyText) : null) ?? ranked.find((c) => lum(c) < 0.08) ?? null;
+  const accent = pickVar(/^(accent|primary|brand|color-primary|color-accent)/) ?? (themeColor && HEX6.test(themeColor) ? norm(themeColor.match(HEX6)[0]) : null) ?? ranked.find((c) => sat(c) > 0.35 && lum(c) > 0.05 && lum(c) < 0.8) ?? null;
+  const accent2 = ranked.find((c) => c !== accent && sat(c) > 0.2 && lum(c) > 0.1 && lum(c) < 0.9) ?? null;
+  if (Object.keys(vars).length) evidence.push(`CSS variables: ${Object.entries(vars).slice(0, 8).map(([k, v]) => `--${k} ${v}`).join(", ")}`);
+  if (ranked.length) evidence.push(`Most used colours: ${ranked.slice(0, 6).join(", ")}`);
+  const gf = [...html.matchAll(/fonts\.googleapis\.com\/css2?\?([^"'\s>]+)/gi)].flatMap((m) => [...m[1].matchAll(/family=([^:&]+)/g)].map((f) => decodeURIComponent(f[1]).replace(/\+/g, " ")));
+  const fams = [...allCss.matchAll(/font-family\s*:\s*([^;}]+)/gi)].map((m) => m[1].split(",")[0].replace(/["']/g, "").trim()).filter((f) => f && !/^(var\(|inherit|system-ui|sans-serif|serif|monospace|-apple-system)/i.test(f));
+  const fontRank = {};
+  for (const f of [...gf, ...fams]) fontRank[f] = (fontRank[f] ?? 0) + 1;
+  const fonts = Object.entries(fontRank).sort((a, b) => b[1] - a[1]).map(([f]) => f);
+  const headingFont = /h1[^{]*\{[^}]*font-family\s*:\s*([^;}]+)/i.exec(allCss)?.[1]?.split(",")[0].replace(/["']/g, "").trim();
+  if (gf.length) evidence.push(`Google Fonts: ${[...new Set(gf)].join(", ")}`);
+  const abs = (u) => {
+    try {
+      return new URL(decode4(u), baseUrl).href;
+    } catch {
+      return null;
+    }
+  };
+  const imgs = [...html.matchAll(/<img\b[^>]*>/gi)].map((m) => m[0]);
+  const logoImg = imgs.find((t) => /logo|wordmark|brand/i.test(`${attr(t, "class") ?? ""} ${attr(t, "alt") ?? ""} ${attr(t, "src") ?? ""}`));
+  const icons = [...html.matchAll(/<link\b[^>]*rel\s*=\s*["'][^"']*(icon|apple-touch-icon)[^"']*["'][^>]*>/gi)].map((m) => abs(attr(m[0], "href"))).filter(Boolean);
+  const logoUrl = logoImg ? abs(attr(logoImg, "src")) : null;
+  const inlineSvgLogo = /<a[^>]*(?:class|aria-label)\s*=\s*["'][^"']*(?:logo|brand|home)[^"']*["'][^>]*>\s*(<svg[\s\S]*?<\/svg>)/i.exec(html)?.[1] ?? null;
+  const name = siteName || title;
+  const markText = decode4(logoImg ? attr(logoImg, "alt") ?? "" : "") || name;
+  const wordmark = name ? { text: markText || name, case: markText && markText === markText.toLowerCase() && /[a-z]/.test(markText) ? "lower" : markText && markText === markText.toUpperCase() && /[A-Z]/.test(markText) ? "upper" : "as-is" } : null;
+  const h1 = textOf(/<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(html)?.[1] ?? "");
+  const h2s = [...html.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/gi)].map((m) => textOf(m[1])).filter(Boolean).slice(0, 4);
+  const paras = [...html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)].map((m) => textOf(m[1])).filter((t) => t.length > 40).slice(0, 4);
+  const palette = Object.fromEntries(Object.entries({ bg, text, accent, accent2 }).filter(([, v]) => v));
+  return {
+    profile: {
+      brand: name || void 0,
+      ...Object.keys(palette).length || fonts.length ? { brandStyle: {
+        ...bg ? { mode: lum(bg) > 0.45 ? "light" : "dark" } : {},
+        ...Object.keys(palette).length ? { palette } : {},
+        ...fonts.length ? { fontDisplay: headingFont && fontRank[headingFont] ? headingFont : fonts[0], fontBody: fonts[1] ?? fonts[0] } : {},
+        ...wordmark ? { wordmark: inlineSvgLogo && inlineSvgLogo.length < 2e4 && !/<script|on\w+\s*=/i.test(inlineSvgLogo) ? { svg: inlineSvgLogo } : wordmark } : {}
+      } } : {},
+      ...logoUrl ? { logoUrl } : {},
+      ...description ? { positioning: { is: description.slice(0, 200) } } : {}
+    },
+    samples: { title, h1, headings: h2s, paragraphs: paras },
+    icons: icons.slice(0, 3),
+    evidence
+  };
+}
+async function extractBrand(url2) {
+  const page2 = await get2(url2);
+  const sheets = [...page2.text.matchAll(/<link\b[^>]*rel\s*=\s*["']stylesheet["'][^>]*>/gi)].map((m) => attr(m[0], "href")).filter(Boolean).map((h) => {
+    try {
+      return new URL(h, page2.url).href;
+    } catch {
+      return null;
+    }
+  }).filter((h) => h && new URL(h).host === new URL(page2.url).host).slice(0, 3);
+  const css = (await Promise.all(sheets.map((h) => get2(h, 1e4, 4e5).then((r) => r.text).catch(() => "")))).join("\n");
+  return { url: page2.url, ...analyse(page2.text, css, page2.url) };
+}
+
+// src/illustrate.js
+var SCENES2 = {
+  apps: [
+    { id: "connect-by-phone", moment: "two people, apart, each smiling at their phone, joined by a thin line in the accent colour", crop: "mid-thigh", aspect: "5:4" },
+    { id: "using-at-home", moment: "a person relaxed on a sofa at home, using the app on their phone, calm and focused", crop: "full figure", aspect: "4:5" },
+    { id: "milestone", moment: "two people sharing a small happy moment while looking at one phone together", crop: "waist up", aspect: "1:1" }
+  ],
+  software: [
+    { id: "focused-work", moment: "a person at a clean desk with a laptop, calm and focused, a plant nearby", crop: "waist up", aspect: "5:4" },
+    { id: "team-together", moment: "two colleagues pointing at one laptop screen, pleased with the result", crop: "waist up", aspect: "5:4" }
+  ],
+  courses: [
+    { id: "learning", moment: "a person learning at a table with a laptop and a notebook, engaged and curious", crop: "waist up", aspect: "5:4" },
+    { id: "breakthrough", moment: "a person smiling with quiet pride after finishing a lesson", crop: "waist up", aspect: "1:1" }
+  ],
+  fitness: [
+    { id: "training-together", moment: "two training partners mid-workout, encouraging each other", crop: "full figure", aspect: "4:5" },
+    { id: "after-session", moment: "a person resting after a session with a water bottle, satisfied", crop: "full figure", aspect: "4:5" }
+  ],
+  food: [
+    { id: "sharing-a-meal", moment: "friends sharing a meal at a table, laughing, plates being passed", crop: "waist up", aspect: "5:4" },
+    { id: "first-bite", moment: "a person enjoying the first bite of a dish", crop: "waist up", aspect: "1:1" }
+  ],
+  services: [
+    { id: "client-and-pro", moment: "a client and a professional talking warmly across a small table", crop: "waist up", aspect: "5:4" },
+    { id: "job-done", moment: "a happy client seeing the finished result", crop: "waist up", aspect: "1:1" }
+  ],
+  fashion: [{ id: "getting-ready", moment: "a person getting ready in front of a mirror, confident", crop: "full figure", aspect: "4:5" }],
+  beauty: [{ id: "self-care", moment: "a person doing a calm self-care routine at a vanity", crop: "waist up", aspect: "4:5" }],
+  footwear: [{ id: "stepping-out", moment: "a person stepping out of the door in fresh sneakers, mid-stride", crop: "full figure", aspect: "4:5" }],
+  kids: [{ id: "family-play", moment: "a parent and child playing together on the floor, joyful", crop: "full figure", aspect: "5:4" }],
+  general: [
+    { id: "happy-customer", moment: "a happy customer using the product at home", crop: "waist up", aspect: "4:5" },
+    { id: "together", moment: "two people sharing a good moment together", crop: "waist up", aspect: "5:4" }
+  ]
+};
+var STYLES = {
+  "flat-editorial": "Premium modern editorial illustration, flat vector style with subtle soft grain texture, realistic human proportions and expressive friendly faces, same style as a warm lifestyle brand campaign.",
+  "soft-line": "Refined minimal line illustration with soft flat colour fills, elegant thin outlines, natural proportions and gentle expressions, calm and airy, like a premium wellness brand.",
+  "textured-gouache": "Warm hand-painted gouache illustration with visible soft brush texture, natural proportions, expressive faces, rich but restrained colour, like a premium magazine feature."
+};
+var ASPECT_SIZE = { "1:1": "1024x1024", "4:5": "1024x1280", "5:4": "1280x1024", "9:16": "1024x1792", "16:9": "1792x1024" };
+function promptFor(p, scene) {
+  const pal = Object.entries(p.palette ?? {}).filter(([, v]) => /^#[0-9a-f]{6}$/i.test(v ?? ""));
+  const bg = p.palette?.bg ?? "#F5F1EA";
+  const people = scene.people ?? (p.audience?.region ? `people who look like the brand's audience in ${p.audience.region}${p.audience.ageRange ? `, aged ${p.audience.ageRange}` : ""}, natural hair and everyday modern clothing` : "a diverse mix of people, natural hair and everyday modern clothing");
+  const avoid = ["text", "letters", "logos", "watermark", "hearts", "frames", "borders", ...p.avoid ?? []];
+  return [
+    STYLES[p.style] ?? STYLES["flat-editorial"],
+    `Scene: ${scene.moment}. People: ${people}; outfits in the brand colours.`,
+    `Mood: ${scene.mood ?? "calm, warm, hopeful"}.`,
+    pal.length ? `Colour palette strictly: ${pal.map(([k, v]) => `${v} (${k})`).join(", ")}.` : "Colour palette: soft, warm and restrained.",
+    `Background: one flat solid plain ${bg} colour filling the whole image, no scenery, no shadows on the background, no frame, no border.`,
+    `No ${[...new Set(avoid)].join(", no ")}.`,
+    `Crop: ${scene.crop ?? "waist up"}, generous empty space around the figures.`,
+    p.reference ? `Match the illustration style, line weight and colour treatment of the reference image exactly.` : ""
+  ].filter(Boolean).join("\n");
+}
+function handoff2(profile, scenes, nicheId) {
+  const list2 = (scenes?.length ? scenes : SCENES2[nicheId] ?? SCENES2.general).slice(0, 6);
+  return list2.map((s) => ({
+    scene: s.id ?? "custom",
+    aspect: s.aspect ?? "4:5",
+    size: ASPECT_SIZE[s.aspect ?? "4:5"] ?? "1024x1280",
+    prompt: promptFor(profile, s)
+  }));
+}
+var ACCEPTANCE = [
+  "Faces and hands look natural (no extra or missing fingers, no distorted features).",
+  "Colours stay within the brand palette.",
+  "No text, letters, logos or watermarks anywhere in the image.",
+  "The people fit the brand's audience.",
+  "The background is one flat colour (so it cuts out cleanly)."
+];
+
 // src/server.js
-var VERSION = "0.6.0";
+import { tmpdir } from "node:os";
+var VERSION = "0.7.0";
 var date5 = external_exports.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD");
 var list = external_exports.union([external_exports.array(external_exports.string()), external_exports.string()]);
 var platformList = list.describe(`Platforms, any spelling: ${PLATFORM_IDS.join(", ")} (also "ig", "tik tok", "newsletter", "status")`);
@@ -43395,19 +44008,44 @@ function createServer2({ allowFileWrites = false } = {}) {
     mode: external_exports.enum(["light", "dark"]).optional(),
     palette: external_exports.object({ bg: hexColor.optional(), surface: hexColor.optional(), text: hexColor.optional(), muted: hexColor.optional(), accent: hexColor.optional(), accent2: hexColor.optional() }).optional(),
     fontDisplay: external_exports.string().max(40).optional().describe('Google Fonts family for headings, e.g. "Inter"'),
-    fontBody: external_exports.string().max(40).optional().describe("Google Fonts family for text")
-  }).optional().describe("The brand's own look. It always wins over the event theme; the event only adds its label. Ask the seller for their colours and fonts (or read them from their site) rather than guessing.");
+    fontBody: external_exports.string().max(40).optional().describe("Google Fonts family for text"),
+    wordmark: external_exports.object({
+      text: external_exports.string().max(60).optional(),
+      case: external_exports.enum(["lower", "upper", "as-is"]).optional(),
+      weight: external_exports.number().min(100).max(900).optional(),
+      letterSpacing: external_exports.string().max(12).optional(),
+      highlight: external_exports.array(external_exports.object({ from: external_exports.number().int().min(0), to: external_exports.number().int().min(1), color: hexColor.optional() })).max(6).optional(),
+      svg: external_exports.string().max(2e4).optional()
+    }).optional().describe("How the brand writes its own name: case, weight, accent letters, or an SVG logotype. Used wherever the name appears; never re-cased.")
+  }).strict().optional().describe("The brand's own look. It always wins over the event theme; the event only adds its label. Ask the seller for their colours and fonts (or read them from their site) rather than guessing.");
+  const positioningFields = {
+    positioning: external_exports.object({ is: external_exports.string().max(200).optional(), isNot: external_exports.array(external_exports.string().max(60)).max(12).optional() }).optional().describe('What the brand is, and what it must never be called (e.g. isNot: ["a dating app"]).'),
+    avoidWords: external_exports.array(external_exports.string().max(40)).max(30).optional().describe('Words that must never appear in copy (e.g. "swipe", "matches", "cheap").'),
+    alwaysSay: external_exports.array(external_exports.string().max(60)).max(10).optional().describe("Preferred phrases or terms to use."),
+    noLocationMentions: external_exports.boolean().optional().describe("Never add country or city mentions the seller did not ask for (default true).")
+  };
   const copyFields = {
     displayName: external_exports.string().max(40).optional().describe('Short name used in copy, e.g. "Brightly Premium". Never pass long internal product phrases as headings.'),
     offerType: external_exports.enum(["physical", "subscription", "course", "service", "digital"]).optional().describe("How it is bought; decides the verbs (shop, start your plan, enrol, book, get). Inferred when missing.")
+  };
+  const runChecks = (tool, input2) => {
+    const r = checkOutput(input2);
+    if (cloud.hasKey() && input2.args?.reportIssues !== false) cloud.countRun(tool, r.passed).catch(() => {
+    });
+    if (r.issues.length && cloud.hasKey() && input2.args?.reportIssues !== false) {
+      const args2 = Object.fromEntries(Object.entries(input2.args ?? {}).filter(([k]) => !["html", "images", "products", "posts"].includes(k)));
+      cloud.reportIssues({ source: "auto", tool, version: VERSION, issues: r.issues, args: args2 }).catch(() => {
+      });
+    }
+    return { passed: r.passed, issues: r.issues, ...r.passed ? {} : { fix: "Fix the errors (usually by passing your own copy, displayName or brand settings) and run the tool again before publishing." } };
   };
   const withProfile = async (a, keys, notes) => {
     if (!cloud.hasKey()) return a;
     const saved = (await cloud.brand().catch(() => null))?.profile;
     if (!saved) return a;
-    const fill = Object.fromEntries(keys.filter((k) => a[k] === void 0 && saved[k] !== void 0).map((k) => [k, saved[k]]));
-    if (Object.keys(fill).length) notes.push(`Filled from your saved brand profile: ${Object.keys(fill).join(", ")}.`);
-    return { ...fill, ...a };
+    const fill2 = Object.fromEntries(keys.filter((k) => a[k] === void 0 && saved[k] !== void 0).map((k) => [k, saved[k]]));
+    if (Object.keys(fill2).length) notes.push(`Filled from your saved brand profile: ${Object.keys(fill2).join(", ")}.`);
+    return { ...fill2, ...a };
   };
   const cloud = createCloud({ persist: allowFileWrites, client: "AI app" });
   server.server.oninitialized = () => {
@@ -43439,7 +44077,13 @@ function createServer2({ allowFileWrites = false } = {}) {
     annotations: { readOnlyHint: true, openWorldHint: false }
   }, wrap(async (a) => {
     const places = a.regions ? normalizeRegions(a.regions) : null;
-    const events = listEvents({ ...a, regions: places?.values });
+    let events = listEvents({ ...a, regions: places?.values });
+    if (places?.values?.length) {
+      events = events.map((e) => {
+        const r = relevance(e, places.values);
+        return { ...e, relevance: r.score, why: r.reasons, ...r.score < 1.5 ? { lowRelevance: true } : {} };
+      }).sort((x, y) => Number(Boolean(x.lowRelevance)) - Number(Boolean(y.lowRelevance)) || x.date.localeCompare(y.date));
+    }
     if (places?.unknown.length) return json3({ count: events.length, events, unknownPlaces: places.unknown, note: `Could not place: ${places.unknown.join(", ")}. Showing events for the rest (worldwide if none).` });
     return json3({ count: events.length, events, note: "Lunar-calendar dates (Diwali, Dhanteras, Hanukkah) are verified for 2026-2028. Hanukkah begins at sundown." });
   }));
@@ -43507,7 +44151,7 @@ function createServer2({ allowFileWrites = false } = {}) {
   }, wrap(async (a) => json3(buildBrief({ ...a, eventId: a.eventId ? eventRef(a.eventId) : void 0 }))));
   server.registerTool("landing_page", {
     title: "Sales landing page",
-    description: `Generate a premium, ready-to-deploy sales page (one HTML file) built around what the user sells. Works from minimal input (brand + product): the copy is written from the facts given and never invents reviews, guarantees or prices.
+    description: `Write the copy yourself and pass it (headline, subheadline, features, ctaText, statement, displayName); Quarter4's own copy is only a plain fallback and the result lists which parts used it (fallbacks). Pass the brand's look with brandStyle (mode, palette, fontDisplay, fontBody, wordmark) and its rules with positioning and avoidWords, or save them once with brand_profile. Every page is checked (checks) before you show it. Generate a premium, ready-to-deploy sales page (one HTML file) built around what the user sells. Works from minimal input (brand + product): the copy is written from the facts given and never invents reviews, guarantees or prices.
 An art director picks the page structure from the niche: cinematic full-bleed scenes for cars, gadgets and fitness; a split showcase (sticky photos beside scrolling story) for fashion, home, food and services; a product stage (product spins and zooms with scroll, stickers pop) for shoes, beauty, jewellery and kids; editorial for courses, software and digital products. Motion is scroll-linked (pinned scenes, scrubbed zoom, horizontal galleries, text that fills as you scroll), not timed fades. Fonts, navigation, buttons and countdown style vary per brand (re-roll with variant).
 Media: pass the seller's own photos (images, productImage), a turntable video (videoUrl, scrubbed by scroll) or a 3D model (modelUrl, .glb, rotates with scroll and can be dragged). With no media, free mood photos are fetched automatically (autoImages).
 A holiday theme (${Object.keys(THEMES).join(", ")}) adds its palette and name; with layout "signature" and no product, the art-directed holiday scenes are used instead.
@@ -43547,6 +44191,18 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
       brandColor: external_exports.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
       brandStyle,
       ...copyFields,
+      ...positioningFields,
+      statement: external_exports.string().max(160).optional().describe("One sentence for the scroll statement section; omitted when not given"),
+      design: external_exports.enum(["auto", "story", "classic"]).optional().describe('"story": art-directed signature sections composed for this brand (hero, statement with a drawn thread, illustrated moments, promise band, journey, offer cards, giant wordmark footer). Chosen automatically when you pass moments, promise or steps.'),
+      heroImage: external_exports.string().optional().describe("Hero illustration or photo (PNG/SVG cut-outs are laid out frameless)"),
+      moments: external_exports.array(external_exports.object({ title: external_exports.string().max(60), text: external_exports.string().max(200).optional(), image: external_exports.string().optional(), alt: external_exports.string().max(120).optional() })).max(3).optional().describe("Up to 3 illustrated moments (e.g. from illustrate)"),
+      momentsTitle: external_exports.string().max(60).optional(),
+      promise: external_exports.string().max(160).optional().describe("The brand promise for the contrast band"),
+      steps: external_exports.array(external_exports.object({ title: external_exports.string().max(60), text: external_exports.string().max(200).optional() })).max(5).optional().describe("How it works, as a journey that fills as you scroll"),
+      stepsTitle: external_exports.string().max(60).optional(),
+      galleryTitle: external_exports.string().max(60).optional(),
+      gridTitle: external_exports.string().max(60).optional(),
+      voice: external_exports.string().max(300).optional(),
       pageUrl: external_exports.string().optional(),
       effects: external_exports.boolean().optional().describe("false turns off particles and 3D motion"),
       outputPath: external_exports.string().optional().describe("Local mode only: write the HTML here (.html)")
@@ -43554,7 +44210,7 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
   }, wrap(async (a) => {
     const notes = [];
-    a = await withProfile(a, ["brandStyle", "brandColor", "displayName", "offerType", "ctaUrl"], notes);
+    a = await withProfile(a, ["brandStyle", "brandColor", "displayName", "offerType", "ctaUrl", "voice", "positioning", "avoidWords"], notes);
     const hasMedia = a.images?.length || a.productImage || a.videoUrl || a.modelUrl || a.imageUrl;
     if (!hasMedia && a.autoImages !== false && a.layout !== "signature") {
       const nicheId = classifyNiche(`${a.niche ?? ""} ${a.product ?? ""}`).id;
@@ -43567,7 +44223,8 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
       } else notes.push("No photos found in time; the page uses typography. Add images, productImage, videoUrl or modelUrl for a richer page.");
     }
     const html = buildLanding(a);
-    const summary = describeLanding(a);
+    const fallbacks = ["headline", "subheadline", "features", "ctaText", "displayName"].filter((k) => !a[k] || Array.isArray(a[k]) && !a[k].length);
+    const summary = { ...describeLanding(a), ...fallbacks.length ? { fallbacks, copyNote: `Plain fallback copy was used for: ${fallbacks.join(", ")}. Write these in the brand's voice and call again for a page worth publishing.` } : {}, checks: runChecks("landing_page", { kind: "page", html, args: a }) };
     if (!a.ctaUrl) notes.push('The button links to "#". Add ctaUrl (checkout, product page or https://wa.me/<number>) before publishing.');
     if (!a.deadline) notes.push("No deadline given, so there is no countdown.");
     const written = await maybeWrite(a.outputPath, html, [".html", ".htm"]);
@@ -43660,10 +44317,13 @@ ${html}` }] };
     inputSchema: {
       brand: external_exports.string().min(1).describe("Brand name; becomes the address q4-<brand>.erasstack.com"),
       path: external_exports.string().optional().describe('Page path, e.g. "black-friday"; empty for the home page'),
+      role: external_exports.enum(["home", "campaign", "product", "legal", "review"]).optional().describe("home (site root, links live campaigns automatically), campaign (ends cleanly after endsAt), product, legal, or review (private, not indexed, does not use a page slot)"),
+      endsAt: external_exports.string().optional().describe("For campaigns: when the offer ends (ISO with time zone). After it, the page says the offer has ended, then redirects home."),
       html: external_exports.string().optional(),
       file: external_exports.string().optional().describe("Local mode: path to an .html file"),
       page: external_exports.record(external_exports.string(), external_exports.any()).optional().describe("landing_page arguments to build and publish in one call"),
-      title: external_exports.string().optional()
+      title: external_exports.string().optional(),
+      force: external_exports.boolean().optional().describe("Publish even if Quarter4's checks find errors (not recommended).")
     },
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
   }, wrap(async (a) => {
@@ -43672,10 +44332,12 @@ ${html}` }] };
       if (!allowFileWrites) throw new Error("file is only supported when the server runs locally. Pass html instead.");
       pageHtml = await readFile(a.file, "utf8");
     }
-    if (!pageHtml && a.page) pageHtml = buildLanding({ brand: a.brand, ...a.page });
+    if (!pageHtml && a.page) pageHtml = buildLanding(await withProfile({ brand: a.brand, ...a.page }, ["brandStyle", "brandColor", "displayName", "offerType", "ctaUrl", "voice", "positioning", "avoidWords"], []));
     if (!pageHtml) throw new Error("Send html, file or page.");
-    const r = await cloud.publish({ brand: a.brand, path: a.path, html: pageHtml, title: a.title });
-    return json3({ ...r, share: `Share this link on WhatsApp, Instagram bio and Status: ${r.url}` });
+    const checks = runChecks("publish_page", { kind: "page", html: pageHtml, args: { brand: a.brand, ...a.page ?? {} } });
+    if (!checks.passed && !a.force) return json3({ published: false, checks, next: "The page failed Quarter4's checks, so it was not published. Fix the errors, or pass force: true to publish anyway." });
+    const r = await cloud.publish({ brand: a.brand, path: a.path, html: pageHtml, title: a.title, role: a.role, endsAt: a.endsAt ?? a.page?.deadline });
+    return json3({ ...r, checks, share: `Share this link on WhatsApp, Instagram bio and Status: ${r.url}` });
   }));
   server.registerTool("page_stats", {
     title: "Page results",
@@ -43759,6 +44421,21 @@ ${html}` }] };
     const line = (await runPython(args2)).trim().split("\n").pop();
     return json3({ ...JSON.parse(line), next: "Pass this file as products[].image to content_kit or landing_page." });
   }));
+  server.registerTool("report_issue", {
+    title: "Report a problem with Quarter4 output",
+    description: 'When the seller says something Quarter4 made is wrong ("off-brand", "wrong image", "copy does not fit", "looks generic", "not us"), call this with their words and what it was about. It goes to the Quarter4 team with the context, so the seller never has to write a report. Needs connect.',
+    inputSchema: {
+      what: external_exports.string().min(3).max(500).describe("What the seller said, in their words"),
+      tool: external_exports.string().max(40).optional().describe("Which tool made it, e.g. content_kit, landing_page"),
+      chip: external_exports.enum(["off-brand", "wrong-image", "copy-does-not-fit", "looks-generic", "wrong-brand-name", "wrong-price", "other"]).optional(),
+      url: external_exports.string().max(300).optional().describe("The kit or page link, if any"),
+      args: external_exports.record(external_exports.string(), external_exports.any()).optional().describe("The tool arguments that produced it (no customer data)")
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => {
+    const r = await cloud.reportIssues({ source: "user", tool: a.tool ?? "unknown", version: VERSION, issues: [{ rule: `user.${a.chip ?? "other"}`, severity: "error", message: a.what, sample: a.url }], args: a.args ?? {} });
+    return json3({ ok: true, ...r, note: "Thanks. The Quarter4 team gets this with the context. Meanwhile, tell me what to change and I will fix it now." });
+  }));
   server.registerTool("brand_profile", {
     title: "Saved brand profile",
     description: "Save or read the seller's brand profile in Quarter4 Cloud (needs connect): voice, products with real prices, order link, colours and logo. Saved details fill in content_kit and sales pages automatically, so the seller does not repeat them. Logo and colours on graphics are a Pro feature. Only save prices the seller gave you.",
@@ -43773,54 +44450,24 @@ ${html}` }] };
         brandColor: external_exports.string().optional(),
         brandStyle,
         ...copyFields,
+        ...positioningFields,
+        illustration: external_exports.object({ style: external_exports.enum(["flat-editorial", "soft-line", "textured-gouache"]).optional(), audience: external_exports.object({ region: external_exports.string().max(60).optional(), ageRange: external_exports.string().max(20).optional() }).optional(), avoid: external_exports.array(external_exports.string().max(40)).max(12).optional(), reference: external_exports.string().optional(), scenes: external_exports.array(external_exports.object({ scene: external_exports.string(), url: external_exports.string() })).max(40).optional() }).optional().describe("How this brand's illustrations look (style, audience, avoid) and the registered scenes; filled by illustrate."),
         products: external_exports.array(external_exports.object({ name: external_exports.string(), price: external_exports.string().optional(), originalPrice: external_exports.string().optional(), note: external_exports.string().optional(), image: external_exports.string().optional() })).max(20).optional()
       }).optional()
     },
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
   }, wrap(async (a) => json3(a.action === "save" ? await cloud.saveBrand(a.profile ?? {}) : await cloud.brand())));
-  server.registerTool("content_kit", {
-    title: "Ready-to-post content kit",
-    description: `Make finished social graphics with captions for a sale or launch: offer post (4:5), product spotlights (1:1), a carousel, Story/WhatsApp Status (9:16), a last-call story and an X/LinkedIn card (16:9). Returns a review page where the seller edits captions, then taps Share (phone share sheet: Instagram, TikTok, WhatsApp with the image attached), uses share links, copies captions or downloads PNGs. Nothing is posted automatically.
-Connected to Quarter4 Cloud: the kit is hosted at a link (Free: 7 days with a small mark; Pro: 90 days, no mark, own logo and colours). Not connected (local): an HTML file is written instead.
-Images: the seller's own photos are best (products[].image or images). If you can generate images yourself, generate them and pass their https URLs. Otherwise free licensed photos are found automatically (autoImages). Never invent prices or deadlines; leave them out if unknown.`,
-    inputSchema: {
-      brand: external_exports.string().min(1),
-      product: external_exports.string().optional().describe('What is on sale, e.g. "sneakers"'),
-      niche: external_exports.string().optional(),
-      theme: external_exports.string().optional().describe(`Event look: ${Object.keys(THEMES).join(", ")}`),
-      offer: external_exports.string().optional().describe('e.g. "30% off"'),
-      discountPercent: external_exports.number().min(1).max(95).optional(),
-      price: external_exports.string().optional(),
-      originalPrice: external_exports.string().optional(),
-      deadline: external_exports.string().optional().describe("ISO date-time the offer ends"),
-      timeZone: external_exports.string().optional(),
-      ctaUrl: external_exports.string().optional().describe("Checkout, product page or https://wa.me/<number>"),
-      pageUrl: external_exports.string().optional().describe("The live sales page link from publish_page, used in captions and share links"),
-      products: external_exports.array(external_exports.object({ name: external_exports.string(), price: external_exports.string().optional(), originalPrice: external_exports.string().optional(), note: external_exports.string().optional(), image: external_exports.string().optional() })).max(6).optional(),
-      images: external_exports.array(external_exports.object({ url: external_exports.string(), alt: external_exports.string().optional() })).max(6).optional(),
-      posts: external_exports.array(external_exports.object({ id: external_exports.string().optional(), format: external_exports.enum(["post", "square", "story", "wide"]).optional(), title: external_exports.string().optional(), hook: external_exports.string().optional(), headline: external_exports.string().optional(), sub: external_exports.string().optional(), caption: external_exports.string().optional(), image: external_exports.string().optional() })).max(12).optional().describe("Your own copy: replace a caption by id (offer, product-1, carousel, story, last-call, wide) or add extra posts with a headline"),
-      logoUrl: external_exports.string().optional().describe("Pro: brand logo (https)"),
-      brandColor: external_exports.string().optional().describe('Pro: brand colour, e.g. "#e11d48"'),
-      brandStyle,
-      ...copyFields,
-      autoImages: external_exports.boolean().optional().describe("Find free photos when none are given (default true)"),
-      features: external_exports.array(external_exports.string().max(40)).max(3).optional().describe('Up to 3 short facts shown as chips on the offer post, e.g. "Free delivery in Lagos", "Cancel anytime". Only real facts from the seller.'),
-      productPhotos: external_exports.enum(["own", "representative", "none"]).optional().describe('What the seller chose for products without photos: "own" (they are sending photos: pass them as products[].image), "representative" (closest real photo, tagged "Representative image"), "none" (text-led product posts). If you can generate images and the seller wants that, generate them and pass the URLs as products[].image. Ask the seller before choosing.'),
-      kitId: external_exports.string().regex(/^[a-f0-9]{12}$/).optional().describe("Update an existing kit at the same link (e.g. after the seller sends new photos)"),
-      outputPath: external_exports.string().optional().describe("Local mode: where to write the kit .html")
-    },
-    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
-  }, wrap(async (a) => {
+  const kitHandler = async (a) => {
     const notes = [];
     let plan = "free";
     if (cloud.hasKey()) {
       plan = (await cloud.me().catch(() => null))?.plan ?? "free";
       const saved = (await cloud.brand().catch(() => null))?.profile;
       if (saved) {
-        const fill = Object.fromEntries(["product", "niche", "ctaUrl", "logoUrl", "brandColor", "products", "brandStyle", "displayName", "offerType"].filter((k) => a[k] === void 0 && saved[k] !== void 0).map((k) => [k, saved[k]]));
-        if (Object.keys(fill).length) {
-          a = { ...fill, ...a };
-          notes.push(`Filled from your saved brand profile: ${Object.keys(fill).join(", ")}.`);
+        const fill2 = Object.fromEntries(["product", "niche", "ctaUrl", "logoUrl", "brandColor", "products", "brandStyle", "displayName", "offerType", "voice", "positioning", "avoidWords", "alwaysSay", "noLocationMentions"].filter((k) => a[k] === void 0 && saved[k] !== void 0).map((k) => [k, saved[k]]));
+        if (Object.keys(fill2).length) {
+          a = { ...fill2, ...a };
+          notes.push(`Filled from your saved brand profile: ${Object.keys(fill2).join(", ")}.`);
         }
       }
     }
@@ -43880,9 +44527,10 @@ Images: the seller's own photos are best (products[].image or images). If you ca
     const kit = buildKit({ ...a, watermark: !paid, proxy: hosted ? (url2, i) => /^data:/.test(url2) ? url2 : `/__q4/img/__KIT__/${i}` : void 0 });
     const { askUser, assumed } = questionsFor("kit", a);
     if (a.discountPercent || /\d\s*%|off/i.test(a.offer ?? "") || a.originalPrice) notes.push("Before you share: make sure your checkout or app actually charges the advertised sale price. Advertising a price you do not charge is a consumer-law risk (for example under Nigeria's FCCPA).");
-    const summary = { posts: kit.posts, notes, ...askUser.length ? { askUser, howToAsk: ASK_RULE } : {}, assumed };
+    const summary = { posts: kit.posts, notes, ...askUser.length ? { askUser, howToAsk: ASK_RULE } : {}, assumed, checks: runChecks("content_kit", { kind: "kit", html: kit.html, args: { ...a, offerType: a.offerType }, posts: kit.posts, contentOnly: kit.contentOnly }) };
     if (hosted) {
-      const body = { brand: a.brand, html: kit.html, images: kit.images.filter((u) => !/^data:/.test(u)), title: `${a.brand} content kit`, ...a.deadline ? { deadline: a.deadline } : {} };
+      const keep = Object.fromEntries(Object.entries(a).filter(([k, v]) => !["outputPath", "kitId"].includes(k) && v !== void 0));
+      const body = { brand: a.brand, html: kit.html, images: kit.images.filter((u) => !/^data:/.test(u)), title: `${a.brand} content kit`, ...a.deadline ? { deadline: a.deadline } : {}, args: keep };
       const r = a.kitId ? await cloud.updateKit(a.kitId, body) : await cloud.kit(body);
       for (const f of localFiles) {
         const ok = await cloud.kitPhoto(r.id, f.key, f.buf, f.type).then(() => true, () => false);
@@ -43893,6 +44541,333 @@ Images: the seller's own photos are best (products[].image or images). If you ca
     if (!allowFileWrites) throw new Error(`Connect first to get a kit link: ${cloud.dashboardUrl()} (or call cloud_account action "connect" when running locally).`);
     const file2 = await maybeWrite(a.outputPath ?? `${a.brand.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-content-kit.html`, kit.html, [".html", ".htm"]);
     return json3({ file: file2, ...summary, next: 'Open the file in a browser to review, download and share. Call cloud_account action "connect" to get a link you can open on your phone.' });
+  };
+  server.registerTool("content_kit", {
+    title: "Ready-to-post content kit",
+    description: `Make finished social graphics with captions for a sale or launch: offer post (4:5), product spotlights (1:1), a carousel, Story/WhatsApp Status (9:16), a last-call story and an X/LinkedIn card (16:9). Returns a review page where the seller edits captions, then taps Share (phone share sheet: Instagram, TikTok, WhatsApp with the image attached), uses share links, copies captions or downloads PNGs. Nothing is posted automatically.
+Connected to Quarter4 Cloud: the kit is hosted at a link (Free: 7 days with a small mark; Pro: 90 days, no mark, own logo and colours). Not connected (local): an HTML file is written instead.
+Images: the seller's own photos are best (products[].image or images). If you can generate images yourself, generate them and pass their https URLs. Otherwise free licensed photos are found automatically (autoImages). Never invent prices or deadlines; leave them out if unknown.`,
+    inputSchema: {
+      brand: external_exports.string().min(1),
+      product: external_exports.string().optional().describe('What is on sale, e.g. "sneakers"'),
+      niche: external_exports.string().optional(),
+      theme: external_exports.string().optional().describe(`Event look: ${Object.keys(THEMES).join(", ")}`),
+      offer: external_exports.string().optional().describe('e.g. "30% off"'),
+      discountPercent: external_exports.number().min(1).max(95).optional(),
+      price: external_exports.string().optional(),
+      originalPrice: external_exports.string().optional(),
+      deadline: external_exports.string().optional().describe("ISO date-time the offer ends"),
+      timeZone: external_exports.string().optional(),
+      ctaUrl: external_exports.string().optional().describe("Checkout, product page or https://wa.me/<number>"),
+      pageUrl: external_exports.string().optional().describe("The live sales page link from publish_page, used in captions and share links"),
+      products: external_exports.array(external_exports.object({ name: external_exports.string(), price: external_exports.string().optional(), originalPrice: external_exports.string().optional(), note: external_exports.string().optional(), image: external_exports.string().optional() })).max(6).optional(),
+      images: external_exports.array(external_exports.object({ url: external_exports.string(), alt: external_exports.string().optional() })).max(6).optional(),
+      posts: external_exports.array(external_exports.object({ id: external_exports.string().optional(), remove: external_exports.boolean().optional(), format: external_exports.enum(["post", "square", "story", "wide"]).optional(), title: external_exports.string().optional(), hook: external_exports.string().optional(), headline: external_exports.string().optional(), sub: external_exports.string().optional(), caption: external_exports.string().optional(), image: external_exports.string().optional() })).max(12).optional().describe("Your own copy: replace a caption by id (offer, product-1, carousel, story, last-call, wide) or add extra posts with a headline"),
+      logoUrl: external_exports.string().optional().describe("Pro: brand logo (https)"),
+      brandColor: external_exports.string().optional().describe('Pro: brand colour, e.g. "#e11d48"'),
+      brandStyle,
+      ...copyFields,
+      autoImages: external_exports.boolean().optional().describe("Find free photos when none are given (default true)"),
+      features: external_exports.array(external_exports.string().max(40)).max(3).optional().describe('Up to 3 short facts shown as chips on the offer post, e.g. "Free delivery in Lagos", "Cancel anytime". Only real facts from the seller.'),
+      mode: external_exports.enum(["offer", "content"]).optional().describe('"content" for everyday posts with no offer: no sale posts, prices or offer badges. Inferred as content when there is no offer.'),
+      remove: external_exports.array(external_exports.string()).max(12).optional().describe("Post ids to leave out (offer, story, last-call, wide, carousel, product-1...)."),
+      order: external_exports.array(external_exports.string()).max(20).optional().describe("Post ids in the order to show them."),
+      ...positioningFields,
+      productPhotos: external_exports.enum(["own", "representative", "none"]).optional().describe('What the seller chose for products without photos: "own" (they are sending photos: pass them as products[].image), "representative" (closest real photo, tagged "Representative image"), "none" (text-led product posts). If you can generate images and the seller wants that, generate them and pass the URLs as products[].image. Ask the seller before choosing.'),
+      kitId: external_exports.string().regex(/^[a-f0-9]{12}$/).optional().describe("Update an existing kit at the same link (e.g. after the seller sends new photos)"),
+      outputPath: external_exports.string().optional().describe("Local mode: where to write the kit .html")
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap((a) => kitHandler(a)));
+  server.registerTool("brand_extract", {
+    title: "Read a brand from its website",
+    description: "Read the brand's own website and propose its brand profile: palette (from its CSS), heading and body fonts, wordmark case or SVG logotype, logo, a positioning line, and copy samples so you can describe the voice. Show the seller what was found and the evidence, fix anything they correct, then call again with save: true (needs connect) or pass the values to brand_profile.",
+    inputSchema: { url: external_exports.string().url().describe("The brand's website"), save: external_exports.boolean().optional().describe("Save the proposed profile (after the seller confirms)"), voice: external_exports.string().max(300).optional().describe("Your one-line read of the voice from the samples, saved with the profile") },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => {
+    const r = await extractBrand(a.url);
+    const profile = { ...r.profile, ...a.voice ? { voice: a.voice } : {} };
+    if (a.save) {
+      if (!cloud.hasKey()) throw new Error(NO_KEY);
+      const saved = await cloud.saveBrand(profile);
+      return json3({ saved: true, profile: saved.profile, ...saved.warnings ? { warnings: saved.warnings } : {}, evidence: r.evidence });
+    }
+    return json3({ proposed: profile, samples: r.samples, evidence: r.evidence, icons: r.icons, next: "Show the seller this profile and evidence; ask them to confirm or correct colours, fonts and how they write their name; add your read of the voice from the samples; then call brand_extract again with save: true." });
+  }));
+  const readLocalOrRemote = async (src) => {
+    if (/^https:\/\//.test(src)) {
+      const r = await fetch(src, { signal: AbortSignal.timeout(3e4) });
+      if (!r.ok) throw new Error(`Could not download ${src} (${r.status}).`);
+      return { buf: Buffer.from(await r.arrayBuffer()), type: (r.headers.get("content-type") ?? "").split(";")[0] };
+    }
+    if (!allowFileWrites) throw new Error("Local files only work when Quarter4 runs on your computer. Pass an https link instead.");
+    if (!existsSync(src)) throw new Error(`File not found: ${src}`);
+    const ext = extname(src).toLowerCase();
+    return { buf: await readFile(src), type: { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".woff": "font/woff" }[ext] ?? "" };
+  };
+  server.registerTool("asset_upload", {
+    title: "Upload a brand asset",
+    description: "Host the brand's own logo, wordmark SVG, illustrations, photos or web fonts on Quarter4 Cloud and get a permanent link to use in pages, kits and brand_profile (every plan; Free has a small quota). Needs connect.",
+    inputSchema: { file: external_exports.string().describe("A local file path or an https link"), name: external_exports.string().max(80).optional() },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => {
+    if (!cloud.hasKey()) throw new Error(NO_KEY);
+    const { buf, type } = await readLocalOrRemote(a.file);
+    return json3(await cloud.uploadAsset(buf, type, a.name));
+  }));
+  server.registerTool("illustrate", {
+    title: "On-brand illustrations",
+    description: `On-brand illustrations of real people in context, without Figma. action "generate" (Pro and above, connected): Quarter4 makes them itself (best model for the job, transparent background, quality-checked with one free automatic redo), saves them to the brand and returns links; draft: true makes cheap style previews first (a tenth of an image each). "regenerate": a new version of a scene the seller did not like (uses one image). When generation is not on the plan or is busy, generate returns the free prompts instead. action "styles": three style options to show the seller once. action "prompts" (default, free on every plan): ready prompts for each scene, built from the brand profile (palette locked to hex, flat background for a clean cut-out, avoid list, audience) - if you can generate images, generate one per prompt, check them against "acceptance", then call action "register" with the image links or files. "register": makes each image a transparent cut-out (on this computer, free), uploads it and saves it to the brand profile, so pages and kits use it frameless. If you cannot generate images, say so and offer the seller's own art (asset_upload) instead. Scenes for this niche are suggested; you can describe your own.`,
+    inputSchema: {
+      action: external_exports.enum(["styles", "prompts", "generate", "regenerate", "register"]).optional(),
+      draft: external_exports.boolean().optional().describe("generate: cheap style previews (not saved to the brand)"),
+      count: external_exports.number().int().min(1).max(6).optional().describe("generate: how many scenes (default 3)"),
+      niche: external_exports.string().optional(),
+      scenes: external_exports.array(external_exports.object({ id: external_exports.string().max(60).optional(), moment: external_exports.string().max(300), people: external_exports.string().max(200).optional(), mood: external_exports.string().max(80).optional(), crop: external_exports.string().max(40).optional(), aspect: external_exports.enum(["1:1", "4:5", "5:4", "9:16", "16:9"]).optional() })).max(6).optional(),
+      style: external_exports.enum(["flat-editorial", "soft-line", "textured-gouache"]).optional(),
+      palette: external_exports.record(external_exports.string(), external_exports.string()).optional().describe("Overrides the saved brand palette"),
+      audience: external_exports.object({ region: external_exports.string().max(60).optional(), ageRange: external_exports.string().max(20).optional() }).optional(),
+      images: external_exports.array(external_exports.object({ scene: external_exports.string().max(60), file: external_exports.string() })).max(12).optional().describe("register: generated images (https links or local files)")
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => {
+    const saved = cloud.hasKey() ? (await cloud.brand().catch(() => null))?.profile ?? {} : {};
+    const ill = saved.illustration ?? {};
+    const nicheId = classifyNiche(`${a.niche ?? saved.niche ?? ""}`).id;
+    const spec = {
+      palette: a.palette ?? saved.brandStyle?.palette ?? {},
+      style: a.style ?? ill.style ?? "flat-editorial",
+      avoid: [...ill.avoid ?? [], ...saved.avoidWords ?? [], ...saved.positioning?.isNot ?? []],
+      audience: a.audience ?? ill.audience,
+      reference: ill.reference
+    };
+    const action = a.action ?? "prompts";
+    if (action === "styles") {
+      const sample = (SCENES2[nicheId] ?? SCENES2.general)[0];
+      return json3({ options: Object.keys(STYLES).map((k) => ({ style: k, description: STYLES[k], samplePrompt: promptFor({ ...spec, style: k }, sample) })), next: "Show the seller the three options (generate one sample each if you can). Save their pick with brand_profile { illustration: { style } }." });
+    }
+    if (action === "prompts") {
+      return json3({ style: spec.style, prompts: handoff2(spec, a.scenes, nicheId), acceptance: ACCEPTANCE, ...spec.reference ? { reference: spec.reference, referenceNote: "Pass this image as the style reference when your image tool accepts one." } : {}, next: 'Generate one image per prompt, check each against acceptance (regenerate up to 2 times if a check fails), then call illustrate with action "register" and the images.' });
+    }
+    if (action === "generate" || action === "regenerate") {
+      const prompts = handoff2(spec, a.scenes, nicheId).slice(0, a.count ?? (action === "regenerate" ? 1 : 3));
+      const freePrompts = (why) => json3({ generated: [], why, style: spec.style, prompts, acceptance: ACCEPTANCE, next: 'Generate these with your own image tool if you can, check them against acceptance, then call illustrate action "register". Otherwise offer the seller their own art (asset_upload).' });
+      if (!cloud.hasKey()) return freePrompts("Not connected to Quarter4 Cloud, so here are the prompts (free).");
+      const palette = Object.values(spec.palette ?? {}).filter((c) => /^#[0-9a-f]{3,8}$/i.test(String(c)));
+      const out2 = [];
+      let last = null;
+      for (const p of prompts) {
+        const r = await cloud.genImage({ prompt: p.prompt, aspect: p.aspect, draft: a.draft === true, regenerate: action === "regenerate", palette });
+        last = r;
+        if (!r.ok) {
+          if (!out2.length) return freePrompts(r.error ?? "Generation is not available right now.");
+          break;
+        }
+        out2.push({ scene: p.scene, url: r.url, model: r.model, check: r.check, autoRedo: r.autoRedo || void 0, reused: r.reused || void 0, charged: r.charged });
+      }
+      if (!a.draft && out2.length) {
+        const scenes2 = [...(ill.scenes ?? []).filter((x) => !out2.some((o) => o.scene === x.scene)), ...out2.map(({ scene, url: url2 }) => ({ scene, url: url2 }))];
+        await cloud.saveBrand({ illustration: { ...ill, style: spec.style, scenes: scenes2, ...ill.reference ? {} : { reference: out2[0].url } } });
+      }
+      return json3({
+        generated: out2,
+        draft: a.draft === true,
+        allowance: last?.allowance,
+        ...last && !last.ok ? { stopped: last.error } : {},
+        costNote: 'Each final image uses 1 from the monthly allowance; drafts use 0.1; quality redos are free; asking again with the same scene returns the stored image free. A redo the seller asks for (action "regenerate") uses 1.',
+        next: a.draft ? "Show the seller the drafts. When they pick a direction, call generate without draft." : "Show the seller the illustrations. Pages and kits now use them (frameless). If one is wrong, call regenerate with that scene."
+      });
+    }
+    if (!a.images?.length) throw new Error("register needs images: [{ scene, file }].");
+    if (!cloud.hasKey()) throw new Error(NO_KEY);
+    const out = [];
+    const notes = [];
+    for (const im of a.images) {
+      const { buf, type } = await readLocalOrRemote(im.file);
+      let upBuf = buf, upType = type;
+      if (allowFileWrites && /image\/(png|jpeg|webp)/.test(type)) {
+        try {
+          const dir = resolve(tmpdir(), `q4-ill-${Date.now()}`);
+          await mkdir(dir, { recursive: true });
+          const src = resolve(dir, `in.${type.split("/")[1].replace("jpeg", "jpg")}`);
+          await writeFile(src, buf);
+          const res = JSON.parse((await runPython([studioScript, src, resolve(dir, "out.png"), "--transparent", "--size", "1600"])).trim().split("\n").pop());
+          if (res.transparent) {
+            upBuf = await readFile(res.output);
+            upType = "image/png";
+          } else notes.push(`${im.scene}: background removal needs rembg (pip install "rembg[cpu]"); uploaded as is.`);
+        } catch (e) {
+          notes.push(`${im.scene}: kept the original (${e.message}).`);
+        }
+      }
+      const r = await cloud.uploadAsset(upBuf, upType, `illustration ${im.scene}`);
+      out.push({ scene: im.scene, url: r.url, transparent: upType === "image/png" });
+    }
+    const scenes = [...(ill.scenes ?? []).filter((x) => !out.some((o) => o.scene === x.scene)), ...out.map(({ scene, url: url2 }) => ({ scene, url: url2 }))];
+    await cloud.saveBrand({ illustration: { ...ill, scenes, ...ill.reference ? {} : { reference: out[0]?.url } } });
+    return json3({ registered: out, notes, use: "Pass these links as images (landing_page) or products[].image / posts[].image (content_kit); PNG cut-outs are laid out frameless." });
+  }));
+  server.registerTool("video", {
+    title: "AI video from an illustration",
+    description: 'Short AI videos (5 or 10 seconds) for Reels, TikTok and Status, animated from an approved illustration or product photo. Studio and Business plans (a 5-second clip uses 1 video, 10 seconds uses 2; failed videos are refunded). action "create" starts it and returns an id; "status" checks it (usually ready in 1 to 3 minutes) and returns the MP4 link, kept 90 days; "usage" shows what is left this month. On other plans, every kit post can still download a free motion video rendered in the browser.',
+    inputSchema: {
+      action: external_exports.enum(["create", "status", "usage"]).optional(),
+      image: external_exports.string().optional().describe("create: https link of the illustration or photo, or a saved illustration scene name"),
+      prompt: external_exports.string().max(1500).optional().describe('create: the motion, e.g. "she looks up from her phone and smiles; the camera holds still"'),
+      seconds: external_exports.union([external_exports.literal(5), external_exports.literal(10)]).optional(),
+      id: external_exports.string().optional().describe("status: the id from create")
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => {
+    if (!cloud.hasKey()) throw new Error(NO_KEY);
+    const action = a.action ?? (a.id ? "status" : "create");
+    if (action === "usage") return json3(await cloud.usage());
+    if (action === "status") {
+      if (!a.id) throw new Error("status needs the id from create.");
+      const r2 = await cloud.videoStatus(a.id);
+      if (!r2.ok) throw new Error(r2.error ?? "Could not check the video.");
+      return json3({ ...r2, ok: void 0, ...r2.status === "running" ? { next: "Not ready yet. Check again in a minute." } : {} });
+    }
+    let image = a.image;
+    if (image && !/^https:\/\//.test(image)) {
+      const saved = (await cloud.brand().catch(() => null))?.profile?.illustration?.scenes ?? [];
+      image = saved.find((x) => x.scene === image)?.url;
+      if (!image) throw new Error(`No saved illustration called "${a.image}". Use illustrate first, or pass an https image link.`);
+    }
+    if (!image) throw new Error("create needs image: the approved illustration or photo to animate.");
+    const r = await cloud.videoStart({ imageUrl: image, prompt: a.prompt, seconds: a.seconds });
+    if (!r.ok) return json3({ started: false, why: r.error, ...r.upgrade ? { upgrade: r.upgrade } : {}, instead: "Every content kit post has a free motion video (the video button on the post), rendered in the browser." });
+    return json3({ started: true, id: r.id, seconds: r.seconds, charged: r.charged, allowance: r.allowance, next: `Call video with action "status" and id "${r.id}" in about a minute.` });
+  }));
+  server.registerTool("campaign_go", {
+    title: "Whole campaign in one go",
+    description: 'Build a complete, on-brand campaign from one request: reads the brand (saved profile, or its website), understands the goal, asks only blocking questions, plans the content, lists the illustrations to generate, builds the landing page and the content kit (offer or content-only), checks everything, and returns private review links. Nothing is public until the seller approves; then publish the page with publish_page (role "campaign"). Write the headline, statement, promise and captions yourself when you can and pass them in; Quarter4 fills the rest plainly.',
+    inputSchema: {
+      request: external_exports.string().min(3).describe("What the seller asked for, in their words"),
+      brand: external_exports.string().min(1),
+      url: external_exports.string().url().optional().describe("The brand's website, read when no brand profile is saved"),
+      offer: external_exports.string().optional().describe('"30% off", or "none" for content only'),
+      deadline: external_exports.string().optional(),
+      timeZone: external_exports.string().optional(),
+      platforms: external_exports.array(external_exports.string()).optional(),
+      regions: external_exports.array(external_exports.string()).optional(),
+      products: external_exports.array(external_exports.object({ name: external_exports.string(), price: external_exports.string().optional(), originalPrice: external_exports.string().optional(), note: external_exports.string().optional(), image: external_exports.string().optional() })).max(6).optional(),
+      ctaUrl: external_exports.string().optional(),
+      copy: external_exports.object({
+        headline: external_exports.string().max(120).optional(),
+        subheadline: external_exports.string().max(240).optional(),
+        statement: external_exports.string().max(160).optional(),
+        promise: external_exports.string().max(160).optional(),
+        steps: external_exports.array(external_exports.object({ title: external_exports.string().max(60), text: external_exports.string().max(200).optional() })).max(5).optional(),
+        features: external_exports.array(external_exports.string().max(40)).max(3).optional(),
+        posts: external_exports.array(external_exports.object({ id: external_exports.string().optional(), hook: external_exports.string().optional(), caption: external_exports.string().optional(), format: external_exports.enum(["post", "square", "story", "wide"]).optional() })).max(12).optional()
+      }).optional().describe("Your own copy in the brand voice (recommended)"),
+      startDate: external_exports.string().optional(),
+      endDate: external_exports.string().optional()
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => {
+    const steps = [];
+    let profile = cloud.hasKey() ? (await cloud.brand().catch(() => null))?.profile ?? null : null;
+    let brandNote = null;
+    if (!profile?.brandStyle && a.url) {
+      const ex = await extractBrand(a.url).catch((e) => ({ error: e.message }));
+      if (!ex.error) {
+        profile = { ...profile ?? {}, ...ex.profile };
+        brandNote = { readFrom: ex.url, evidence: ex.evidence, confirm: "Show the seller these colours, fonts and wordmark; save with brand_extract save: true once they confirm." };
+      } else brandNote = { error: `Could not read ${a.url}: ${ex.error}` };
+    }
+    steps.push(profile?.brandStyle ? "brand look applied" : "no brand look yet (ask for the website or colours)");
+    const understood = startCampaign({ description: `${a.request}${a.offer && a.offer !== "none" ? ` ${a.offer}` : ""}`, brand: a.brand });
+    const blocking = understood.questions.filter((q) => q.blocking);
+    if (blocking.length && !profile?.niche) return json3({ needsAnswer: true, askUser: blocking, understood: understood.understood, howToAsk: "Ask these in one message, then call campaign_go again with the answers in the request." });
+    const un = understood.understood.niche;
+    const niche = profile?.niche ?? (typeof un === "string" ? un : un?.label ?? un?.id) ?? a.request;
+    const contentOnly = !a.offer || /^\s*(none|no|no offer)\s*$/i.test(a.offer);
+    const base2 = { brand: a.brand, niche, ...profile ?? {}, ...a.ctaUrl ? { ctaUrl: a.ctaUrl } : {}, ...a.products ? { products: a.products } : {} };
+    const plan = buildPlan({ brand: a.brand, niche, platforms: a.platforms ?? understood.understood.platforms ?? ["instagram", "whatsapp"], regions: a.regions ?? understood.understood.regions, startDate: a.startDate, endDate: a.endDate, offer: contentOnly ? void 0 : a.offer, offerType: base2.offerType, displayName: base2.displayName });
+    steps.push(`plan: ${plan.totals.slots} posts`);
+    const nicheId = classifyNiche(niche).id;
+    const scenes = profile?.illustration?.scenes ?? [];
+    const prompts = scenes.length ? [] : handoff2({ palette: profile?.brandStyle?.palette ?? {}, style: profile?.illustration?.style, avoid: [...profile?.avoidWords ?? [], ...profile?.positioning?.isNot ?? []], audience: profile?.illustration?.audience }, null, nicheId).slice(0, 3);
+    const c = a.copy ?? {};
+    const pageArgs = {
+      ...base2,
+      headline: c.headline,
+      subheadline: c.subheadline,
+      statement: c.statement,
+      promise: c.promise,
+      steps: c.steps,
+      features: c.features,
+      ...contentOnly ? {} : { offer: a.offer, deadline: a.deadline, timeZone: a.timeZone },
+      ...scenes.length ? { heroImage: scenes[0].url, moments: scenes.slice(1, 4).map((x) => ({ title: x.scene.replace(/-/g, " "), image: x.url })) } : {},
+      design: c.statement || c.promise || c.steps?.length || scenes.length ? "story" : void 0,
+      autoImages: false
+    };
+    const pageHtml = buildLanding(pageArgs);
+    const pageChecks = runChecks("campaign_go", { kind: "page", html: pageHtml, args: pageArgs });
+    const kitArgs = {
+      ...base2,
+      ...contentOnly ? { mode: "content" } : { offer: a.offer, deadline: a.deadline, timeZone: a.timeZone },
+      posts: c.posts,
+      features: c.features,
+      productPhotos: "none",
+      autoImages: false,
+      ...scenes.length ? { images: scenes.slice(0, 3).map((x) => ({ url: x.url, alt: x.scene })) } : {}
+    };
+    const kitRes = JSON.parse((await kitHandler(kitArgs)).content[0].text);
+    let pageLink = null;
+    if (cloud.hasKey() && pageChecks.passed) {
+      const slug = `review-${Date.now().toString(36)}`;
+      const r = await cloud.publish({ brand: a.brand, path: slug, html: pageHtml, title: `${a.brand} campaign review`, role: "review" }).catch((e) => ({ error: e.message }));
+      pageLink = r.url ?? null;
+      if (r.error) steps.push(`page review upload failed: ${r.error}`);
+    } else if (allowFileWrites) {
+      pageLink = await maybeWrite(`${a.brand.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-campaign.html`, pageHtml, [".html"]);
+    }
+    return json3({
+      understood: understood.understood,
+      ...brandNote ? { brand: brandNote } : {},
+      review: { page: pageLink, kit: kitRes.url ?? kitRes.file ?? null, private: true },
+      plan: { totals: plan.totals, firstWeek: plan.slots.slice(0, 7).map((x) => ({ date: x.date, platform: x.platform, format: x.format, hook: x.hook })) },
+      ...prompts.length ? { illustrationsToMake: prompts, illustrationsNote: 'On Pro and above, call illustrate action "generate" (Quarter4 makes and saves them). Otherwise generate these with your own image tool if you can and register them with illustrate action "register". Then call campaign_go again: the page and kit will use them.' } : {},
+      checks: { page: pageChecks, kit: kitRes.checks },
+      ...kitRes.askUser ? { askUser: kitRes.askUser } : {},
+      steps,
+      next: 'Show the seller the review links. When they approve, publish the page publicly with publish_page (role "campaign", endsAt = deadline) and share the kit posts.'
+    });
+  }));
+  server.registerTool("kit_edit", {
+    title: "Edit a hosted content kit",
+    description: "Change a kit that is already shared, at the same link: remove posts, reorder them, replace a post's hook, caption, image or format, add new posts, or change settings (e.g. features, deadline). Use the kitId from content_kit.",
+    inputSchema: {
+      kitId: external_exports.string().regex(/^[a-f0-9]{12}$/),
+      remove: external_exports.array(external_exports.string()).max(12).optional().describe("Post ids to remove"),
+      order: external_exports.array(external_exports.string()).max(20).optional().describe("Post ids in the new order"),
+      posts: external_exports.array(external_exports.object({ id: external_exports.string().optional(), remove: external_exports.boolean().optional(), format: external_exports.enum(["post", "square", "story", "wide"]).optional(), title: external_exports.string().optional(), hook: external_exports.string().optional(), headline: external_exports.string().optional(), sub: external_exports.string().optional(), caption: external_exports.string().optional(), image: external_exports.string().optional() })).max(12).optional().describe("Posts to change (by id) or add"),
+      set: external_exports.record(external_exports.string(), external_exports.any()).optional().describe('Other content_kit settings to change, e.g. { features: [...], deadline: "..." }')
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+  }, wrap(async (a) => {
+    if (!cloud.hasKey()) throw new Error(NO_KEY);
+    const current = await cloud.getKit(a.kitId);
+    if (!current.args) throw new Error("This kit was made before editing was available. Make it again with content_kit (pass kitId to keep the link).");
+    const prev = current.args;
+    const byId2 = new Map((prev.posts ?? []).map((x) => [x.id, x]));
+    for (const x of a.posts ?? []) byId2.set(x.id ?? `new-${byId2.size}`, { ...byId2.get(x.id) ?? {}, ...x });
+    const next = { ...prev, ...a.set ?? {}, posts: [...byId2.values()], remove: [.../* @__PURE__ */ new Set([...prev.remove ?? [], ...a.remove ?? []])], ...a.order ? { order: a.order } : {}, kitId: a.kitId, productPhotos: prev.productPhotos ?? "none" };
+    return kitHandler(next);
+  }));
+  server.registerTool("unpublish", {
+    title: "Take a page or kit offline",
+    description: 'Remove a published page or a content kit immediately (for example a kit made by mistake, or a sale page before the sale). Use cloud_account action "pages" to see every page and kit with its id.',
+    inputSchema: { pageId: external_exports.string().optional(), kitId: external_exports.string().regex(/^[a-f0-9]{12}$/).optional() },
+    annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true }
+  }, wrap(async (a) => {
+    if (!a.pageId && !a.kitId) throw new Error('Send pageId or kitId (see cloud_account action "pages").');
+    if (a.kitId) await cloud.deleteKit(a.kitId);
+    if (a.pageId) await cloud.remove(a.pageId);
+    return json3({ ok: true, removed: a.kitId ?? a.pageId });
   }));
   server.registerPrompt("q4-campaign", {
     title: "Plan my campaign",

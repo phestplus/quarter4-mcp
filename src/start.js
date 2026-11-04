@@ -9,6 +9,15 @@ import { currencyFor, findCountriesInText, findEventsInText, findPlatformsInText
 
 const THEME_BY_EVENT = { 'black-friday': 'black-friday', 'cyber-monday': 'cyber-monday', christmas: 'christmas', 'christmas-eve': 'christmas', 'super-saturday': 'christmas', 'shipping-cutoff': 'christmas', diwali: 'diwali', dhanteras: 'diwali', hanukkah: 'hanukkah', halloween: 'halloween', 'us-thanksgiving': 'thanksgiving', 'boxing-day': 'boxing-day', 'new-year': 'new-year', 'new-years-eve': 'new-year' };
 
+// Standard UTC offsets for common markets, so an "ends Nov 27" deadline means 23:59 local time.
+const OFFSETS = { NG: '+01:00', GH: '+00:00', KE: '+03:00', ZA: '+02:00', EG: '+02:00', MA: '+01:00', CM: '+01:00', SN: '+00:00', CI: '+00:00', UG: '+03:00', TZ: '+03:00', RW: '+02:00', ET: '+03:00',
+  GB: '+00:00', IE: '+00:00', FR: '+01:00', DE: '+01:00', ES: '+01:00', IT: '+01:00', NL: '+01:00', AE: '+04:00', SA: '+03:00', QA: '+03:00', KW: '+03:00', IN: '+05:30', PK: '+05:00', BD: '+06:00',
+  SG: '+08:00', MY: '+08:00', PH: '+08:00', ID: '+07:00', CN: '+08:00', JP: '+09:00', AU: '+10:00', NZ: '+12:00', US: '-05:00', CA: '-05:00', MX: '-06:00', BR: '-03:00', JM: '-05:00', TT: '-04:00' };
+function offsetFor(regions = [], countries = []) {
+  const code = [...countries, ...regions].map((c) => String(c?.code ?? c).toUpperCase()).find((c) => OFFSETS[c]);
+  return OFFSETS[code] ?? 'Z';
+}
+
 export const MOOD_QUERIES = {
   footwear: ['sneakers on concrete', 'street style shoes close up', 'urban night city lights'],
   fashion: ['fashion editorial model', 'runway fabric movement', 'boutique interior warm light'],
@@ -46,7 +55,8 @@ export function startCampaign(o) {
   const cls = classifyNiche(`${o.description ?? ''} ${o.product ?? ''}`);
   const niche = NICHES[cls.id];
   const product = o.product || cls.matched[0] || null;
-  if (cls.confidence !== 'high') questions.push({ field: 'product', question: `What exactly do you sell, and how do people buy it? (a product they order, an app or subscription, a course, a booked service)`, blocking: true, defaultUsed: `${NICHES[cls.id]?.label ?? 'general'} (a guess; the plan, posts and page depend on this)` });
+  // Blocks only when Quarter4 cannot tell at all; a reasonable guess proceeds and says what it assumed.
+  if (cls.confidence !== 'high') questions.push({ field: 'product', question: `What exactly do you sell, and how do people buy it? (a product they order, an app or subscription, a course, a booked service)`, blocking: cls.confidence === 'low', defaultUsed: `${NICHES[cls.id]?.label ?? 'general'} (a guess; the plan, posts and page depend on this)` });
 
   // Platforms
   let platforms = o.platforms ? normalizePlatforms(o.platforms).values : findPlatformsInText(text);
@@ -117,7 +127,7 @@ export function startCampaign(o) {
     nextCalls: [
       { tool: 'content_plan', args: planArgs },
       { tool: 'find_images', args: { query: (MOOD_QUERIES[cls.id] ?? MOOD_QUERIES.general)[0], orientation: 'landscape' } },
-      { tool: 'landing_page', args: { brand: brand ?? '<brand>', ...(product ? { product } : {}), theme, ...(offer?.type === 'percent' ? { discountPercent: offer.value } : offer ? { offer: offer.text } : {}), ...(deadline ? { deadline: `${deadline}T23:59:00Z` } : {}) } },
+      { tool: 'landing_page', args: { brand: brand ?? '<brand>', ...(product ? { product } : {}), theme, ...(offer?.type === 'percent' ? { discountPercent: offer.value } : offer ? { offer: offer.text } : {}), ...(deadline ? { deadline: `${deadline}T23:59:00${offsetFor(regions, countries)}` } : {}) } },
     ],
   };
 }

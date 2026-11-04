@@ -7,6 +7,10 @@ description: Run a full marketing campaign for any business at any time of year,
 
 People will type short, messy requests. Do the work; do not interrogate them.
 
+## 0. One go (preferred)
+
+For a whole campaign, call `campaign_go` with the user's words as `request`, the brand, the offer (or "none" for everyday content) and any website link. Write the headline, statement, promise, steps and post hooks yourself in the brand's voice and pass them as `copy`. If it returns `illustrationsToMake` and you can generate images, generate them, check each against the acceptance list, register them with `illustrate` action "register", and call `campaign_go` again. Show the seller the private review links; publish publicly only after they approve (`publish_page` with role "campaign"). If the seller says something looks wrong, fix it and call `report_issue` with their words.
+
 ## 1. Understand (one call)
 
 Call `start_campaign` with the user's words as `description`, plus anything else they gave (brand, platforms, places, offer, deadline).
@@ -33,7 +37,7 @@ For the next 7 days of slots, write ready-to-post content using the `posts` skil
 
 ## 5. Make it timely (optional, fast)
 
-If the user cares about what is happening now, call `whats_on` with their places and niche. Suggest at most 2 trend-based posts, only from `safeToUse`, never from `avoid`.
+If the user cares about what is happening now, call `whats_on` with their places and niche. Suggest at most 2 trend-based posts, only from `use` (safe and relevant), never from `avoid`; if nothing fits, skip trend posts.
 
 ## 6. Offer the page and exports
 

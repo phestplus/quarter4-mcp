@@ -6,8 +6,8 @@ import { dirname, extname, resolve } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { buildBrief, ASSET_TYPES } from './brief.js';
-import { EVENT_IDS, listEvents } from './calendar.js';
-import { createCloud } from './cloud.js';
+import { EVENT_IDS, listEvents, relevance } from './calendar.js';
+import { NO_KEY, createCloud } from './cloud.js';
 import { findImages, matchingImages, typeWords } from './images.js';
 import { ASK_RULE, questionsFor } from './ask.js';
 import { upcomingHolidays, whatsOn } from './live.js';
@@ -20,9 +20,13 @@ import { toCSV, toICS, toMarkdown } from './export.js';
 import { buildLanding, describeLanding, LAYOUTS, THEMES } from './landing.js';
 import { buildPlan } from './plan.js';
 import { buildKit } from './kit.js';
+import { checkOutput } from './checks.js';
+import { extractBrand } from './extract.js';
+import { ACCEPTANCE, SCENES, STYLES, handoff, promptFor } from './illustrate.js';
+import { tmpdir } from 'node:os';
 import { getSpecs, PLATFORM_IDS } from './specs.js';
 
-export const VERSION = '0.6.0';
+export const VERSION = '0.7.0';
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD');
 // Loose inputs: real users write "ig, tik tok", "Lagos", "black friday". Normalised in the engine.
@@ -44,11 +48,32 @@ export function createServer({ allowFileWrites = false } = {}) {
     palette: z.object({ bg: hexColor.optional(), surface: hexColor.optional(), text: hexColor.optional(), muted: hexColor.optional(), accent: hexColor.optional(), accent2: hexColor.optional() }).optional(),
     fontDisplay: z.string().max(40).optional().describe('Google Fonts family for headings, e.g. "Inter"'),
     fontBody: z.string().max(40).optional().describe('Google Fonts family for text'),
-  }).optional().describe('The brand\'s own look. It always wins over the event theme; the event only adds its label. Ask the seller for their colours and fonts (or read them from their site) rather than guessing.');
+    wordmark: z.object({ text: z.string().max(60).optional(), case: z.enum(['lower', 'upper', 'as-is']).optional(), weight: z.number().min(100).max(900).optional(), letterSpacing: z.string().max(12).optional(),
+      highlight: z.array(z.object({ from: z.number().int().min(0), to: z.number().int().min(1), color: hexColor.optional() })).max(6).optional(), svg: z.string().max(20000).optional() }).optional()
+      .describe('How the brand writes its own name: case, weight, accent letters, or an SVG logotype. Used wherever the name appears; never re-cased.'),
+  }).strict().optional().describe('The brand\'s own look. It always wins over the event theme; the event only adds its label. Ask the seller for their colours and fonts (or read them from their site) rather than guessing.');
+  const positioningFields = {
+    positioning: z.object({ is: z.string().max(200).optional(), isNot: z.array(z.string().max(60)).max(12).optional() }).optional().describe('What the brand is, and what it must never be called (e.g. isNot: ["a dating app"]).'),
+    avoidWords: z.array(z.string().max(40)).max(30).optional().describe('Words that must never appear in copy (e.g. "swipe", "matches", "cheap").'),
+    alwaysSay: z.array(z.string().max(60)).max(10).optional().describe('Preferred phrases or terms to use.'),
+    noLocationMentions: z.boolean().optional().describe('Never add country or city mentions the seller did not ask for (default true).'),
+  };
   const copyFields = {
     displayName: z.string().max(40).optional().describe('Short name used in copy, e.g. "Brightly Premium". Never pass long internal product phrases as headings.'),
     offerType: z.enum(['physical', 'subscription', 'course', 'service', 'digital']).optional().describe('How it is bought; decides the verbs (shop, start your plan, enrol, book, get). Inferred when missing.'),
   };
+  // render_check: every page and kit is checked against Quarter4's own rules before it is shown.
+  // When connected, issues are filed automatically (tool arguments and the failing snippet only).
+  const runChecks = (tool, input) => {
+    const r = checkOutput(input);
+    if (cloud.hasKey() && input.args?.reportIssues !== false) cloud.countRun(tool, r.passed).catch(() => {});
+    if (r.issues.length && cloud.hasKey() && input.args?.reportIssues !== false) {
+      const args = Object.fromEntries(Object.entries(input.args ?? {}).filter(([k]) => !['html', 'images', 'products', 'posts'].includes(k)));
+      cloud.reportIssues({ source: 'auto', tool, version: VERSION, issues: r.issues, args }).catch(() => {});
+    }
+    return { passed: r.passed, issues: r.issues, ...(r.passed ? {} : { fix: 'Fix the errors (usually by passing your own copy, displayName or brand settings) and run the tool again before publishing.' }) };
+  };
+
   // A saved brand profile fills anything the caller did not pass (look, voice, names, links).
   const withProfile = async (a, keys, notes) => {
     if (!cloud.hasKey()) return a;
@@ -88,7 +113,13 @@ export function createServer({ allowFileWrites = false } = {}) {
     annotations: { readOnlyHint: true, openWorldHint: false },
   }, wrap(async (a) => {
     const places = a.regions ? normalizeRegions(a.regions) : null;
-    const events = listEvents({ ...a, regions: places?.values });
+    let events = listEvents({ ...a, regions: places?.values });
+    // With a place given, events celebrated there come first; worldwide events that are mainly another
+    // market's (Diwali for Nigeria, Singles' Day outside Asia) are kept but marked lowRelevance.
+    if (places?.values?.length) {
+      events = events.map((e) => { const r = relevance(e, places.values); return { ...e, relevance: r.score, why: r.reasons, ...(r.score < 1.5 ? { lowRelevance: true } : {}) }; })
+        .sort((x, y) => Number(Boolean(x.lowRelevance)) - Number(Boolean(y.lowRelevance)) || x.date.localeCompare(y.date));
+    }
     if (places?.unknown.length) return json({ count: events.length, events, unknownPlaces: places.unknown, note: `Could not place: ${places.unknown.join(', ')}. Showing events for the rest (worldwide if none).` });
     return json({ count: events.length, events, note: 'Lunar-calendar dates (Diwali, Dhanteras, Hanukkah) are verified for 2026-2028. Hanukkah begins at sundown.' });
   }));
@@ -160,7 +191,7 @@ export function createServer({ allowFileWrites = false } = {}) {
 
   server.registerTool('landing_page', {
     title: 'Sales landing page',
-    description: `Generate a premium, ready-to-deploy sales page (one HTML file) built around what the user sells. Works from minimal input (brand + product): the copy is written from the facts given and never invents reviews, guarantees or prices.
+    description: `Write the copy yourself and pass it (headline, subheadline, features, ctaText, statement, displayName); Quarter4's own copy is only a plain fallback and the result lists which parts used it (fallbacks). Pass the brand's look with brandStyle (mode, palette, fontDisplay, fontBody, wordmark) and its rules with positioning and avoidWords, or save them once with brand_profile. Every page is checked (checks) before you show it. Generate a premium, ready-to-deploy sales page (one HTML file) built around what the user sells. Works from minimal input (brand + product): the copy is written from the facts given and never invents reviews, guarantees or prices.
 An art director picks the page structure from the niche: cinematic full-bleed scenes for cars, gadgets and fitness; a split showcase (sticky photos beside scrolling story) for fashion, home, food and services; a product stage (product spins and zooms with scroll, stickers pop) for shoes, beauty, jewellery and kids; editorial for courses, software and digital products. Motion is scroll-linked (pinned scenes, scrubbed zoom, horizontal galleries, text that fills as you scroll), not timed fades. Fonts, navigation, buttons and countdown style vary per brand (re-roll with variant).
 Media: pass the seller's own photos (images, productImage), a turntable video (videoUrl, scrubbed by scroll) or a 3D model (modelUrl, .glb, rotates with scroll and can be dragged). With no media, free mood photos are fetched automatically (autoImages).
 A holiday theme (${Object.keys(THEMES).join(', ')}) adds its palette and name; with layout "signature" and no product, the art-directed holiday scenes are used instead.
@@ -198,7 +229,17 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
       faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       terms: z.string().optional(),
       brandColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-      brandStyle, ...copyFields,
+      brandStyle, ...copyFields, ...positioningFields,
+      statement: z.string().max(160).optional().describe('One sentence for the scroll statement section; omitted when not given'),
+      design: z.enum(['auto', 'story', 'classic']).optional().describe('"story": art-directed signature sections composed for this brand (hero, statement with a drawn thread, illustrated moments, promise band, journey, offer cards, giant wordmark footer). Chosen automatically when you pass moments, promise or steps.'),
+      heroImage: z.string().optional().describe('Hero illustration or photo (PNG/SVG cut-outs are laid out frameless)'),
+      moments: z.array(z.object({ title: z.string().max(60), text: z.string().max(200).optional(), image: z.string().optional(), alt: z.string().max(120).optional() })).max(3).optional().describe('Up to 3 illustrated moments (e.g. from illustrate)'),
+      momentsTitle: z.string().max(60).optional(),
+      promise: z.string().max(160).optional().describe('The brand promise for the contrast band'),
+      steps: z.array(z.object({ title: z.string().max(60), text: z.string().max(200).optional() })).max(5).optional().describe('How it works, as a journey that fills as you scroll'),
+      stepsTitle: z.string().max(60).optional(),
+      galleryTitle: z.string().max(60).optional(), gridTitle: z.string().max(60).optional(),
+      voice: z.string().max(300).optional(),
       pageUrl: z.string().optional(),
       effects: z.boolean().optional().describe('false turns off particles and 3D motion'),
       outputPath: z.string().optional().describe('Local mode only: write the HTML here (.html)'),
@@ -206,7 +247,7 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   }, wrap(async (a) => {
     const notes = [];
-    a = await withProfile(a, ['brandStyle', 'brandColor', 'displayName', 'offerType', 'ctaUrl'], notes);
+    a = await withProfile(a, ['brandStyle', 'brandColor', 'displayName', 'offerType', 'ctaUrl', 'voice', 'positioning', 'avoidWords'], notes);
     const hasMedia = a.images?.length || a.productImage || a.videoUrl || a.modelUrl || a.imageUrl;
     if (!hasMedia && a.autoImages !== false && a.layout !== 'signature') {
       const nicheId = classifyNiche(`${a.niche ?? ''} ${a.product ?? ''}`).id;
@@ -219,7 +260,8 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
       } else notes.push('No photos found in time; the page uses typography. Add images, productImage, videoUrl or modelUrl for a richer page.');
     }
     const html = buildLanding(a);
-    const summary = describeLanding(a);
+    const fallbacks = ['headline', 'subheadline', 'features', 'ctaText', 'displayName'].filter((k) => !a[k] || (Array.isArray(a[k]) && !a[k].length));
+    const summary = { ...describeLanding(a), ...(fallbacks.length ? { fallbacks, copyNote: `Plain fallback copy was used for: ${fallbacks.join(', ')}. Write these in the brand's voice and call again for a page worth publishing.` } : {}), checks: runChecks('landing_page', { kind: 'page', html, args: a }) };
     if (!a.ctaUrl) notes.push('The button links to "#". Add ctaUrl (checkout, product page or https://wa.me/<number>) before publishing.');
     if (!a.deadline) notes.push('No deadline given, so there is no countdown.');
     const written = await maybeWrite(a.outputPath, html, ['.html', '.htm']);
@@ -316,10 +358,13 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
     inputSchema: {
       brand: z.string().min(1).describe('Brand name; becomes the address q4-<brand>.erasstack.com'),
       path: z.string().optional().describe('Page path, e.g. "black-friday"; empty for the home page'),
+      role: z.enum(['home', 'campaign', 'product', 'legal', 'review']).optional().describe('home (site root, links live campaigns automatically), campaign (ends cleanly after endsAt), product, legal, or review (private, not indexed, does not use a page slot)'),
+      endsAt: z.string().optional().describe('For campaigns: when the offer ends (ISO with time zone). After it, the page says the offer has ended, then redirects home.'),
       html: z.string().optional(),
       file: z.string().optional().describe('Local mode: path to an .html file'),
       page: z.record(z.string(), z.any()).optional().describe('landing_page arguments to build and publish in one call'),
       title: z.string().optional(),
+      force: z.boolean().optional().describe('Publish even if Quarter4\'s checks find errors (not recommended).'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   }, wrap(async (a) => {
@@ -328,10 +373,12 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
       if (!allowFileWrites) throw new Error('file is only supported when the server runs locally. Pass html instead.');
       pageHtml = await readFile(a.file, 'utf8');
     }
-    if (!pageHtml && a.page) pageHtml = buildLanding({ brand: a.brand, ...a.page });
+    if (!pageHtml && a.page) pageHtml = buildLanding(await withProfile({ brand: a.brand, ...a.page }, ['brandStyle', 'brandColor', 'displayName', 'offerType', 'ctaUrl', 'voice', 'positioning', 'avoidWords'], []));
     if (!pageHtml) throw new Error('Send html, file or page.');
-    const r = await cloud.publish({ brand: a.brand, path: a.path, html: pageHtml, title: a.title });
-    return json({ ...r, share: `Share this link on WhatsApp, Instagram bio and Status: ${r.url}` });
+    const checks = runChecks('publish_page', { kind: 'page', html: pageHtml, args: { brand: a.brand, ...(a.page ?? {}) } });
+    if (!checks.passed && !a.force) return json({ published: false, checks, next: 'The page failed Quarter4\'s checks, so it was not published. Fix the errors, or pass force: true to publish anyway.' });
+    const r = await cloud.publish({ brand: a.brand, path: a.path, html: pageHtml, title: a.title, role: a.role, endsAt: a.endsAt ?? a.page?.deadline });
+    return json({ ...r, checks, share: `Share this link on WhatsApp, Instagram bio and Status: ${r.url}` });
   }));
 
   server.registerTool('page_stats', {
@@ -415,6 +462,22 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
     return json({ ...JSON.parse(line), next: 'Pass this file as products[].image to content_kit or landing_page.' });
   }));
 
+  server.registerTool('report_issue', {
+    title: 'Report a problem with Quarter4 output',
+    description: 'When the seller says something Quarter4 made is wrong ("off-brand", "wrong image", "copy does not fit", "looks generic", "not us"), call this with their words and what it was about. It goes to the Quarter4 team with the context, so the seller never has to write a report. Needs connect.',
+    inputSchema: {
+      what: z.string().min(3).max(500).describe('What the seller said, in their words'),
+      tool: z.string().max(40).optional().describe('Which tool made it, e.g. content_kit, landing_page'),
+      chip: z.enum(['off-brand', 'wrong-image', 'copy-does-not-fit', 'looks-generic', 'wrong-brand-name', 'wrong-price', 'other']).optional(),
+      url: z.string().max(300).optional().describe('The kit or page link, if any'),
+      args: z.record(z.string(), z.any()).optional().describe('The tool arguments that produced it (no customer data)'),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => {
+    const r = await cloud.reportIssues({ source: 'user', tool: a.tool ?? 'unknown', version: VERSION, issues: [{ rule: `user.${a.chip ?? 'other'}`, severity: 'error', message: a.what, sample: a.url }], args: a.args ?? {} });
+    return json({ ok: true, ...r, note: 'Thanks. The Quarter4 team gets this with the context. Meanwhile, tell me what to change and I will fix it now.' });
+  }));
+
   server.registerTool('brand_profile', {
     title: 'Saved brand profile',
     description: 'Save or read the seller\'s brand profile in Quarter4 Cloud (needs connect): voice, products with real prices, order link, colours and logo. Saved details fill in content_kit and sales pages automatically, so the seller does not repeat them. Logo and colours on graphics are a Pro feature. Only save prices the seller gave you.',
@@ -423,44 +486,15 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
       profile: z.object({
         brand: z.string().optional(), niche: z.string().optional(), voice: z.string().max(300).optional().describe('How the brand talks, e.g. "playful, Lagos slang, short sentences"'),
         ctaUrl: z.string().optional(), logoUrl: z.string().optional(), brandColor: z.string().optional(),
-        brandStyle, ...copyFields,
+        brandStyle, ...copyFields, ...positioningFields,
+        illustration: z.object({ style: z.enum(['flat-editorial', 'soft-line', 'textured-gouache']).optional(), audience: z.object({ region: z.string().max(60).optional(), ageRange: z.string().max(20).optional() }).optional(), avoid: z.array(z.string().max(40)).max(12).optional(), reference: z.string().optional(), scenes: z.array(z.object({ scene: z.string(), url: z.string() })).max(40).optional() }).optional().describe('How this brand\'s illustrations look (style, audience, avoid) and the registered scenes; filled by illustrate.'),
         products: z.array(z.object({ name: z.string(), price: z.string().optional(), originalPrice: z.string().optional(), note: z.string().optional(), image: z.string().optional() })).max(20).optional(),
       }).optional(),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   }, wrap(async (a) => json(a.action === 'save' ? await cloud.saveBrand(a.profile ?? {}) : await cloud.brand())));
 
-  server.registerTool('content_kit', {
-    title: 'Ready-to-post content kit',
-    description: `Make finished social graphics with captions for a sale or launch: offer post (4:5), product spotlights (1:1), a carousel, Story/WhatsApp Status (9:16), a last-call story and an X/LinkedIn card (16:9). Returns a review page where the seller edits captions, then taps Share (phone share sheet: Instagram, TikTok, WhatsApp with the image attached), uses share links, copies captions or downloads PNGs. Nothing is posted automatically.
-Connected to Quarter4 Cloud: the kit is hosted at a link (Free: 7 days with a small mark; Pro: 90 days, no mark, own logo and colours). Not connected (local): an HTML file is written instead.
-Images: the seller's own photos are best (products[].image or images). If you can generate images yourself, generate them and pass their https URLs. Otherwise free licensed photos are found automatically (autoImages). Never invent prices or deadlines; leave them out if unknown.`,
-    inputSchema: {
-      brand: z.string().min(1),
-      product: z.string().optional().describe('What is on sale, e.g. "sneakers"'),
-      niche: z.string().optional(),
-      theme: z.string().optional().describe(`Event look: ${Object.keys(THEMES).join(', ')}`),
-      offer: z.string().optional().describe('e.g. "30% off"'),
-      discountPercent: z.number().min(1).max(95).optional(),
-      price: z.string().optional(), originalPrice: z.string().optional(),
-      deadline: z.string().optional().describe('ISO date-time the offer ends'), timeZone: z.string().optional(),
-      ctaUrl: z.string().optional().describe('Checkout, product page or https://wa.me/<number>'),
-      pageUrl: z.string().optional().describe('The live sales page link from publish_page, used in captions and share links'),
-      products: z.array(z.object({ name: z.string(), price: z.string().optional(), originalPrice: z.string().optional(), note: z.string().optional(), image: z.string().optional() })).max(6).optional(),
-      images: z.array(z.object({ url: z.string(), alt: z.string().optional() })).max(6).optional(),
-      posts: z.array(z.object({ id: z.string().optional(), format: z.enum(['post', 'square', 'story', 'wide']).optional(), title: z.string().optional(), hook: z.string().optional(), headline: z.string().optional(), sub: z.string().optional(), caption: z.string().optional(), image: z.string().optional() })).max(12).optional()
-        .describe('Your own copy: replace a caption by id (offer, product-1, carousel, story, last-call, wide) or add extra posts with a headline'),
-      logoUrl: z.string().optional().describe('Pro: brand logo (https)'),
-      brandColor: z.string().optional().describe('Pro: brand colour, e.g. "#e11d48"'),
-      brandStyle, ...copyFields,
-      autoImages: z.boolean().optional().describe('Find free photos when none are given (default true)'),
-      features: z.array(z.string().max(40)).max(3).optional().describe('Up to 3 short facts shown as chips on the offer post, e.g. "Free delivery in Lagos", "Cancel anytime". Only real facts from the seller.'),
-      productPhotos: z.enum(['own', 'representative', 'none']).optional().describe('What the seller chose for products without photos: "own" (they are sending photos: pass them as products[].image), "representative" (closest real photo, tagged "Representative image"), "none" (text-led product posts). If you can generate images and the seller wants that, generate them and pass the URLs as products[].image. Ask the seller before choosing.'),
-      kitId: z.string().regex(/^[a-f0-9]{12}$/).optional().describe('Update an existing kit at the same link (e.g. after the seller sends new photos)'),
-      outputPath: z.string().optional().describe('Local mode: where to write the kit .html'),
-    },
-    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
-  }, wrap(async (a) => {
+  const kitHandler = async (a) => {
     const notes = [];
     let plan = 'free';
     if (cloud.hasKey()) {
@@ -468,7 +502,7 @@ Images: the seller's own photos are best (products[].image or images). If you ca
       // Saved brand profile fills anything not given in this request.
       const saved = (await cloud.brand().catch(() => null))?.profile;
       if (saved) {
-        const fill = Object.fromEntries(['product', 'niche', 'ctaUrl', 'logoUrl', 'brandColor', 'products', 'brandStyle', 'displayName', 'offerType'].filter((k) => a[k] === undefined && saved[k] !== undefined).map((k) => [k, saved[k]]));
+        const fill = Object.fromEntries(['product', 'niche', 'ctaUrl', 'logoUrl', 'brandColor', 'products', 'brandStyle', 'displayName', 'offerType', 'voice', 'positioning', 'avoidWords', 'alwaysSay', 'noLocationMentions'].filter((k) => a[k] === undefined && saved[k] !== undefined).map((k) => [k, saved[k]]));
         if (Object.keys(fill).length) { a = { ...fill, ...a }; notes.push(`Filled from your saved brand profile: ${Object.keys(fill).join(', ')}.`); }
       }
     }
@@ -530,9 +564,10 @@ Images: the seller's own photos are best (products[].image or images). If you ca
     const kit = buildKit({ ...a, watermark: !paid, proxy: hosted ? (url, i) => (/^data:/.test(url) ? url : `/__q4/img/__KIT__/${i}`) : undefined });
     const { askUser, assumed } = questionsFor('kit', a);
     if (a.discountPercent || /\d\s*%|off/i.test(a.offer ?? '') || a.originalPrice) notes.push('Before you share: make sure your checkout or app actually charges the advertised sale price. Advertising a price you do not charge is a consumer-law risk (for example under Nigeria\'s FCCPA).');
-    const summary = { posts: kit.posts, notes, ...(askUser.length ? { askUser, howToAsk: ASK_RULE } : {}), assumed };
+    const summary = { posts: kit.posts, notes, ...(askUser.length ? { askUser, howToAsk: ASK_RULE } : {}), assumed, checks: runChecks('content_kit', { kind: 'kit', html: kit.html, args: { ...a, offerType: a.offerType }, posts: kit.posts, contentOnly: kit.contentOnly }) };
     if (hosted) {
-      const body = { brand: a.brand, html: kit.html, images: kit.images.filter((u) => !/^data:/.test(u)), title: `${a.brand} content kit`, ...(a.deadline ? { deadline: a.deadline } : {}) };
+      const keep = Object.fromEntries(Object.entries(a).filter(([k, v]) => !['outputPath', 'kitId'].includes(k) && v !== undefined));
+      const body = { brand: a.brand, html: kit.html, images: kit.images.filter((u) => !/^data:/.test(u)), title: `${a.brand} content kit`, ...(a.deadline ? { deadline: a.deadline } : {}), args: keep };
       const r = a.kitId ? await cloud.updateKit(a.kitId, body) : await cloud.kit(body);
       for (const f of localFiles) {
         const ok = await cloud.kitPhoto(r.id, f.key, f.buf, f.type).then(() => true, () => false);
@@ -543,6 +578,319 @@ Images: the seller's own photos are best (products[].image or images). If you ca
     if (!allowFileWrites) throw new Error(`Connect first to get a kit link: ${cloud.dashboardUrl()} (or call cloud_account action "connect" when running locally).`);
     const file = await maybeWrite(a.outputPath ?? `${a.brand.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-content-kit.html`, kit.html, ['.html', '.htm']);
     return json({ file, ...summary, next: 'Open the file in a browser to review, download and share. Call cloud_account action "connect" to get a link you can open on your phone.' });
+  };
+
+  server.registerTool('content_kit', {
+    title: 'Ready-to-post content kit',
+    description: `Make finished social graphics with captions for a sale or launch: offer post (4:5), product spotlights (1:1), a carousel, Story/WhatsApp Status (9:16), a last-call story and an X/LinkedIn card (16:9). Returns a review page where the seller edits captions, then taps Share (phone share sheet: Instagram, TikTok, WhatsApp with the image attached), uses share links, copies captions or downloads PNGs. Nothing is posted automatically.
+Connected to Quarter4 Cloud: the kit is hosted at a link (Free: 7 days with a small mark; Pro: 90 days, no mark, own logo and colours). Not connected (local): an HTML file is written instead.
+Images: the seller's own photos are best (products[].image or images). If you can generate images yourself, generate them and pass their https URLs. Otherwise free licensed photos are found automatically (autoImages). Never invent prices or deadlines; leave them out if unknown.`,
+    inputSchema: {
+      brand: z.string().min(1),
+      product: z.string().optional().describe('What is on sale, e.g. "sneakers"'),
+      niche: z.string().optional(),
+      theme: z.string().optional().describe(`Event look: ${Object.keys(THEMES).join(', ')}`),
+      offer: z.string().optional().describe('e.g. "30% off"'),
+      discountPercent: z.number().min(1).max(95).optional(),
+      price: z.string().optional(), originalPrice: z.string().optional(),
+      deadline: z.string().optional().describe('ISO date-time the offer ends'), timeZone: z.string().optional(),
+      ctaUrl: z.string().optional().describe('Checkout, product page or https://wa.me/<number>'),
+      pageUrl: z.string().optional().describe('The live sales page link from publish_page, used in captions and share links'),
+      products: z.array(z.object({ name: z.string(), price: z.string().optional(), originalPrice: z.string().optional(), note: z.string().optional(), image: z.string().optional() })).max(6).optional(),
+      images: z.array(z.object({ url: z.string(), alt: z.string().optional() })).max(6).optional(),
+      posts: z.array(z.object({ id: z.string().optional(), remove: z.boolean().optional(), format: z.enum(['post', 'square', 'story', 'wide']).optional(), title: z.string().optional(), hook: z.string().optional(), headline: z.string().optional(), sub: z.string().optional(), caption: z.string().optional(), image: z.string().optional() })).max(12).optional()
+        .describe('Your own copy: replace a caption by id (offer, product-1, carousel, story, last-call, wide) or add extra posts with a headline'),
+      logoUrl: z.string().optional().describe('Pro: brand logo (https)'),
+      brandColor: z.string().optional().describe('Pro: brand colour, e.g. "#e11d48"'),
+      brandStyle, ...copyFields,
+      autoImages: z.boolean().optional().describe('Find free photos when none are given (default true)'),
+      features: z.array(z.string().max(40)).max(3).optional().describe('Up to 3 short facts shown as chips on the offer post, e.g. "Free delivery in Lagos", "Cancel anytime". Only real facts from the seller.'),
+      mode: z.enum(['offer', 'content']).optional().describe('"content" for everyday posts with no offer: no sale posts, prices or offer badges. Inferred as content when there is no offer.'),
+      remove: z.array(z.string()).max(12).optional().describe('Post ids to leave out (offer, story, last-call, wide, carousel, product-1...).'),
+      order: z.array(z.string()).max(20).optional().describe('Post ids in the order to show them.'),
+      ...positioningFields,
+      productPhotos: z.enum(['own', 'representative', 'none']).optional().describe('What the seller chose for products without photos: "own" (they are sending photos: pass them as products[].image), "representative" (closest real photo, tagged "Representative image"), "none" (text-led product posts). If you can generate images and the seller wants that, generate them and pass the URLs as products[].image. Ask the seller before choosing.'),
+      kitId: z.string().regex(/^[a-f0-9]{12}$/).optional().describe('Update an existing kit at the same link (e.g. after the seller sends new photos)'),
+      outputPath: z.string().optional().describe('Local mode: where to write the kit .html'),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap((a) => kitHandler(a)));
+
+  // ---- 0.8: brand understanding, assets, illustrations (level 2: the host AI generates) ----
+  server.registerTool('brand_extract', {
+    title: 'Read a brand from its website',
+    description: 'Read the brand\'s own website and propose its brand profile: palette (from its CSS), heading and body fonts, wordmark case or SVG logotype, logo, a positioning line, and copy samples so you can describe the voice. Show the seller what was found and the evidence, fix anything they correct, then call again with save: true (needs connect) or pass the values to brand_profile.',
+    inputSchema: { url: z.string().url().describe('The brand\'s website'), save: z.boolean().optional().describe('Save the proposed profile (after the seller confirms)'), voice: z.string().max(300).optional().describe('Your one-line read of the voice from the samples, saved with the profile') },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => {
+    const r = await extractBrand(a.url);
+    const profile = { ...r.profile, ...(a.voice ? { voice: a.voice } : {}) };
+    if (a.save) {
+      if (!cloud.hasKey()) throw new Error(NO_KEY);
+      const saved = await cloud.saveBrand(profile);
+      return json({ saved: true, profile: saved.profile, ...(saved.warnings ? { warnings: saved.warnings } : {}), evidence: r.evidence });
+    }
+    return json({ proposed: profile, samples: r.samples, evidence: r.evidence, icons: r.icons, next: 'Show the seller this profile and evidence; ask them to confirm or correct colours, fonts and how they write their name; add your read of the voice from the samples; then call brand_extract again with save: true.' });
+  }));
+
+  const readLocalOrRemote = async (src) => {
+    if (/^https:\/\//.test(src)) {
+      const r = await fetch(src, { signal: AbortSignal.timeout(30000) });
+      if (!r.ok) throw new Error(`Could not download ${src} (${r.status}).`);
+      return { buf: Buffer.from(await r.arrayBuffer()), type: (r.headers.get('content-type') ?? '').split(';')[0] };
+    }
+    if (!allowFileWrites) throw new Error('Local files only work when Quarter4 runs on your computer. Pass an https link instead.');
+    if (!existsSync(src)) throw new Error(`File not found: ${src}`);
+    const ext = extname(src).toLowerCase();
+    return { buf: await readFile(src), type: { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.woff': 'font/woff' }[ext] ?? '' };
+  };
+
+  server.registerTool('asset_upload', {
+    title: 'Upload a brand asset',
+    description: 'Host the brand\'s own logo, wordmark SVG, illustrations, photos or web fonts on Quarter4 Cloud and get a permanent link to use in pages, kits and brand_profile (every plan; Free has a small quota). Needs connect.',
+    inputSchema: { file: z.string().describe('A local file path or an https link'), name: z.string().max(80).optional() },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => {
+    if (!cloud.hasKey()) throw new Error(NO_KEY);
+    const { buf, type } = await readLocalOrRemote(a.file);
+    return json(await cloud.uploadAsset(buf, type, a.name));
+  }));
+
+  server.registerTool('illustrate', {
+    title: 'On-brand illustrations',
+    description: `On-brand illustrations of real people in context, without Figma. action "generate" (Pro and above, connected): Quarter4 makes them itself (best model for the job, transparent background, quality-checked with one free automatic redo), saves them to the brand and returns links; draft: true makes cheap style previews first (a tenth of an image each). "regenerate": a new version of a scene the seller did not like (uses one image). When generation is not on the plan or is busy, generate returns the free prompts instead. action "styles": three style options to show the seller once. action "prompts" (default, free on every plan): ready prompts for each scene, built from the brand profile (palette locked to hex, flat background for a clean cut-out, avoid list, audience) - if you can generate images, generate one per prompt, check them against "acceptance", then call action "register" with the image links or files. "register": makes each image a transparent cut-out (on this computer, free), uploads it and saves it to the brand profile, so pages and kits use it frameless. If you cannot generate images, say so and offer the seller's own art (asset_upload) instead. Scenes for this niche are suggested; you can describe your own.`,
+    inputSchema: {
+      action: z.enum(['styles', 'prompts', 'generate', 'regenerate', 'register']).optional(),
+      draft: z.boolean().optional().describe('generate: cheap style previews (not saved to the brand)'),
+      count: z.number().int().min(1).max(6).optional().describe('generate: how many scenes (default 3)'),
+      niche: z.string().optional(),
+      scenes: z.array(z.object({ id: z.string().max(60).optional(), moment: z.string().max(300), people: z.string().max(200).optional(), mood: z.string().max(80).optional(), crop: z.string().max(40).optional(), aspect: z.enum(['1:1', '4:5', '5:4', '9:16', '16:9']).optional() })).max(6).optional(),
+      style: z.enum(['flat-editorial', 'soft-line', 'textured-gouache']).optional(),
+      palette: z.record(z.string(), z.string()).optional().describe('Overrides the saved brand palette'),
+      audience: z.object({ region: z.string().max(60).optional(), ageRange: z.string().max(20).optional() }).optional(),
+      images: z.array(z.object({ scene: z.string().max(60), file: z.string() })).max(12).optional().describe('register: generated images (https links or local files)'),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => {
+    const saved = cloud.hasKey() ? (await cloud.brand().catch(() => null))?.profile ?? {} : {};
+    const ill = saved.illustration ?? {};
+    const nicheId = classifyNiche(`${a.niche ?? saved.niche ?? ''}`).id;
+    const spec = {
+      palette: a.palette ?? saved.brandStyle?.palette ?? {},
+      style: a.style ?? ill.style ?? 'flat-editorial',
+      avoid: [...(ill.avoid ?? []), ...(saved.avoidWords ?? []), ...(saved.positioning?.isNot ?? [])],
+      audience: a.audience ?? ill.audience,
+      reference: ill.reference,
+    };
+    const action = a.action ?? 'prompts';
+    if (action === 'styles') {
+      const sample = (SCENES[nicheId] ?? SCENES.general)[0];
+      return json({ options: Object.keys(STYLES).map((k) => ({ style: k, description: STYLES[k], samplePrompt: promptFor({ ...spec, style: k }, sample) })), next: 'Show the seller the three options (generate one sample each if you can). Save their pick with brand_profile { illustration: { style } }.' });
+    }
+    if (action === 'prompts') {
+      return json({ style: spec.style, prompts: handoff(spec, a.scenes, nicheId), acceptance: ACCEPTANCE, ...(spec.reference ? { reference: spec.reference, referenceNote: 'Pass this image as the style reference when your image tool accepts one.' } : {}), next: 'Generate one image per prompt, check each against acceptance (regenerate up to 2 times if a check fails), then call illustrate with action "register" and the images.' });
+    }
+    if (action === 'generate' || action === 'regenerate') {
+      const prompts = handoff(spec, a.scenes, nicheId).slice(0, a.count ?? (action === 'regenerate' ? 1 : 3));
+      const freePrompts = (why) => json({ generated: [], why, style: spec.style, prompts, acceptance: ACCEPTANCE, next: 'Generate these with your own image tool if you can, check them against acceptance, then call illustrate action "register". Otherwise offer the seller their own art (asset_upload).' });
+      if (!cloud.hasKey()) return freePrompts('Not connected to Quarter4 Cloud, so here are the prompts (free).');
+      const palette = Object.values(spec.palette ?? {}).filter((c) => /^#[0-9a-f]{3,8}$/i.test(String(c)));
+      const out = [];
+      let last = null;
+      for (const p of prompts) {
+        const r = await cloud.genImage({ prompt: p.prompt, aspect: p.aspect, draft: a.draft === true, regenerate: action === 'regenerate', palette });
+        last = r;
+        if (!r.ok) {
+          if (!out.length) return freePrompts(r.error ?? 'Generation is not available right now.');
+          break;
+        }
+        out.push({ scene: p.scene, url: r.url, model: r.model, check: r.check, autoRedo: r.autoRedo || undefined, reused: r.reused || undefined, charged: r.charged });
+      }
+      if (!a.draft && out.length) {
+        const scenes = [...(ill.scenes ?? []).filter((x) => !out.some((o) => o.scene === x.scene)), ...out.map(({ scene, url }) => ({ scene, url }))];
+        await cloud.saveBrand({ illustration: { ...ill, style: spec.style, scenes, ...(ill.reference ? {} : { reference: out[0].url }) } });
+      }
+      return json({
+        generated: out, draft: a.draft === true, allowance: last?.allowance,
+        ...(last && !last.ok ? { stopped: last.error } : {}),
+        costNote: 'Each final image uses 1 from the monthly allowance; drafts use 0.1; quality redos are free; asking again with the same scene returns the stored image free. A redo the seller asks for (action "regenerate") uses 1.',
+        next: a.draft ? 'Show the seller the drafts. When they pick a direction, call generate without draft.' : 'Show the seller the illustrations. Pages and kits now use them (frameless). If one is wrong, call regenerate with that scene.',
+      });
+    }
+    if (!a.images?.length) throw new Error('register needs images: [{ scene, file }].');
+    if (!cloud.hasKey()) throw new Error(NO_KEY);
+    const out = [];
+    const notes = [];
+    for (const im of a.images) {
+      const { buf, type } = await readLocalOrRemote(im.file);
+      let upBuf = buf, upType = type;
+      if (allowFileWrites && /image\/(png|jpeg|webp)/.test(type)) {
+        // Free local background removal so the illustration sits frameless on any page.
+        try {
+          const dir = resolve(tmpdir(), `q4-ill-${Date.now()}`);
+          await mkdir(dir, { recursive: true });
+          const src = resolve(dir, `in.${type.split('/')[1].replace('jpeg', 'jpg')}`);
+          await writeFile(src, buf);
+          const res = JSON.parse((await runPython([studioScript, src, resolve(dir, 'out.png'), '--transparent', '--size', '1600'])).trim().split('\n').pop());
+          if (res.transparent) { upBuf = await readFile(res.output); upType = 'image/png'; }
+          else notes.push(`${im.scene}: background removal needs rembg (pip install "rembg[cpu]"); uploaded as is.`);
+        } catch (e) { notes.push(`${im.scene}: kept the original (${e.message}).`); }
+      }
+      const r = await cloud.uploadAsset(upBuf, upType, `illustration ${im.scene}`);
+      out.push({ scene: im.scene, url: r.url, transparent: upType === 'image/png' });
+    }
+    const scenes = [...(ill.scenes ?? []).filter((x) => !out.some((o) => o.scene === x.scene)), ...out.map(({ scene, url }) => ({ scene, url }))];
+    await cloud.saveBrand({ illustration: { ...ill, scenes, ...(ill.reference ? {} : { reference: out[0]?.url }) } });
+    return json({ registered: out, notes, use: 'Pass these links as images (landing_page) or products[].image / posts[].image (content_kit); PNG cut-outs are laid out frameless.' });
+  }));
+
+  // ---- AI video (Studio and Business): animate an approved illustration or photo ----
+  server.registerTool('video', {
+    title: 'AI video from an illustration',
+    description: 'Short AI videos (5 or 10 seconds) for Reels, TikTok and Status, animated from an approved illustration or product photo. Studio and Business plans (a 5-second clip uses 1 video, 10 seconds uses 2; failed videos are refunded). action "create" starts it and returns an id; "status" checks it (usually ready in 1 to 3 minutes) and returns the MP4 link, kept 90 days; "usage" shows what is left this month. On other plans, every kit post can still download a free motion video rendered in the browser.',
+    inputSchema: {
+      action: z.enum(['create', 'status', 'usage']).optional(),
+      image: z.string().optional().describe('create: https link of the illustration or photo, or a saved illustration scene name'),
+      prompt: z.string().max(1500).optional().describe('create: the motion, e.g. "she looks up from her phone and smiles; the camera holds still"'),
+      seconds: z.union([z.literal(5), z.literal(10)]).optional(),
+      id: z.string().optional().describe('status: the id from create'),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => {
+    if (!cloud.hasKey()) throw new Error(NO_KEY);
+    const action = a.action ?? (a.id ? 'status' : 'create');
+    if (action === 'usage') return json(await cloud.usage());
+    if (action === 'status') {
+      if (!a.id) throw new Error('status needs the id from create.');
+      const r = await cloud.videoStatus(a.id);
+      if (!r.ok) throw new Error(r.error ?? 'Could not check the video.');
+      return json({ ...r, ok: undefined, ...(r.status === 'running' ? { next: 'Not ready yet. Check again in a minute.' } : {}) });
+    }
+    let image = a.image;
+    if (image && !/^https:\/\//.test(image)) {
+      const saved = (await cloud.brand().catch(() => null))?.profile?.illustration?.scenes ?? [];
+      image = saved.find((x) => x.scene === image)?.url;
+      if (!image) throw new Error(`No saved illustration called "${a.image}". Use illustrate first, or pass an https image link.`);
+    }
+    if (!image) throw new Error('create needs image: the approved illustration or photo to animate.');
+    const r = await cloud.videoStart({ imageUrl: image, prompt: a.prompt, seconds: a.seconds });
+    if (!r.ok) return json({ started: false, why: r.error, ...(r.upgrade ? { upgrade: r.upgrade } : {}), instead: 'Every content kit post has a free motion video (the video button on the post), rendered in the browser.' });
+    return json({ started: true, id: r.id, seconds: r.seconds, charged: r.charged, allowance: r.allowance, next: `Call video with action "status" and id "${r.id}" in about a minute.` });
+  }));
+
+  // ---- 1.0: one go (report §6): brand -> plan -> illustrations -> page -> kit -> checks -> one review ----
+  server.registerTool('campaign_go', {
+    title: 'Whole campaign in one go',
+    description: 'Build a complete, on-brand campaign from one request: reads the brand (saved profile, or its website), understands the goal, asks only blocking questions, plans the content, lists the illustrations to generate, builds the landing page and the content kit (offer or content-only), checks everything, and returns private review links. Nothing is public until the seller approves; then publish the page with publish_page (role "campaign"). Write the headline, statement, promise and captions yourself when you can and pass them in; Quarter4 fills the rest plainly.',
+    inputSchema: {
+      request: z.string().min(3).describe('What the seller asked for, in their words'),
+      brand: z.string().min(1),
+      url: z.string().url().optional().describe('The brand\'s website, read when no brand profile is saved'),
+      offer: z.string().optional().describe('"30% off", or "none" for content only'),
+      deadline: z.string().optional(), timeZone: z.string().optional(),
+      platforms: z.array(z.string()).optional(), regions: z.array(z.string()).optional(),
+      products: z.array(z.object({ name: z.string(), price: z.string().optional(), originalPrice: z.string().optional(), note: z.string().optional(), image: z.string().optional() })).max(6).optional(),
+      ctaUrl: z.string().optional(),
+      copy: z.object({ headline: z.string().max(120).optional(), subheadline: z.string().max(240).optional(), statement: z.string().max(160).optional(), promise: z.string().max(160).optional(),
+        steps: z.array(z.object({ title: z.string().max(60), text: z.string().max(200).optional() })).max(5).optional(), features: z.array(z.string().max(40)).max(3).optional(),
+        posts: z.array(z.object({ id: z.string().optional(), hook: z.string().optional(), caption: z.string().optional(), format: z.enum(['post', 'square', 'story', 'wide']).optional() })).max(12).optional() }).optional()
+        .describe('Your own copy in the brand voice (recommended)'),
+      startDate: z.string().optional(), endDate: z.string().optional(),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => {
+    const steps = [];
+    // 1. Brand: saved profile first; otherwise read the website (proposal, not saved).
+    let profile = cloud.hasKey() ? (await cloud.brand().catch(() => null))?.profile ?? null : null;
+    let brandNote = null;
+    if (!profile?.brandStyle && a.url) {
+      const ex = await extractBrand(a.url).catch((e) => ({ error: e.message }));
+      if (!ex.error) { profile = { ...(profile ?? {}), ...ex.profile }; brandNote = { readFrom: ex.url, evidence: ex.evidence, confirm: 'Show the seller these colours, fonts and wordmark; save with brand_extract save: true once they confirm.' }; }
+      else brandNote = { error: `Could not read ${a.url}: ${ex.error}` };
+    }
+    steps.push(profile?.brandStyle ? 'brand look applied' : 'no brand look yet (ask for the website or colours)');
+    // 2. Understand; stop on blocking questions only.
+    const understood = startCampaign({ description: `${a.request}${a.offer && a.offer !== 'none' ? ` ${a.offer}` : ''}`, brand: a.brand });
+    const blocking = understood.questions.filter((q) => q.blocking);
+    if (blocking.length && !profile?.niche) return json({ needsAnswer: true, askUser: blocking, understood: understood.understood, howToAsk: 'Ask these in one message, then call campaign_go again with the answers in the request.' });
+    const un = understood.understood.niche;
+    const niche = profile?.niche ?? (typeof un === 'string' ? un : un?.label ?? un?.id) ?? a.request;
+    const contentOnly = !a.offer || /^\s*(none|no|no offer)\s*$/i.test(a.offer);
+    const base = { brand: a.brand, niche, ...(profile ?? {}), ...(a.ctaUrl ? { ctaUrl: a.ctaUrl } : {}), ...(a.products ? { products: a.products } : {}) };
+    // 3. Plan.
+    const plan = buildPlan({ brand: a.brand, niche, platforms: a.platforms ?? understood.understood.platforms ?? ['instagram', 'whatsapp'], regions: a.regions ?? understood.understood.regions, startDate: a.startDate, endDate: a.endDate, offer: contentOnly ? undefined : a.offer, offerType: base.offerType, displayName: base.displayName });
+    steps.push(`plan: ${plan.totals.slots} posts`);
+    // 4. Illustrations: registered scenes are used; missing ones come back as prompts to generate.
+    const nicheId = classifyNiche(niche).id;
+    const scenes = profile?.illustration?.scenes ?? [];
+    const prompts = scenes.length ? [] : handoff({ palette: profile?.brandStyle?.palette ?? {}, style: profile?.illustration?.style, avoid: [...(profile?.avoidWords ?? []), ...(profile?.positioning?.isNot ?? [])], audience: profile?.illustration?.audience }, null, nicheId).slice(0, 3);
+    // 5. Page.
+    const c = a.copy ?? {};
+    const pageArgs = { ...base, headline: c.headline, subheadline: c.subheadline, statement: c.statement, promise: c.promise, steps: c.steps, features: c.features,
+      ...(contentOnly ? {} : { offer: a.offer, deadline: a.deadline, timeZone: a.timeZone }),
+      ...(scenes.length ? { heroImage: scenes[0].url, moments: scenes.slice(1, 4).map((x) => ({ title: x.scene.replace(/-/g, ' '), image: x.url })) } : {}),
+      design: c.statement || c.promise || c.steps?.length || scenes.length ? 'story' : undefined, autoImages: false };
+    const pageHtml = buildLanding(pageArgs);
+    const pageChecks = runChecks('campaign_go', { kind: 'page', html: pageHtml, args: pageArgs });
+    // 6. Kit (offer or content-only), hosted privately when connected.
+    const kitArgs = { ...base, ...(contentOnly ? { mode: 'content' } : { offer: a.offer, deadline: a.deadline, timeZone: a.timeZone }), posts: c.posts, features: c.features, productPhotos: 'none', autoImages: false,
+      ...(scenes.length ? { images: scenes.slice(0, 3).map((x) => ({ url: x.url, alt: x.scene })) } : {}) };
+    const kitRes = JSON.parse((await kitHandler(kitArgs)).content[0].text);
+    // 7. Review: the page goes up privately (role "review") when connected; otherwise a local file.
+    let pageLink = null;
+    if (cloud.hasKey() && pageChecks.passed) {
+      const slug = `review-${Date.now().toString(36)}`;
+      const r = await cloud.publish({ brand: a.brand, path: slug, html: pageHtml, title: `${a.brand} campaign review`, role: 'review' }).catch((e) => ({ error: e.message }));
+      pageLink = r.url ?? null;
+      if (r.error) steps.push(`page review upload failed: ${r.error}`);
+    } else if (allowFileWrites) {
+      pageLink = await maybeWrite(`${a.brand.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-campaign.html`, pageHtml, ['.html']);
+    }
+    return json({
+      understood: understood.understood, ...(brandNote ? { brand: brandNote } : {}),
+      review: { page: pageLink, kit: kitRes.url ?? kitRes.file ?? null, private: true },
+      plan: { totals: plan.totals, firstWeek: plan.slots.slice(0, 7).map((x) => ({ date: x.date, platform: x.platform, format: x.format, hook: x.hook })) },
+      ...(prompts.length ? { illustrationsToMake: prompts, illustrationsNote: 'On Pro and above, call illustrate action "generate" (Quarter4 makes and saves them). Otherwise generate these with your own image tool if you can and register them with illustrate action "register". Then call campaign_go again: the page and kit will use them.' } : {}),
+      checks: { page: pageChecks, kit: kitRes.checks },
+      ...(kitRes.askUser ? { askUser: kitRes.askUser } : {}),
+      steps,
+      next: 'Show the seller the review links. When they approve, publish the page publicly with publish_page (role "campaign", endsAt = deadline) and share the kit posts.',
+    });
+  }));
+
+  server.registerTool('kit_edit', {
+    title: 'Edit a hosted content kit',
+    description: 'Change a kit that is already shared, at the same link: remove posts, reorder them, replace a post\'s hook, caption, image or format, add new posts, or change settings (e.g. features, deadline). Use the kitId from content_kit.',
+    inputSchema: {
+      kitId: z.string().regex(/^[a-f0-9]{12}$/),
+      remove: z.array(z.string()).max(12).optional().describe('Post ids to remove'),
+      order: z.array(z.string()).max(20).optional().describe('Post ids in the new order'),
+      posts: z.array(z.object({ id: z.string().optional(), remove: z.boolean().optional(), format: z.enum(['post', 'square', 'story', 'wide']).optional(), title: z.string().optional(), hook: z.string().optional(), headline: z.string().optional(), sub: z.string().optional(), caption: z.string().optional(), image: z.string().optional() })).max(12).optional()
+        .describe('Posts to change (by id) or add'),
+      set: z.record(z.string(), z.any()).optional().describe('Other content_kit settings to change, e.g. { features: [...], deadline: "..." }'),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  }, wrap(async (a) => {
+    if (!cloud.hasKey()) throw new Error(NO_KEY);
+    const current = await cloud.getKit(a.kitId);
+    if (!current.args) throw new Error('This kit was made before editing was available. Make it again with content_kit (pass kitId to keep the link).');
+    const prev = current.args;
+    const byId = new Map((prev.posts ?? []).map((x) => [x.id, x]));
+    for (const x of a.posts ?? []) byId.set(x.id ?? `new-${byId.size}`, { ...(byId.get(x.id) ?? {}), ...x });
+    const next = { ...prev, ...(a.set ?? {}), posts: [...byId.values()], remove: [...new Set([...(prev.remove ?? []), ...(a.remove ?? [])])], ...(a.order ? { order: a.order } : {}), kitId: a.kitId, productPhotos: prev.productPhotos ?? 'none' };
+    return kitHandler(next);
+  }));
+
+  server.registerTool('unpublish', {
+    title: 'Take a page or kit offline',
+    description: 'Remove a published page or a content kit immediately (for example a kit made by mistake, or a sale page before the sale). Use cloud_account action "pages" to see every page and kit with its id.',
+    inputSchema: { pageId: z.string().optional(), kitId: z.string().regex(/^[a-f0-9]{12}$/).optional() },
+    annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
+  }, wrap(async (a) => {
+    if (!a.pageId && !a.kitId) throw new Error('Send pageId or kitId (see cloud_account action "pages").');
+    if (a.kitId) await cloud.deleteKit(a.kitId);
+    if (a.pageId) await cloud.remove(a.pageId);
+    return json({ ok: true, removed: a.kitId ?? a.pageId });
   }));
 
   // Prompts: reusable workflows for clients without skills (ChatGPT, Claude Desktop).

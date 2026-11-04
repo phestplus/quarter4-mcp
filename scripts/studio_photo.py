@@ -81,6 +81,7 @@ def main():
     ap.add_argument("--size", type=int, default=1600)
     ap.add_argument("--no-shadow", action="store_true")
     ap.add_argument("--keep-bg", action="store_true", help="enhance only, never remove the background")
+    ap.add_argument("--transparent", action="store_true", help="output the cut-out alone as a transparent PNG (for illustrations)")
     a = ap.parse_args()
 
     src = Image.open(a.input)
@@ -88,6 +89,16 @@ def main():
     cut = None if a.keep_bg else cut_out(img)
     size = a.size
 
+    if cut is not None and a.transparent:
+        bbox = cut.getchannel("A").point(lambda v: 255 if v > 16 else 0).getbbox()
+        if bbox:
+            cut = cut.crop(bbox)
+        cut.thumbnail((size, size), Image.LANCZOS)
+        out = Path(a.output).with_suffix(".png")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        cut.save(out, optimize=True)
+        print(json.dumps({"output": str(out.resolve()), "removedBackground": True, "transparent": True, "note": "Transparent cut-out, ready to place on any background without a frame.", "size": max(cut.size)}))
+        return
     if cut is not None:
         bbox = cut.getchannel("A").point(lambda v: 255 if v > 16 else 0).getbbox()
         if bbox:

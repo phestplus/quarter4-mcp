@@ -10,14 +10,14 @@ description: Find what is happening right now for a country or region (today's t
 Call `whats_on` with `places` (countries, cities or regions in any form) and `niche` (what they sell). It returns:
 
 - `trending`: today's top searches per country, with `sensitive` and `fitsNiche` flags
-- `safeToUse` and `avoid`
+- `use` (safe and relevant to this business), `safeButUnrelated`, `avoid`, and `nothingFitsToday` when nothing fits
 - `publicHolidays`: official holidays in the look-ahead window (with substitute days, e.g. a Boxing Day moved to Monday)
 - `worldReading`: what people are reading about globally
 - `errors`: sources that failed; mention them in one line
 
 ## 2. Turn into ideas
 
-- Up to 3 trend posts, only from `safeToUse`, preferring `fitsNiche`. For each: why the audience cares, the angle for this brand, format (story or short video is fastest), and post it today.
+- Up to 3 trend posts, only from `use`. If `use` is empty, say nothing fits today and suggest the content plan instead. For each: why the audience cares, the angle for this brand, format (story or short video is fastest), and post it today.
 - Public holidays: opening hours posts, order-by dates, and whether a sale fits the day.
 - If nothing fits, say so. A forced trend post hurts the brand.
 

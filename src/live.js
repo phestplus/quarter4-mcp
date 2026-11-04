@@ -118,7 +118,10 @@ export async function whatsOn(o) {
   return {
     fetchedAt: new Date().toISOString(),
     trending: trending.slice(0, 15 * countries.length),
-    safeToUse: trending.filter((t) => !t.sensitive).slice(0, 10).map((t) => t.topic),
+    // "Use" means safe AND relevant to this business; safe-but-unrelated topics are listed separately.
+    use: kw.length ? trending.filter((t) => !t.sensitive && t.fitsNiche).slice(0, 10).map((t) => t.topic) : [],
+    safeButUnrelated: trending.filter((t) => !t.sensitive && !(kw.length && t.fitsNiche)).slice(0, 10).map((t) => t.topic),
+    ...(kw.length && !trending.some((t) => !t.sensitive && t.fitsNiche) ? { nothingFitsToday: 'None of the trends today fit this business. Skip trend posts today and use the content plan instead.' } : {}),
     avoid: trending.filter((t) => t.sensitive).map((t) => t.topic),
     publicHolidays: hol.holidays,
     worldReading: wiki.filter((w) => !w.sensitive).slice(0, 10),

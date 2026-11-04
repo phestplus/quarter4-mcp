@@ -25,7 +25,8 @@ export function questionsFor(task, o) {
     assumed.push('No product photos given, so offer posts use matching licensed photos or bold type. Add product photos to feature specific items.');
   }
   const hasPrice = o.price || o.discountPercent || /\d/.test(o.offer ?? '') || products.some((p) => p.price);
-  if (!hasPrice) q.push({ field: 'price', question: 'What is the offer and the real prices? (e.g. "30% off, now ₦63,000, was ₦90,000"). Say "no discount" if there is none.', why: 'Prices and discounts are never made up.' });
+  const contentOnly = o.mode === 'content' || /^\s*(none|no|no offer|no discount)\s*$/i.test(String(o.offer ?? ''));
+  if (!hasPrice && !contentOnly) q.push({ field: 'price', question: 'What is the offer and the real prices? (e.g. "30% off, now ₦63,000, was ₦90,000"). Say "no discount" if there is none.', why: 'Prices and discounts are never made up.' });
   if (!o.ctaUrl && !o.pageUrl) q.push({ field: 'link', question: 'Where should buyers order? Your WhatsApp number or a checkout link.', why: 'Every post and button needs a real place to buy.' });
   if (!o.deadline && (o.discountPercent || /off|%|sale/i.test(o.offer ?? ''))) assumed.push('No end date given, so there is no countdown and no "ends" line. Tell me the end date to add one.');
   if (o.price && !/[₦$€£¥₹]|ngn|usd|ghs|kes|zar|eur|gbp|cedi|naira|rand|shilling/i.test(String(o.price))) q.push({ field: 'currency', question: 'Which currency are these prices in?', why: 'Prices must show the right currency.' });

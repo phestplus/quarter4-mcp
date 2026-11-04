@@ -10,7 +10,8 @@ const UA = 'quarter4-mcp (https://github.com/phestplus/quarter4-mcp)';
 const TRADEMARKS = ['nike', 'adidas', 'converse', 'vans', 'puma', 'reebok', 'yeezy', 'jordan', 'new balance', 'asics', 'fila', 'gucci', 'louis vuitton', 'chanel', 'prada', 'dior', 'hermes', 'rolex', 'apple', 'iphone', 'macbook', 'samsung', 'sony', 'playstation', 'xbox', 'nintendo', 'toyota', 'mercedes', 'bmw', 'audi', 'ferrari', 'lamborghini', 'porsche', 'tesla', 'ford', 'honda', 'lexus', 'range rover', 'kia', 'chevrolet', 'corvette', 'hyundai', 'nissan', 'volkswagen', 'volvo', 'jaguar', 'bentley', 'rolls-royce', 'maserati', 'mazda', 'subaru', 'jeep', 'peugeot', 'renault', 'fiat', 'mclaren', 'bugatti', 'aston martin', 'coca-cola', 'pepsi', 'starbucks', 'mcdonald', 'ikea', 'zara', 'h&m', 'supreme', 'balenciaga', 'off-white', 'lego', 'disney', 'barbie', 'marvel'];
 
 const brandRisk = (text) => TRADEMARKS.find((t) => String(text ?? '').toLowerCase().includes(t)) ?? null;
-const strip = (html) => String(html ?? '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+const strip = (html) => String(html ?? '').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+const short = (t, n = 60) => { const x = String(t ?? '').trim(); return x.length > n ? `${x.slice(0, n - 1).replace(/\s+\S*$/, '')}…` : x; };
 
 async function getJson(url, headers = {}, ms = 12000) {
   const res = await fetch(url, { headers: { 'user-agent': UA, ...headers }, signal: AbortSignal.timeout(ms) });
@@ -51,8 +52,8 @@ async function commons(q, { perPage, minWidth }) {
     const lic = m.LicenseShortName?.value ?? '';
     if (!/^(cc0|public domain|cc by(-sa)? \d)/i.test(lic)) return null;   // commercial-use licences only
     if (i.width < minWidth) return null;
-    const author = strip(m.Artist?.value) || 'Unknown';
-    const title = p.title.replace(/^File:/, '').replace(/\.[a-z]+$/i, '');
+    const author = short(strip(m.Artist?.value), 40) || 'Unknown';
+    const title = short(strip(p.title.replace(/^File:/, '').replace(/\.[a-z]+$/i, '')));
     return {
       provider: 'wikimedia', url: i.thumburl ?? i.url, full: i.url, thumb: i.thumburl, width: i.width, height: i.height,
       alt: strip(m.ImageDescription?.value).slice(0, 140) || title, author, page: i.descriptionurl, license: lic, licenseUrl: m.LicenseUrl?.value ?? null,
@@ -101,6 +102,13 @@ export async function findImages(query, o = {}) {
     }
   }
   images = images.map((im) => ({ ...im, brandRisk: brandRisk(`${im.alt} ${im.page}`) }));
+  // Never fill a page with something unrelated: a result must mention at least one subject word of the query.
+  const STOP = new Set(['with', 'from', 'that', 'this', 'into', 'over', 'their', 'your', 'some', 'very', 'warm', 'light', 'soft', 'bright', 'dark', 'home', 'together', 'photo', 'image', 'picture', 'happy', 'smiling', 'young', 'black', 'white', 'african', 'nigerian', 'person', 'people']);
+  const terms = String(query).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3 && !STOP.has(w)).map((w) => w.replace(/(ies)$/, 'y').replace(/(es|s)$/, ''));
+  const relevant = (im) => !terms.length || terms.some((t) => new RegExp(`(^|[^a-z])${t}`, 'i').test(`${im.alt ?? ''}`));
+  const before = images.length;
+  images = images.filter(relevant);
+  const dropped = before - images.length;
   // Photographs only: archive scans, engravings and paintings look wrong on a modern sales page.
   if (o.photosOnly !== false) images = images.filter((im) => !/drawing|engraving|lithograph|etching|fashion plate|illustration|painting|museum|(^|[^a-z])met([^a-z]|$)|lacma|scan|poster|diagram|logo|icon|\bmap\b/i.test(`${im.alt} ${im.page}`));
   // Skip broken, abandoned or damaged subjects unless asked for.
@@ -113,6 +121,8 @@ export async function findImages(query, o = {}) {
   const premium = providersTried.some((p) => p === 'pexels' || p === 'unsplash');
   return {
     images: images.slice(0, count),
+    ...(dropped ? { droppedAsUnrelated: dropped } : {}),
+    ...(images.length ? {} : { nothingFits: `Nothing found matches "${query}"${terms.length ? ` (looked for: ${terms.join(', ')})` : ''}. Try simpler words, use the seller's own photos, or connect Quarter4 Cloud for studio photo search.` }),
     providersTried, errors,
     note: [
       premium ? null : 'Tip: set PEXELS_API_KEY or UNSPLASH_ACCESS_KEY (both free) for studio-quality photos. Keyless sources are mixed quality.',

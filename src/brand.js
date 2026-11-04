@@ -75,3 +75,29 @@ export function brandTokens(o = {}) {
     brandColor: o.brandColor,
   };
 }
+
+const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+/**
+ * The brand's name as a wordmark: never re-cased by CSS. brandStyle.wordmark =
+ * { text, case: 'lower'|'upper'|'as-is', weight, letterSpacing, highlight: [{ from, to, color }] } or { svg }.
+ */
+export function wordmarkHtml(o = {}) {
+  const w = o.brandStyle?.wordmark ?? o.wordmark ?? null;
+  if (w?.svg && /^\s*<svg[\s>]/i.test(w.svg) && !/<script|on\w+=/i.test(w.svg)) return `<span class="wm wm-svg" role="img" aria-label="${escHtml(o.brand)}">${w.svg}</span>`;
+  let text = String(w?.text ?? o.brand ?? '');
+  if (w?.case === 'lower') text = text.toLowerCase();
+  else if (w?.case === 'upper') text = text.toUpperCase();
+  const style = [w?.weight ? `font-weight:${Number(w.weight) || 700}` : '', w?.letterSpacing ? `letter-spacing:${String(w.letterSpacing).replace(/[^0-9.\-a-z]/gi, '')}` : ''].filter(Boolean).join(';');
+  const marks = (Array.isArray(w?.highlight) ? w.highlight : []).filter((h) => Number.isInteger(h.from) && Number.isInteger(h.to) && h.to > h.from).sort((a, b) => a.from - b.from);
+  let html = '';
+  let at = 0;
+  for (const h of marks) {
+    if (h.from < at) continue;
+    const color = /^#[0-9a-f]{6}$/i.test(h.color ?? '') ? h.color : 'var(--ac)';
+    html += escHtml(text.slice(at, h.from)) + `<span style="color:${color}">${escHtml(text.slice(h.from, h.to))}</span>`;
+    at = h.to;
+  }
+  html += escHtml(text.slice(at));
+  return `<span class="wm" style="text-transform:none${style ? `;${style}` : ''}">${html}</span>`;
+}
