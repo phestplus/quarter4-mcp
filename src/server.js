@@ -747,12 +747,12 @@ Images: the seller's own photos are best (products[].image or images). If you ca
   // ---- AI video (Studio and Business): animate an approved illustration or photo ----
   server.registerTool('video', {
     title: 'AI video from an illustration',
-    description: 'Short AI videos (5 or 10 seconds) for Reels, TikTok and Status, animated from an approved illustration or product photo. Studio and Business plans (a 5-second clip uses 1 video, 10 seconds uses 2; failed videos are refunded). action "create" starts it and returns an id; "status" checks it (usually ready in 1 to 3 minutes) and returns the MP4 link, kept 90 days; "usage" shows what is left this month. On other plans, every kit post can still download a free motion video rendered in the browser.',
+    description: 'Short AI videos (4 or 8 seconds) for Reels, TikTok and Status, animated from an approved illustration or product photo. Studio and Business plans (a 4-second clip uses 1 video, 8 seconds uses 2; failed videos are refunded). action "create" starts it and returns an id; "status" checks it (usually ready in 1 to 3 minutes) and returns the MP4 link, kept 90 days; "usage" shows what is left this month. On other plans, every kit post can still download a free motion video rendered in the browser.',
     inputSchema: {
       action: z.enum(['create', 'status', 'usage']).optional(),
       image: z.string().optional().describe('create: https link of the illustration or photo, or a saved illustration scene name'),
       prompt: z.string().max(1500).optional().describe('create: the motion, e.g. "she looks up from her phone and smiles; the camera holds still"'),
-      seconds: z.union([z.literal(5), z.literal(10)]).optional(),
+      seconds: z.union([z.literal(4), z.literal(8)]).optional(),
       id: z.string().optional().describe('status: the id from create'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },

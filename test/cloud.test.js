@@ -185,7 +185,7 @@ test('connect: browser approval saves the key locally, then publishing works', {
 test('AI generation through MCP: Free gets the free prompts, Pro generates and saves, video needs Studio', { skip, timeout: 30000 }, async () => {
   const { default: worker } = await import(workerPath.href);
   const { MemoryStore, MemoryBucket } = await import(new URL('../../quarter4-cloud/src/store.js', import.meta.url).href);
-  const env = { store: new MemoryStore(), PAGES: new MemoryBucket(), DEV: '1', APP_HOST: 'q4.erasstack.com', ROOT_DOMAIN: 'erasstack.com', PAGE_PREFIX: 'q4-', KEY_PEPPER: 'p', OPENAI_API_KEY: 'sk-test', FAL_KEY: 'fal-test' };
+  const env = { store: new MemoryStore(), PAGES: new MemoryBucket(), DEV: '1', APP_HOST: 'q4.erasstack.com', ROOT_DOMAIN: 'erasstack.com', PAGE_PREFIX: 'q4-', KEY_PEPPER: 'p', OPENROUTER_API_KEY: 'or-test' };
   const realFetch = globalThis.fetch;
   const http = createHttp(async (req, res) => {
     const chunks = []; for await (const c of req) chunks.push(c);
@@ -196,8 +196,8 @@ test('AI generation through MCP: Free gets the free prompts, Pro generates and s
   // Image and vision providers are faked; everything else goes to the local worker.
   globalThis.fetch = async (input, init) => {
     const url = typeof input === 'string' ? input : input.url;
-    if (url === 'https://api.openai.com/v1/images/generations') return Response.json({ data: [{ b64_json: Buffer.from('png-bytes-for-the-test').toString('base64') }] });
-    if (url === 'https://api.openai.com/v1/chat/completions') return Response.json({ choices: [{ message: { content: '{"passed":true,"reasons":[]}' } }] });
+    if (url === 'https://openrouter.ai/api/v1/images') return Response.json({ data: [{ b64_json: Buffer.from('png-bytes-for-the-test').toString('base64') }] });
+    if (url === 'https://openrouter.ai/api/v1/chat/completions') return Response.json({ choices: [{ message: { content: '{"passed":true,"reasons":[]}' } }] });
     return realFetch(input, init);
   };
   process.env.QUARTER4_API_URL = `http://127.0.0.1:${http.address().port}`;

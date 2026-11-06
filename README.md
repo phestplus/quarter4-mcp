@@ -44,7 +44,7 @@ Docs and examples: https://phestplus.github.io/quarter4-mcp/ (mirror: https://q4
 | `campaign_go` | The whole campaign in one go: brand, plan, illustrations to make, landing page, content kit, checks, private review links. |
 | `brand_extract` | Read a brand's own website: palette, fonts, wordmark, logo, positioning and copy samples, with evidence. |
 | `illustrate` | On-brand illustrations of people without Figma. Pro and above: Quarter4 generates them (quality-checked, transparent, saved to the brand). Every plan: style options and ready prompts for the AI's own image tool, then transparent cut-outs. |
-| `video` | Short AI videos (5 or 10 seconds) animated from an approved illustration or photo (Studio and Business). |
+| `video` | Short AI videos (4 or 8 seconds) animated from an approved illustration or photo (Studio and Business). |
 | `asset_upload` | Host the brand's logo, wordmark, illustrations and fonts (every plan). |
 | `kit_edit` | Change a shared kit at the same link: remove, reorder, replace or add posts. |
 | `unpublish` | Take a page or kit offline immediately. |
@@ -109,7 +109,7 @@ Prefer setting a key yourself (CI, hosted connectors)? Create one in the dashboa
 |---|---|---|
 | Free | ₦0 / $0 | 1 site, 3 live pages, 7-day analytics, small badge |
 | Pro | ₦9,900 a month in Nigeria, $9 elsewhere | Your own domain, no badge, 100 pages, 12-month analytics |
-| Business | ₦39,000 a month in Nigeria, $39 elsewhere | 10 brands, 10 custom domains |
+| Business | ₦60,000 a month in Nigeria, $39 elsewhere | 10 brands, 10 custom domains |
 
 Payments are handled by Flutterwave's secure checkout. Pricing: https://q4.erasstack.com
 
