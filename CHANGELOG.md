@@ -4,6 +4,7 @@
 
 - **AI illustrations made by Quarter4 (`illustrate` action "generate", Pro and above):** the best model for each job (cheap drafts for style previews, a premium model for finals with a transparent background, a fallback model), a quality check on every final with one free automatic redo, saved to the brand so pages and kits use them. `regenerate` makes a new version a seller asks for. Free plans, and any time generation is unavailable, get the free prompts instead.
 - **AI video (`video`, Studio and Business):** 4 or 8-second clips animated from an approved illustration or photo; failed videos are refunded; kept 90 days.
+- **Credits (cloud):** generation stops at the content limit or credits, whichever comes first, and nobody is charged extra. Costs are fixed and can be quoted first. AI images and video can be switched off (video starts off); landing page images keep working but still use credits.
 - **Studio plan and top-ups (cloud):** Studio adds 60 images and 15 videos a month; one-off packs of 20 images or 5 videos. Allowances and a daily spending cap protect costs.
 - **Retention (cloud):** a daily cleanup removes expired kits, ended campaigns, idle Free pages (after an email warning), old analytics, old issues, generated art after a plan lapses and videos after 90 days.
 

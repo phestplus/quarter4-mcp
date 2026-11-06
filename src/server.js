@@ -662,6 +662,7 @@ Images: the seller's own photos are best (products[].image or images). If you ca
     inputSchema: {
       action: z.enum(['styles', 'prompts', 'generate', 'regenerate', 'register']).optional(),
       draft: z.boolean().optional().describe('generate: cheap style previews (not saved to the brand)'),
+      purpose: z.enum(['post', 'page']).optional().describe('generate: "page" for landing page images; they still work when AI images are off, and always pass the credit check'),
       count: z.number().int().min(1).max(6).optional().describe('generate: how many scenes (default 3)'),
       niche: z.string().optional(),
       scenes: z.array(z.object({ id: z.string().max(60).optional(), moment: z.string().max(300), people: z.string().max(200).optional(), mood: z.string().max(80).optional(), crop: z.string().max(40).optional(), aspect: z.enum(['1:1', '4:5', '5:4', '9:16', '16:9']).optional() })).max(6).optional(),
@@ -695,10 +696,12 @@ Images: the seller's own photos are best (products[].image or images). If you ca
       const freePrompts = (why) => json({ generated: [], why, style: spec.style, prompts, acceptance: ACCEPTANCE, next: 'Generate these with your own image tool if you can, check them against acceptance, then call illustrate action "register". Otherwise offer the seller their own art (asset_upload).' });
       if (!cloud.hasKey()) return freePrompts('Not connected to Quarter4 Cloud, so here are the prompts (free).');
       const palette = Object.values(spec.palette ?? {}).filter((c) => /^#[0-9a-f]{3,8}$/i.test(String(c)));
+      const quote = await cloud.genQuote({ [a.draft ? 'drafts' : 'images']: prompts.length, purpose: a.purpose }).catch(() => null);
+      if (quote && !quote.ok) return freePrompts(`${quote.why} Nothing was used.`);
       const out = [];
       let last = null;
       for (const p of prompts) {
-        const r = await cloud.genImage({ prompt: p.prompt, aspect: p.aspect, draft: a.draft === true, regenerate: action === 'regenerate', palette });
+        const r = await cloud.genImage({ prompt: p.prompt, aspect: p.aspect, draft: a.draft === true, regenerate: action === 'regenerate', palette, purpose: a.purpose });
         last = r;
         if (!r.ok) {
           if (!out.length) return freePrompts(r.error ?? 'Generation is not available right now.');
@@ -711,9 +714,9 @@ Images: the seller's own photos are best (products[].image or images). If you ca
         await cloud.saveBrand({ illustration: { ...ill, style: spec.style, scenes, ...(ill.reference ? {} : { reference: out[0].url }) } });
       }
       return json({
-        generated: out, draft: a.draft === true, allowance: last?.allowance,
+        generated: out, draft: a.draft === true, allowance: last?.allowance, credits: last?.credits,
         ...(last && !last.ok ? { stopped: last.error } : {}),
-        costNote: 'Each final image uses 1 from the monthly allowance; drafts use 0.1; quality redos are free; asking again with the same scene returns the stored image free. A redo the seller asks for (action "regenerate") uses 1.',
+        costNote: 'Tell the seller what this used and what is left. A final image uses 1 image and 8 credits; a draft uses a tenth of an image and 1 credit; quality redos are free; asking again with the same scene returns the stored image free. A redo the seller asks for (action "regenerate") costs the same as a new image. The seller stops at their content limit or credits, whichever comes first, and is never charged extra.',
         next: a.draft ? 'Show the seller the drafts. When they pick a direction, call generate without draft.' : 'Show the seller the illustrations. Pages and kits now use them (frameless). If one is wrong, call regenerate with that scene.',
       });
     }
@@ -747,9 +750,11 @@ Images: the seller's own photos are best (products[].image or images). If you ca
   // ---- AI video (Studio and Business): animate an approved illustration or photo ----
   server.registerTool('video', {
     title: 'AI video from an illustration',
-    description: 'Short AI videos (4 or 8 seconds) for Reels, TikTok and Status, animated from an approved illustration or product photo. Studio and Business plans (a 4-second clip uses 1 video, 8 seconds uses 2; failed videos are refunded). action "create" starts it and returns an id; "status" checks it (usually ready in 1 to 3 minutes) and returns the MP4 link, kept 90 days; "usage" shows what is left this month. On other plans, every kit post can still download a free motion video rendered in the browser.',
+    description: 'Short AI videos (4 or 8 seconds) for Reels, TikTok and Status, animated from an approved illustration or product photo. Studio and Business plans (a 4-second clip uses 1 video, 8 seconds uses 2; failed videos are refunded). Uses credits (15 for 4 seconds, 30 for 8), and AI video is off until the seller turns it on: ask before enabling it with action "settings" and video: true. action "create" starts it and returns an id; "status" checks it (usually ready in 1 to 3 minutes) and returns the MP4 link, kept 90 days; "usage" shows credits, images and videos left; "settings" turns AI images or video on or off. On other plans, every kit post can still download a free motion video rendered in the browser.',
     inputSchema: {
-      action: z.enum(['create', 'status', 'usage']).optional(),
+      action: z.enum(['create', 'status', 'usage', 'settings']).optional(),
+      images: z.boolean().optional().describe('settings: AI images on or off (landing page images keep working, and still use credits)'),
+      video: z.boolean().optional().describe('settings: AI video on or off'),
       image: z.string().optional().describe('create: https link of the illustration or photo, or a saved illustration scene name'),
       prompt: z.string().max(1500).optional().describe('create: the motion, e.g. "she looks up from her phone and smiles; the camera holds still"'),
       seconds: z.union([z.literal(4), z.literal(8)]).optional(),
@@ -760,6 +765,7 @@ Images: the seller's own photos are best (products[].image or images). If you ca
     if (!cloud.hasKey()) throw new Error(NO_KEY);
     const action = a.action ?? (a.id ? 'status' : 'create');
     if (action === 'usage') return json(await cloud.usage());
+    if (action === 'settings') return json(await cloud.genSettings(a.images === undefined && a.video === undefined ? undefined : { images: a.images, video: a.video }));
     if (action === 'status') {
       if (!a.id) throw new Error('status needs the id from create.');
       const r = await cloud.videoStatus(a.id);
