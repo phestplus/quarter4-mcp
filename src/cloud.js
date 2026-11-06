@@ -140,6 +140,8 @@ export function createCloud({ persist = false, client: initialClient = 'AI app' 
     videoStart: (b) => soft('/v1/generate/video', { method: 'POST', body: b, timeout: 60000 }),
     videoStatus: (id) => soft(`/v1/generate/video/${encodeURIComponent(id)}`, { timeout: 120000 }),
     usage: () => call('/v1/usage'),
+    genQuote: (b) => call('/v1/generate/quote', { method: 'POST', body: b }),
+    genSettings: (b) => call('/v1/generate/settings', b ? { method: 'PUT', body: b } : {}),
     images: (q, o = {}) => call(`/v1/images?q=${encodeURIComponent(q)}&count=${o.count ?? 15}${o.orientation ? `&orientation=${o.orientation === 'squarish' ? 'square' : o.orientation}` : ''}`),
     saveBrand: (profile) => call('/v1/brand', { method: 'PUT', body: { profile } }),
     pages: () => call('/v1/pages'),
