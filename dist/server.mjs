@@ -41558,7 +41558,7 @@ function startCampaign(o) {
 }
 
 // src/export.js
-var COLUMNS = ["date", "weekday", "platform", "format", "size", "kind", "event", "phase", "objective", "angle", "cta", "hashtags", "caution", "status"];
+var COLUMNS = ["date", "time", "weekday", "platform", "format", "size", "kind", "event", "phase", "objective", "angle", "cta", "hashtags", "caution", "status"];
 function csvCell(v) {
   if (v == null) return "";
   const s = Array.isArray(v) ? v.join(" ") : String(v);
@@ -41584,6 +41584,11 @@ function fold(line) {
   }
   return parts.join("\r\n ");
 }
+var endOf = (t) => {
+  const [h, m] = t.split(":").map(Number);
+  const e = Math.min(h * 60 + m + 30, 23 * 60 + 59);
+  return `${String(Math.floor(e / 60)).padStart(2, "0")}${String(e % 60).padStart(2, "0")}`;
+};
 function toICS(slots, calName = "Q4 content plan") {
   const stamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
   const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//quarter4//content plan//EN", "CALSCALE:GREGORIAN", `X-WR-CALNAME:${icsText(calName)}`];
@@ -41592,13 +41597,13 @@ function toICS(slots, calName = "Q4 content plan") {
     const next = addDays(s.date, 1).replace(/-/g, "");
     const title = `${s.platform} ${s.format}: ${s.event ?? s.phase}${s.event ? ` (${s.phase})` : ""}`;
     const desc = [`Objective: ${s.objective}`, `Angle: ${s.angle}`, `CTA: ${s.cta}`, s.size ? `Size: ${s.size} (${s.aspect})` : "", s.hashtags?.length ? `Hashtags: ${s.hashtags.join(" ")}` : "", s.caution ? `Caution: ${s.caution}` : ""].filter(Boolean).join("\n");
-    lines.push("BEGIN:VEVENT", `UID:${d}-${i}-${s.platform}@quarter4`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${next}`, `SUMMARY:${icsText(title)}`, `DESCRIPTION:${icsText(desc)}`, "TRANSP:TRANSPARENT", "END:VEVENT");
+    lines.push("BEGIN:VEVENT", `UID:${d}-${i}-${s.platform}@quarter4`, `DTSTAMP:${stamp}`, ...s.time ? [`DTSTART:${d}T${s.time.replace(":", "")}00`, `DTEND:${d}T${endOf(s.time)}00`] : [`DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${next}`], `SUMMARY:${icsText(title)}`, `DESCRIPTION:${icsText(desc)}`, "TRANSP:TRANSPARENT", "END:VEVENT");
   });
   lines.push("END:VCALENDAR");
   return lines.map(fold).join("\r\n") + "\r\n";
 }
 function toMarkdown(plan) {
-  const rows = plan.slots.map((s) => `| ${s.date} | ${s.weekday.slice(0, 3)} | ${s.platform} | ${s.format} | ${s.event ?? "-"} | ${s.phase} | ${String(s.angle).replace(/\|/g, "/")} | ${s.cta} |`);
+  const rows = plan.slots.map((s) => `| ${s.date} | ${s.time ?? "-"} | ${s.weekday.slice(0, 3)} | ${s.platform} | ${s.format} | ${s.event ?? "-"} | ${s.phase} | ${String(s.angle).replace(/\|/g, "/")} | ${s.cta} |`);
   return [
     `# Q4 content plan: ${plan.brand}`,
     "",
@@ -41609,8 +41614,8 @@ function toMarkdown(plan) {
     ...plan.observances.length ? ["", "## Observances (no sales tie-ins)", ...plan.observances.map((e) => `- ${e.name}: ${e.date}`)] : [],
     "",
     "## Calendar",
-    "| Date | Day | Platform | Format | Event | Phase | Angle | CTA |",
-    "|---|---|---|---|---|---|---|---|",
+    "| Date | Time | Day | Platform | Format | Event | Phase | Angle | CTA |",
+    "|---|---|---|---|---|---|---|---|---|",
     ...rows,
     ""
   ].join("\n");
@@ -43182,6 +43187,16 @@ function score(phase, ev) {
   const phaseWeight = { launch: 6, "last-chance": 5, "early-access": 4, "warm-up": 3, tease: 2, "thank-you": 1 }[phase];
   return IMPACT_RANK2[ev.impact] * 10 + phaseWeight + (ev.relevance?.score ?? 0) / 10 + ev.leadDays / 1e3;
 }
+var POST_TIMES = { instagram: ["12:30", "19:00"], tiktok: ["19:00", "21:00"], facebook: ["13:00", "19:30"], whatsapp: ["08:00", "18:30"], linkedin: ["08:30", "12:00"], x: ["09:00", "18:00"], youtube: ["17:00", "19:00"], email: ["10:00", "17:00"], telegram: ["09:00", "19:00"], pinterest: ["14:00", "20:00"] };
+var PHASE_TIME = { launch: 0, "last-chance": 1 };
+function postTimeFor(platform, date6, phase, custom2 = {}) {
+  if (/^([01]\d|2[0-3]):[0-5]\d$/.test(custom2?.[platform] ?? "")) return custom2[platform];
+  const t = POST_TIMES[platform] ?? ["10:00", "19:00"];
+  if (phase in PHASE_TIME) return t[PHASE_TIME[phase]];
+  const day = (/* @__PURE__ */ new Date(`${date6}T00:00:00Z`)).getUTCDay();
+  if (day === 0 || day === 6) return t[1];
+  return t[Number(date6.slice(8)) % 2];
+}
 function buildPlan(o) {
   const notes = [];
   const start = o.startDate ?? today();
@@ -43286,6 +43301,7 @@ function buildPlan(o) {
       const isMotion = /reel|video|short|story|status/.test(format);
       slots.push({
         date: d,
+        time: postTimeFor(platformId, d, slot.phase, o.postTimes),
         weekday: weekdayName(d),
         platform: platformId,
         format,
@@ -43305,6 +43321,7 @@ function buildPlan(o) {
     offer,
     offerType,
     interpreted: { platforms, regions, niche: niche.label, notes },
+    timesNote: "Posting times are suggestions in your audience's local time. Change them to suit you, and let your results guide you.",
     ...featured.length ? { featured } : {},
     window: { start, end },
     postsPerWeekPerPlatform: perWeek,
@@ -44101,6 +44118,7 @@ function createServer2({ allowFileWrites = false } = {}) {
       startDate: date5.optional().describe("Default today"),
       endDate: date5.optional().describe("Default 60 days from start"),
       postsPerWeek: external_exports.number().int().min(1).max(7).optional().describe("Per platform; default 4"),
+      postTimes: external_exports.record(external_exports.string(), external_exports.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)).optional().describe(`Seller's own posting times per platform, 24-hour, e.g. { "instagram": "18:00" }. Every slot has a suggested time otherwise`),
       focusEvents: external_exports.array(external_exports.string()).optional().describe('Events to campaign around, ids or names ("black friday", "eid", "valentines")'),
       offer: external_exports.string().optional().describe('Written any way: "30% off", "N5k off", "BOGO", "free delivery"'),
       sellsProducts: external_exports.boolean().optional().describe("false for creators who only publish content; default true"),
@@ -44355,7 +44373,7 @@ ${html}` }] };
   }, wrap(async (a) => json3(a.check ? await cloud.domainStatus(a.hostname) : await cloud.connectDomain(a.hostname, a.site))));
   server.registerTool("cloud_account", {
     title: "Quarter4 account and plans",
-    description: 'Quarter4 Cloud account. "connect" links this AI app to the user account: it returns a link and code the user approves in their browser (new users get a free account); call it again to finish. "status" shows plan, limits and sites. "pages" lists published pages. "dashboard" returns the web dashboard link (views, WhatsApp orders per product, plan). "upgrade" returns a secure Flutterwave card checkout link for Pro or Business, priced in Naira for Nigeria and US Dollars elsewhere. "signup" (fallback) emails a key instead. Never ask for passwords or card details in chat; always send the link.',
+    description: 'Quarter4 Cloud account. "connect" links this AI app to the user account: it returns a link and code the user approves in their browser (new users get a free account); call it again to finish. "status" shows plan, limits and sites. "pages" lists published pages. "dashboard" returns the web dashboard link (views, WhatsApp orders per product, plan). "upgrade" returns a secure Flutterwave card checkout link for Pro or Business, priced in Naira for Nigeria and US Dollars elsewhere. "signup" (fallback) emails a sign-in link; the user then connects or creates a key from their profile. Never ask for passwords or card details in chat; always send the link.',
     inputSchema: {
       action: external_exports.enum(["connect", "status", "pages", "dashboard", "upgrade", "signup"]),
       email: external_exports.string().optional(),

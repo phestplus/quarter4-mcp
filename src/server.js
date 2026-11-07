@@ -136,6 +136,7 @@ export function createServer({ allowFileWrites = false } = {}) {
       startDate: date.optional().describe('Default today'),
       endDate: date.optional().describe('Default 60 days from start'),
       postsPerWeek: z.number().int().min(1).max(7).optional().describe('Per platform; default 4'),
+      postTimes: z.record(z.string(), z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)).optional().describe('Seller\'s own posting times per platform, 24-hour, e.g. { "instagram": "18:00" }. Every slot has a suggested time otherwise'),
       focusEvents: z.array(z.string()).optional().describe('Events to campaign around, ids or names ("black friday", "eid", "valentines")'),
       offer: z.string().optional().describe('Written any way: "30% off", "N5k off", "BOGO", "free delivery"'),
       sellsProducts: z.boolean().optional().describe('false for creators who only publish content; default true'),
@@ -397,7 +398,7 @@ Includes an honest countdown, sticky mobile CTA, SEO/Open Graph tags, Product/Of
 
   server.registerTool('cloud_account', {
     title: 'Quarter4 account and plans',
-    description: 'Quarter4 Cloud account. "connect" links this AI app to the user account: it returns a link and code the user approves in their browser (new users get a free account); call it again to finish. "status" shows plan, limits and sites. "pages" lists published pages. "dashboard" returns the web dashboard link (views, WhatsApp orders per product, plan). "upgrade" returns a secure Flutterwave card checkout link for Pro or Business, priced in Naira for Nigeria and US Dollars elsewhere. "signup" (fallback) emails a key instead. Never ask for passwords or card details in chat; always send the link.',
+    description: 'Quarter4 Cloud account. "connect" links this AI app to the user account: it returns a link and code the user approves in their browser (new users get a free account); call it again to finish. "status" shows plan, limits and sites. "pages" lists published pages. "dashboard" returns the web dashboard link (views, WhatsApp orders per product, plan). "upgrade" returns a secure Flutterwave card checkout link for Pro or Business, priced in Naira for Nigeria and US Dollars elsewhere. "signup" (fallback) emails a sign-in link; the user then connects or creates a key from their profile. Never ask for passwords or card details in chat; always send the link.',
     inputSchema: {
       action: z.enum(['connect', 'status', 'pages', 'dashboard', 'upgrade', 'signup']),
       email: z.string().optional(),
